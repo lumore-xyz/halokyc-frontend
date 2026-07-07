@@ -7,71 +7,17 @@
       "skillPath": "skills/copywriting/SKILL.md",
       "computedHash": "cb9761b92e140cd68c1de6397c51dd9952da198382abfdbf26589ef26f6572b4"
     },
-    "deep-agents-orchestration": {
-      "source": "langchain-ai/langchain-skills",
-      "sourceType": "github",
-      "skillPath": "config/skills/deep-agents-orchestration/SKILL.md",
-      "computedHash": "bff75455339bb6c2d0aeb75ea9a25d1732228a566d34efd213b52a53f686159f"
-    },
-    "ecosystem-primer": {
-      "source": "langchain-ai/langchain-skills",
-      "sourceType": "github",
-      "skillPath": "config/skills/ecosystem-primer/SKILL.md",
-      "computedHash": "83d0d8922a89bd92d2031e2e3c3c785f32f84513d0785c3a3018690a81984b82"
-    },
     "frontend-design": {
       "source": "anthropics/skills",
       "sourceType": "github",
       "skillPath": "skills/frontend-design/SKILL.md",
       "computedHash": "93f53fd1c0352d3d7ec17b8f73d7351bf76f4821e55d123c9d2abc2c53ba48e4"
     },
-    "langchain-dependencies": {
-      "source": "langchain-ai/langchain-skills",
-      "sourceType": "github",
-      "skillPath": "config/skills/langchain-dependencies/SKILL.md",
-      "computedHash": "ac62cde366414ce2f928e43fe0e94dacc2969f5bf14f500650508f385d5ce0b5"
-    },
-    "langchain-fundamentals": {
-      "source": "langchain-ai/langchain-skills",
-      "sourceType": "github",
-      "skillPath": "config/skills/langchain-fundamentals/SKILL.md",
-      "computedHash": "766050497c9a8bde7a8df17cb8c00291e0fd4a62662d735c628b2bb6725a1002"
-    },
-    "langgraph-fundamentals": {
-      "source": "langchain-ai/langchain-skills",
-      "sourceType": "github",
-      "skillPath": "config/skills/langgraph-fundamentals/SKILL.md",
-      "computedHash": "581ea3bb684f4cd2c3eeee3f9b357f3988032d1f40fb5afc2ce217ec2ecbcdaa"
-    },
-    "langgraph-human-in-the-loop": {
-      "source": "langchain-ai/langchain-skills",
-      "sourceType": "github",
-      "skillPath": "config/skills/langgraph-human-in-the-loop/SKILL.md",
-      "computedHash": "f98bc8e16c416b859bebf6126009d637b72a26d510d234c296a774d79736ead9"
-    },
-    "langgraph-persistence": {
-      "source": "langchain-ai/langchain-skills",
-      "sourceType": "github",
-      "skillPath": "config/skills/langgraph-persistence/SKILL.md",
-      "computedHash": "7538756e423b3da5ce25b6c7f99070792214a9c7a51510e9579a40a190e88ccd"
-    },
     "legal-writing": {
       "source": "anthropics/claude-for-legal",
       "sourceType": "github",
       "skillPath": "law-student/skills/legal-writing/SKILL.md",
       "computedHash": "e90a58c594cad90dd8ba719988c966d2c097eea99ef8d4f7834aa176ddaef297"
-    },
-    "managed-deep-agents": {
-      "source": "langchain-ai/langchain-skills",
-      "sourceType": "github",
-      "skillPath": "config/skills/managed-deep-agents/SKILL.md",
-      "computedHash": "6aa974f503fc5e856abf0e04530ddffd7ecec27406b68d84f9a060af0cf80f14"
-    },
-    "product-brainstorming": {
-      "source": "anthropics/knowledge-work-plugins",
-      "sourceType": "github",
-      "skillPath": "product-management/skills/product-brainstorming/SKILL.md",
-      "computedHash": "595e6cc5bb85da6b67b35c24d4d3906c6bac42a1fe4ecbe71fa154176d724c1b"
     },
     "security-review": {
       "source": "getsentry/skills",
@@ -89,7 +35,7 @@
       "source": "shadcn/ui",
       "sourceType": "github",
       "skillPath": "skills/shadcn/SKILL.md",
-      "computedHash": "0dc0edeeaec2ae491ae506806517866a3f9bd48d04e0458feb37e0252862891f"
+      "computedHash": "4f78ff7cd3a4f637b6fe30dbbab4a80a19dd63fa62d9352bed461ccfdbcbbf43"
     },
     "vercel-react-best-practices": {
       "source": "vercel-labs/agent-skills",
@@ -102,54 +48,6 @@
       "sourceType": "github",
       "skillPath": "skills/web-design-guidelines/SKILL.md",
       "computedHash": "f3bc47f890f42a44db1007ab390709ec368e4b8c089baee6b0007182236ac474"
-    },
-    "billing-sdk": {
-      "source": "dodopayments/skills",
-      "sourceType": "github",
-      "skillPath": "dodo-payments/billing-sdk/SKILL.md",
-      "computedHash": "f146915e1ec917908ae3d9e2ea2e9a7f9d4629998dfe3f9f954dc5ce100db68d"
-    },
-    "checkout-integration": {
-      "source": "dodopayments/skills",
-      "sourceType": "github",
-      "skillPath": "dodo-payments/checkout-integration/SKILL.md",
-      "computedHash": "d1f4db7aed0b940b400cb7e25d047df9b4b3e86d529e00a0364b6b3a8321689e"
-    },
-    "credit-based-billing": {
-      "source": "dodopayments/skills",
-      "sourceType": "github",
-      "skillPath": "dodo-payments/credit-based-billing/SKILL.md",
-      "computedHash": "498dc2f80f914407515872b2896aa1eaab4560adbc246d09f6bf52a7195ad0f8"
-    },
-    "dodo-best-practices": {
-      "source": "dodopayments/skills",
-      "sourceType": "github",
-      "skillPath": "dodo-payments/best-practices/SKILL.md",
-      "computedHash": "b91766c293068ca85b613e12b7064cd73bf062c4793d31e02a9ef94389b7db1d"
-    },
-    "license-keys": {
-      "source": "dodopayments/skills",
-      "sourceType": "github",
-      "skillPath": "dodo-payments/license-keys/SKILL.md",
-      "computedHash": "bb36b8e5b1983a4407f45702263beaaf0870f24e06cda3122211a2a5b084a2bc"
-    },
-    "subscription-integration": {
-      "source": "dodopayments/skills",
-      "sourceType": "github",
-      "skillPath": "dodo-payments/subscription-integration/SKILL.md",
-      "computedHash": "10790c7171568919f1ca53ea150be7ac49e9ba15eeafe4c8cbe9cefcfd4b8a75"
-    },
-    "usage-based-billing": {
-      "source": "dodopayments/skills",
-      "sourceType": "github",
-      "skillPath": "dodo-payments/usage-based-billing/SKILL.md",
-      "computedHash": "d60f9ccb03bf70c85949a29c3a29670562877082a9bb5f0aea764fcc8ae6a124"
-    },
-    "webhook-integration": {
-      "source": "dodopayments/skills",
-      "sourceType": "github",
-      "skillPath": "dodo-payments/webhook-integration/SKILL.md",
-      "computedHash": "c46ba82cf4aaa31568debb59d9bfc8a47ecbab04f881fdacca86d68cf046dda1"
     }
   }
 }

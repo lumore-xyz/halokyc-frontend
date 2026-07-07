@@ -1,74 +1,85 @@
-﻿# AGENTS.md
+# frontend/AGENTS.md
 
-HaloKYC frontend — Next.js 16 dashboard. You are my technical
-co-founder, product strategist, and systems architect. Read
-`.agents/context/FOUNDER_MODE.md` and `.agents/context/AI_RULES.md`
-before touching anything.
+Frontend-specific notes for agents working in `frontend/`. The
+shared rules live in `../AGENTS.md` and `.agents/context/AI_RULES.md`;
+this file adds the rules that are specific to Next.js 16.
 
-> **Repo layout after the split.** This repo is home to the
-> Next.js app (`frontend/`) and carries an **in-tree copy** of
-> `.agents/context/` and `.agents/skills/`. The canonical home of
-> the agent context is `halo-backend`'s `.agents/`; treat divergence
-> as a docs bug and rsync when you change either side. A shared
-> `halo-docs` repo can replace this duplication later.
->
-> The `.agents/` copy is excluded from git for editor state
-> (`.obsidian/`, `.trash/`) via the repo-root `.gitignore`.
+## Next.js 16 — read the docs first
 
-## Read order (agents)
+This codebase ships Next.js 16, not the version in older training
+data. Before writing any routing, data fetching, or metadata code,
+read the relevant guide under
+`frontend/node_modules/next/dist/docs/`. The deprecation notices in
+that folder are the source of truth for what is removed in 16.
 
-1. `.agents/skills/` — project-local skills (frontend-design,
-   product-brainstorming, shadcn, vercel-react-best-practices,
-   web-design-guidelines).
-2. `.agents/context/AI_RULES.md` — shared ground rules. **Read
-   this first**, including the "development over testing" policy
-   and the per-side gating commands.
-3. `.agents/context/PRODUCT_PLAN.md`,
-   `.agents/context/API_CONTRACTS.md`.
-4. Frontend side: `frontend/ARCHITECTURE.md`,
-   `frontend/DESIGN_SYSTEM.md`, `.agents/context/frontend/DECISIONS.md`,
-   `.agents/context/frontend/CHANGELOG.md`,
-   `.agents/context/frontend/TODO.md`.
-5. `frontend/AGENTS.md` for Next.js 16-specific conventions — read
-   it before any frontend work; the App Router conventions differ
-   from older training data (`cookies()` and `headers()` are async,
-   `RouteContext<…>` for dynamic params).
+The two patterns that catch agents most often:
 
-## Gating commands
+- `cookies()` and `headers()` are **async**. Always `await` them.
+- Dynamic route params come through `RouteContext<'/path/[id]'>` with
+  an async `params` field. Pattern:
+
+  ```ts
+  type PageProps = { params: Promise<{ id: string }> };
+  export default async function Page({ params }: PageProps) {
+    const { id } = await params;
+    // ...
+  }
+  ```
+
+## Component conventions
+
+- Default to Server Components. Add `"use client"` only when state,
+  effects, browser APIs, or event handlers are needed.
+- Props are typed with `type`, never `interface`, except when
+  extending a third-party contract.
+- Use named exports, not default exports, for everything except
+  `page.tsx` and `layout.tsx` (Next.js routing requires a default
+  export there).
+- Compose, do not duplicate: a new variant is a CVA entry, not a
+  forked component.
+- Co-locate feature components under `src/app/<route>/_components/`
+  (Next.js private folder convention).
+- `src/components/ui/` is the only folder allowed to import from
+  `@base-ui/react`. Feature code consumes `ui/*` instead.
+
+## Forms
+
+- Native `<form>` + React 19 `useActionState` for server-validated
+  submissions.
+- Client-only forms use local state + `sonner` for error feedback.
+- Validation mirrors the backend Pydantic schema where one exists.
+- Every form has an accessible label association and a visible focus
+  state.
+
+## Data flow
+
+- All HTTP goes through `src/lib/api-client.ts`. Do not call `fetch`
+  from feature code.
+- React Query owns the cache. Feature hooks under
+  `src/lib/hooks/` are the only call sites for `useQuery` /
+  `useMutation`.
+- API keys live in `sessionStorage` (`halokyc.apiKey`); admin and
+  client JWTs live in httpOnly cookies set by the BFF.
+- Do not introduce a server-side data layer (Route Handlers, Server
+  Actions, RSC fetch caching) before the API contract is stable.
+
+## Compliance surfaces
+
+- The `/verify` consent capture, the `/privacy/dashboard` subject surface, the `/admin/dsr` queue, and the cookie consent banner are documented in `.agents/context/COMPLIANCE.md`. Read it before touching any of these routes.
+- Selfie and ID captures stay in component memory. They are never
+  rendered through `<img src=>` and never uploaded to a third-party
+  CDN. Object URLs are revoked on unmount.
+
+## Gating
+
+Before declaring done, run the frontend gating commands (per root
+`AGENTS.md`):
 
 ```
-cd frontend
 npx --no-install tsc --noEmit
 npx --no-install eslint src
 npx --no-install vitest run
 ```
 
-> `pnpm` requires Node 22.13+; this environment has Node 20.
-> Use `npx --no-install …` to invoke the locally-installed
-> binaries.
-
-## Repo facts that aren't in the docs
-
-- **The `.gitignore` at repo root** covers `node_modules`,
-  `.next/`, `.env*`, etc. (lifted from the old
-  `frontend/.gitignore`).
-- **`frontend/` is the only working directory.** All paths in
-  commands assume you have `cd frontend`'d.
-- **`.agents/context/` is an in-tree copy.** Edits happen in
-  `halo-backend/.agents/` first (canonical), then synced into
-  this repo. The new `submodule` style was rejected in favour of
-  a literal file copy to keep onboarding (`pnpm install` etc.)
-  trivial — there's nothing to fetch after a clone.
-
-## When unsure
-
-- Prefer the simpler option; add a `TODO`; keep interfaces clean.
-- For frontend policy decisions:
-  `.agents/context/frontend/DECISIONS.md` (ADR-F001 … ADR-F013).
-  Add a new ADR; do not edit old ones. Same rule.
-- For "is this allowed?" questions, prefer the Never / Always
-  lists in `.agents/context/AI_RULES.md`.
-
-## License
-
-Proprietary. Internal HaloKYC product. Do not redistribute.
+`pnpm` requires Node 22.13+; this environment has Node 20, so the
+local binaries are invoked directly through `npx --no-install`.

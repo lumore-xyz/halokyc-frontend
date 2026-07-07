@@ -1,0 +1,30 @@
+services:
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    restart: unless-stopped
+    environment:
+      NODE_ENV: production
+      NEXT_PUBLIC_API_BASE_URL: ${NEXT_PUBLIC_API_BASE_URL}
+      NEXT_PUBLIC_GOOGLE_OAUTH_CLIENT_ID: ${NEXT_PUBLIC_GOOGLE_OAUTH_CLIENT_ID}
+      NEXT_PUBLIC_GOOGLE_OAUTH_REDIRECT_URI: ${NEXT_PUBLIC_GOOGLE_OAUTH_REDIRECT_URI}
+      NEXT_PUBLIC_VERIFICATION_POLL_MS: ${NEXT_PUBLIC_VERIFICATION_POLL_MS}
+      NEXT_PUBLIC_ENABLE_ADMIN_CONSOLE: ${NEXT_PUBLIC_ENABLE_ADMIN_CONSOLE}
+      NEXT_PUBLIC_ENABLE_PRIVACY_DASHBOARD: ${NEXT_PUBLIC_ENABLE_PRIVACY_DASHBOARD}
+    expose:
+      - "3000"
+    healthcheck:
+      test:
+        [
+          "CMD",
+          "wget",
+          "--no-verbose",
+          "--tries=1",
+          "--spider",
+          "http://127.0.0.1:3000/",
+        ]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 60s
