@@ -11,7 +11,6 @@ type VerifyDocumentStepProps = {
   onSkip?: () => void;
   showBackButton: boolean;
   optional?: boolean;
-  cameraOnly?: boolean;
   frameType?: "oval" | "rectangle";
   instructionPill?: string;
 };
@@ -25,7 +24,6 @@ export function VerifyDocumentStep({
   onSkip,
   showBackButton,
   optional = false,
-  cameraOnly = false,
   frameType = "rectangle",
   instructionPill,
 }: VerifyDocumentStepProps) {
@@ -45,7 +43,7 @@ export function VerifyDocumentStep({
       file={file}
       frameType={frameType}
       instructionPill={instructionPill}
-      cameraOnly={cameraOnly}
+      cameraOnly
       title={title}
       captureLabel={`Take picture of ${side} side`}
       continueLabel={ctaLabel}

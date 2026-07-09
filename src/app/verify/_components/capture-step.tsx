@@ -65,7 +65,7 @@ export function CaptureStep({
       });
     } catch {
       setCameraError(
-        "Camera access was blocked or unavailable. Choose a JPEG or PNG instead.",
+        "Camera access was blocked or unavailable. Choose a JPEG, PNG, or WEBP instead.",
       );
     }
   }
@@ -182,7 +182,7 @@ export function CaptureStep({
             id={fileInputId}
             className="sr-only"
             type="file"
-            accept="image/jpeg,image/png"
+            accept="image/jpeg,image/png,image/webp"
             capture={acceptCamera}
             onChange={(event) => onChange(event.target.files?.[0] ?? null)}
           />

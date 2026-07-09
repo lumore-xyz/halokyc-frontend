@@ -149,9 +149,7 @@ export function CheckCard({
                 Detail
               </dt>
               <dd className="col-span-2">
-                <pre className="bg-muted text-foreground max-h-48 overflow-auto rounded-md p-3 font-mono text-xs leading-relaxed">
-                  {JSON.stringify(detail, null, 2)}
-                </pre>
+                <CheckDetailSummary value={detail} />
               </dd>
             </>
           ) : null}
@@ -266,4 +264,159 @@ function formatQualityValue(value: string): string {
 
 function formatMachineLabel(value: string): string {
   return value.replaceAll("_", " ");
+}
+
+function CheckDetailSummary({ value }: { value: Record<string, unknown> }) {
+  const reconciliation = readMetadataReconciliation(value);
+  const entries = Object.entries(value).filter(
+    ([key, entryValue]) =>
+      key !== "metadata_reconciliation" &&
+      entryValue !== null &&
+      entryValue !== undefined,
+  );
+
+  if (entries.length === 0) {
+    return reconciliation ? (
+      <MetadataReconciliationSummary reconciliation={reconciliation} />
+    ) : (
+      <span className="text-muted-foreground text-sm">No extra detail</span>
+    );
+  }
+
+  return (
+    <div className="flex flex-col gap-2 rounded-md border border-border bg-muted/30 p-3">
+      {reconciliation ? (
+        <MetadataReconciliationSummary reconciliation={reconciliation} />
+      ) : null}
+      {entries.slice(0, 6).map(([key, entryValue]) => (
+        <div
+          key={key}
+          className="grid gap-1 text-sm sm:grid-cols-[minmax(0,0.45fr)_minmax(0,0.55fr)]"
+        >
+          <span className="text-muted-foreground">
+            {formatMachineLabel(key)}
+          </span>
+          <span className="min-w-0 break-words font-medium">
+            {formatDetailValue(entryValue)}
+          </span>
+        </div>
+      ))}
+      {entries.length > 6 ? (
+        <span className="text-muted-foreground text-xs">
+          {entries.length - 6} more detail fields available to admins.
+        </span>
+      ) : null}
+    </div>
+  );
+}
+
+type MetadataReconciliation = {
+  status: "matched" | "mismatch";
+  mismatches: string[];
+  comparisons: Array<{
+    field: string;
+    expected: unknown;
+    actual: unknown;
+    matched: boolean;
+  }>;
+};
+
+function MetadataReconciliationSummary({
+  reconciliation,
+}: {
+  reconciliation: MetadataReconciliation;
+}) {
+  return (
+    <div className="flex flex-col gap-2 rounded-md border border-border bg-background p-3">
+      <div className="flex items-center justify-between gap-2">
+        <span className="font-medium">
+          Metadata match
+        </span>
+        <Badge variant={reconciliation.status === "mismatch" ? "destructive" : "outline"}>
+          {reconciliation.status === "mismatch" ? "Needs review" : "Matched"}
+        </Badge>
+      </div>
+      {reconciliation.comparisons.map((comparison) => (
+        <div
+          key={comparison.field}
+          className="grid gap-1 text-sm sm:grid-cols-[minmax(0,0.35fr)_minmax(0,0.65fr)]"
+        >
+          <span className="text-muted-foreground">
+            {formatMachineLabel(comparison.field)}
+          </span>
+          <span className="min-w-0 break-words">
+            <span className="font-medium">
+              {formatDetailValue(comparison.actual)}
+            </span>
+            <span className="text-muted-foreground">
+              {" "}
+              expected {formatDetailValue(comparison.expected)}
+            </span>
+          </span>
+        </div>
+      ))}
+    </div>
+  );
+}
+
+function readMetadataReconciliation(
+  value: Record<string, unknown>,
+): MetadataReconciliation | null {
+  const raw = value.metadata_reconciliation;
+  if (!raw || typeof raw !== "object" || Array.isArray(raw)) return null;
+  const record = raw as Record<string, unknown>;
+  const status = record.status;
+  const comparisons = record.comparisons;
+  const mismatches = record.mismatches;
+  if (
+    status !== "matched" &&
+    status !== "mismatch"
+  ) {
+    return null;
+  }
+  if (!Array.isArray(comparisons) || !Array.isArray(mismatches)) return null;
+  return {
+    status,
+    mismatches: mismatches.filter((item): item is string => typeof item === "string"),
+    comparisons: comparisons.flatMap((item) => {
+      if (!item || typeof item !== "object" || Array.isArray(item)) return [];
+      const comparison = item as Record<string, unknown>;
+      if (
+        typeof comparison.field !== "string" ||
+        typeof comparison.matched !== "boolean"
+      ) {
+        return [];
+      }
+      return [
+        {
+          field: comparison.field,
+          expected: comparison.expected,
+          actual: comparison.actual,
+          matched: comparison.matched,
+        },
+      ];
+    }),
+  };
+}
+
+function formatDetailValue(value: unknown): string {
+  if (value === null || value === undefined) return "Not provided";
+  if (typeof value === "boolean") return value ? "Yes" : "No";
+  if (typeof value === "number") {
+    if (value >= 0 && value <= 1) return `${Math.round(value * 100)}%`;
+    return Number.isInteger(value) ? String(value) : value.toFixed(2);
+  }
+  if (typeof value === "string") return formatMachineLabel(value);
+  if (Array.isArray(value)) {
+    if (value.length === 0) return "None";
+    if (value.every((item) => ["string", "number", "boolean"].includes(typeof item))) {
+      return value.map(formatDetailValue).join(", ");
+    }
+    return `${value.length} item${value.length === 1 ? "" : "s"}`;
+  }
+  if (typeof value === "object") {
+    const fieldCount = Object.keys(value).length;
+    return `${fieldCount} field${fieldCount === 1 ? "" : "s"}`;
+  }
+  return String(value);
 }

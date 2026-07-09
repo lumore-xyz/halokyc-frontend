@@ -26,6 +26,7 @@ Platform admin surfaces for managing AI model providers and their stored API key
 ## Implementation notes
 - Provider credentials stored encrypted in `ai_provider_keys`
 - Default configured model: Gemma 4 (when available in the selected Google API account); overrideable
+- Provider create/edit/key drawers must use an internal scroll area so long forms remain reachable on short viewports
 - Provider/key metadata (name, latency, token/cost estimate, fallback reason) shown only to `platform_owner` and `platform_business_admin`
 - Budget and quota guard runs before every model call; no-cost fallback to deterministic risk engine when exceeded
 

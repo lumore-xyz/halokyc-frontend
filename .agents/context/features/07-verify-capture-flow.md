@@ -8,10 +8,11 @@ Workflow-driven end-user verification flow served at `/verify`. The step sequenc
 - Accepts two URL modes: `?workflow_id=` (start new session) or `?verification_id=` (resume existing session)
 - Server-driven step machine pre-computes the capture sequence from workflow services (`selfie`, `liveness`, `document`, `age`)
 - Instruction pages before each capture step (selfie instruction, document front instruction, document back instruction)
-- Camera-only capture for selfie and liveness; camera + upload fallback for documents
+- Camera-only capture for selfie and liveness; document screens use the guided capture/upload path without flashlight or visible file-select affordances
 - Oval capture frame for selfie/liveness; rectangular frame for documents
 - Client-side file validation: MIME `image/jpeg|image/png|image/webp`, ≤ 8 MB, aspect-ratio warning above 4:1
 - Document retake flow: if the document quality check recommends retry, `/verify` resets document capture state and shows neutral retake copy (no credit or billing language)
+- Client-side compression targets a small WebP payload before upload. Raw JPEG, PNG, and WebP images may be up to 50 MB; the backend still enforces the final compressed-size cap.
 - Session resumable via `verification_id`; progress bar persists across page refreshes
 - Polls for results using the existing `GET /api/v1/verifications/{id}` endpoint
 
@@ -37,6 +38,7 @@ Workflow-driven end-user verification flow served at `/verify`. The step sequenc
 - `VerifyShell` renders a centered card with dotted backdrop on desktop; full-bleed on mobile
 - `/verify` ignores `callback_url` query param for security (ADR-F027); browser return navigation requires a server-side contract
 - Selfie and ID captures stay in component memory; object URLs revoked on unmount; never rendered via `<img src>` or uploaded to a third-party CDN
+- Verification-session upload and polling require only `verification_id`; `/verify` never asks the end user for API keys, session keys, or workspace credentials
 
 ## Related
 - [`PRODUCT_PLAN.md`](PRODUCT_PLAN.md) §2.4, §5 (Decision Rules), §6 (Credit Backlog Rules — neutral UX)

@@ -173,7 +173,7 @@ describe("WorkflowDesigner", () => {
       services: ["selfie", "document", "age"],
       min_age: 21,
       auto_decide_allowed: true,
-      agentic_mode: "disabled",
+      agentic_mode: "auto_decide",
       auto_decide_confidence_threshold: null,
     });
   });
@@ -327,7 +327,7 @@ describe("WorkflowDesigner", () => {
     fireEvent.click(within(dialog).getByRole("button", { name: "Selfie" }));
     await user.click(
       within(dialog).getByRole("switch", {
-        name: /Allow automatic agent decisions/i,
+        name: /Automatic decisions/i,
       }),
     );
     fireEvent.click(

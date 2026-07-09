@@ -873,11 +873,16 @@ export type AutomationMetricsFilters = {
   until?: string | null;
 };
 
-export const ALLOWED_UPLOAD_MIME = ["image/jpeg", "image/png"] as const;
-export const MAX_UPLOAD_BYTES = 8 * 1024 * 1024;
-const OPTIMIZE_UPLOAD_MIN_BYTES = 1024 * 1024;
-const OPTIMIZE_UPLOAD_MAX_EDGE = 2200;
-const OPTIMIZE_UPLOAD_JPEG_QUALITY = 0.92;
+export const ALLOWED_UPLOAD_MIME = [
+  "image/jpeg",
+  "image/png",
+  "image/webp",
+] as const;
+export const MAX_UPLOAD_BYTES = 50 * 1024 * 1024;
+export const MAX_OPTIMIZED_UPLOAD_BYTES = 300 * 1024;
+const OPTIMIZE_UPLOAD_TARGET_BYTES = 250 * 1024;
+const OPTIMIZE_UPLOAD_MAX_EDGES = [1800, 1500, 1200, 1000, 850, 720, 640];
+const OPTIMIZE_UPLOAD_QUALITIES = [0.82, 0.72, 0.62, 0.52, 0.44, 0.36];
 
 export type ClientValidationError = {
   kind: "client-validation";
@@ -977,7 +982,16 @@ function resolveBrowserPath(path: string): string {
   return new URL(path, window.location.origin).toString();
 }
 
-function validateUploadFile(file: File, field: string): void {
+function formatBytes(bytes: number): string {
+  if (bytes >= 1024 * 1024) return `${Math.round(bytes / (1024 * 1024))} MB`;
+  return `${Math.round(bytes / 1024)} KB`;
+}
+
+function validateUploadFile(
+  file: File,
+  field: string,
+  maxBytes = MAX_UPLOAD_BYTES,
+): void {
   if (
     !ALLOWED_UPLOAD_MIME.includes(
       file.type as (typeof ALLOWED_UPLOAD_MIME)[number],
@@ -986,15 +1000,15 @@ function validateUploadFile(file: File, field: string): void {
     const err: ClientValidationError = {
       kind: "client-validation",
       field,
-      message: `${field} must be JPEG or PNG (got ${file.type || "unknown"}).`,
+      message: `${field} must be JPEG, PNG, or WEBP (got ${file.type || "unknown"}).`,
     };
     throw new ApiError(err.message, 0, err);
   }
-  if (file.size > MAX_UPLOAD_BYTES) {
+  if (file.size > maxBytes) {
     const err: ClientValidationError = {
       kind: "client-validation",
       field,
-      message: `${field} is too large. Max ${Math.round(MAX_UPLOAD_BYTES / (1024 * 1024))} MB.`,
+      message: `${field} is too large. Max ${formatBytes(maxBytes)}.`,
     };
     throw new ApiError(err.message, 0, err);
   }
@@ -1010,12 +1024,13 @@ function validateUploadFile(file: File, field: string): void {
 
 async function optimizeUploadImage(file: File): Promise<File> {
   if (
-    file.size < OPTIMIZE_UPLOAD_MIN_BYTES ||
+    file.size <= OPTIMIZE_UPLOAD_TARGET_BYTES ||
     !ALLOWED_UPLOAD_MIME.includes(
       file.type as (typeof ALLOWED_UPLOAD_MIME)[number],
     ) ||
     typeof document === "undefined" ||
-    typeof URL === "undefined"
+    typeof URL === "undefined" ||
+    typeof URL.createObjectURL !== "function"
   ) {
     return file;
   }
@@ -1023,23 +1038,38 @@ async function optimizeUploadImage(file: File): Promise<File> {
   const objectUrl = URL.createObjectURL(file);
   try {
     const image = await loadImage(objectUrl);
-    const scale = Math.min(
-      1,
-      OPTIMIZE_UPLOAD_MAX_EDGE /
-        Math.max(image.naturalWidth, image.naturalHeight),
-    );
-    const width = Math.max(1, Math.round(image.naturalWidth * scale));
-    const height = Math.max(1, Math.round(image.naturalHeight * scale));
-    const canvas = document.createElement("canvas");
-    canvas.width = width;
-    canvas.height = height;
-    const context = canvas.getContext("2d");
-    if (!context) return file;
-    context.drawImage(image, 0, 0, width, height);
-    const blob = await canvasToBlob(canvas);
-    if (!blob || blob.size >= file.size) return file;
+    let bestBlob: Blob | null = null;
+
+    for (const maxEdge of OPTIMIZE_UPLOAD_MAX_EDGES) {
+      const scale = Math.min(
+        1,
+        maxEdge / Math.max(image.naturalWidth, image.naturalHeight),
+      );
+      const width = Math.max(1, Math.round(image.naturalWidth * scale));
+      const height = Math.max(1, Math.round(image.naturalHeight * scale));
+      const canvas = document.createElement("canvas");
+      canvas.width = width;
+      canvas.height = height;
+      const context = canvas.getContext("2d");
+      if (!context) return file;
+      context.drawImage(image, 0, 0, width, height);
+
+      for (const quality of OPTIMIZE_UPLOAD_QUALITIES) {
+        const blob = await canvasToBlob(canvas, quality);
+        if (!blob) continue;
+        if (!bestBlob || blob.size < bestBlob.size) bestBlob = blob;
+        if (blob.size <= OPTIMIZE_UPLOAD_TARGET_BYTES) {
+          bestBlob = blob;
+          break;
+        }
+      }
+
+      if (bestBlob && bestBlob.size <= OPTIMIZE_UPLOAD_TARGET_BYTES) break;
+    }
+
+    if (!bestBlob || bestBlob.size >= file.size) return file;
     const basename = file.name.replace(/\.[^.]+$/, "") || "evidence";
-    return new File([blob], `${basename}.jpg`, {
+    return new File([bestBlob], `${basename}.jpg`, {
       type: "image/jpeg",
       lastModified: file.lastModified,
     });
@@ -1059,9 +1089,12 @@ function loadImage(src: string): Promise<HTMLImageElement> {
   });
 }
 
-function canvasToBlob(canvas: HTMLCanvasElement): Promise<Blob | null> {
+function canvasToBlob(
+  canvas: HTMLCanvasElement,
+  quality: number,
+): Promise<Blob | null> {
   return new Promise((resolve) => {
-    canvas.toBlob(resolve, "image/jpeg", OPTIMIZE_UPLOAD_JPEG_QUALITY);
+    canvas.toBlob(resolve, "image/jpeg", quality);
   });
 }
 
@@ -1083,6 +1116,24 @@ export function validateUploadFiles(files: UploadVerificationFilesInput): void {
   validateUploadFile(files.idFront, "id_front_image");
   if (files.idBack) {
     validateUploadFile(files.idBack, "id_back_image");
+  }
+}
+
+function validateOptimizedUploadFiles(
+  files: UploadVerificationFilesInput,
+): void {
+  validateUploadFile(files.selfie, "selfie_image", MAX_OPTIMIZED_UPLOAD_BYTES);
+  validateUploadFile(
+    files.idFront,
+    "id_front_image",
+    MAX_OPTIMIZED_UPLOAD_BYTES,
+  );
+  if (files.idBack) {
+    validateUploadFile(
+      files.idBack,
+      "id_back_image",
+      MAX_OPTIMIZED_UPLOAD_BYTES,
+    );
   }
 }
 
@@ -1236,11 +1287,10 @@ export const apiClient = {
   uploadVerificationFiles: async (
     verificationId: string,
     files: UploadVerificationFilesInput,
-    apiKey: string,
   ): Promise<UploadVerificationResponse> => {
     validateUploadFiles(files);
     const optimizedFiles = await optimizeUploadFiles(files);
-    validateUploadFiles(optimizedFiles);
+    validateOptimizedUploadFiles(optimizedFiles);
     const form = new FormData();
     form.append(
       "selfie_image",
@@ -1262,15 +1312,12 @@ export const apiClient = {
     return request<UploadVerificationResponse>(
       `/api/v1/verifications/${verificationId}/upload`,
       { method: "POST", body: form },
-      apiKey,
     );
   },
 
-  getVerification: (verificationId: string, apiKey: string) =>
+  getVerification: (verificationId: string) =>
     request<VerificationDetail>(
       `/api/v1/verifications/${verificationId}`,
-      undefined,
-      apiKey,
     ),
 
   captureConsent: (

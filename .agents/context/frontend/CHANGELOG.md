@@ -2,6 +2,18 @@
 
 **Context:** [`PRODUCT_PLAN.md`](PRODUCT_PLAN.md) (phases) · [`TODO.md`](TODO.md) (task status) · [`frontend/DECISIONS.md`](DECISIONS.md) (ADRs behind each change) · [`API_CONTRACTS.md`](API_CONTRACTS.md) (changed endpoints) · [`COMPLIANCE.md`](COMPLIANCE.md) (compliance surface changes)
 
+## [2026-07-10]
+
+### Added
+- Updated the verification journey UX: the `/verify` flow now works from
+  `verification_id` only, document screens remove flashlight/file-select
+  affordances, uploads compress large images before submit, and consent copy
+  no longer exposes policy-version/privacy-dashboard text inside the card.
+- Improved operator surfaces: AI-provider and workflow drawers scroll on
+  short viewports, new workflows default to `auto_decide`, and session/review
+  detail pages show readable check summaries instead of raw JSON for normal
+  users.
+
 ## [Unreleased]
 
 ### Added

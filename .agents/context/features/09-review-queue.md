@@ -7,7 +7,7 @@ Dedicated interface for client operators to manually approve, reject, or escalat
 ## What it does
 - List view of sessions in `manual_review` status, scoped to the current workspace
 - Assigned reviews vs. completed reviews tabs
-- Evidence viewer: selfie, ID document, and all check result payloads
+- Evidence viewer: selfie, ID document, and human-readable check summaries
 - Agent recommendation panel: shows `recommended_status`, confidence, reason codes, and human-readable summary when agentic adjudication is enabled
 - Deterministic check results displayed beside the agent recommendation for comparison
 - Approve / Reject buttons; final decision is human-owned for `manual_review` sessions — the UI never implies the model is the final authority
@@ -29,6 +29,7 @@ Dedicated interface for client operators to manually approve, reject, or escalat
 - Reviewer must have `client_reviewer` or higher role
 - Fallback states for: provider unavailable, budget exceeded, timeout, invalid model output, deterministic-only decision
 - Model/provider metadata shown only to owner/admin/platform roles; hidden from developers and end users
+- Normal client users never see raw check JSON by default; raw JSON is reserved for owner/admin/platform diagnostic views
 - All review decisions appended to the immutable audit log
 
 ## Related

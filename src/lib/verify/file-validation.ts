@@ -1,10 +1,9 @@
-export const MAX_FILE_BYTES = 8 * 1024 * 1024;
+export const MAX_FILE_BYTES = 50 * 1024 * 1024;
 export const ALLOWED_MIME_TYPES = [
   "image/jpeg",
   "image/png",
   "image/webp",
 ] as const;
-export const MAX_LONG_EDGE = 4096;
 export const MAX_ASPECT_RATIO = 4;
 
 export type FileValidationResult =
@@ -26,7 +25,7 @@ export function validateVerifyFile(file: File): FileValidationResult {
     return {
       ok: false,
       code: "too_large",
-      message: `Photo is ${(file.size / 1024 / 1024).toFixed(1)} MB. The limit is 8 MB.`,
+      message: `Photo is ${(file.size / 1024 / 1024).toFixed(1)} MB. The limit is 50 MB.`,
     };
   }
   const allowed = ALLOWED_MIME_TYPES as ReadonlyArray<string>;
@@ -57,16 +56,6 @@ export function checkImageAspect(file: File): Promise<AspectCheckResult> {
       const height = img.naturalHeight || img.height;
       if (width === 0 || height === 0) {
         resolve({ ok: false, width, height, message: "The photo is corrupt." });
-        return;
-      }
-      const longEdge = Math.max(width, height);
-      if (longEdge > MAX_LONG_EDGE) {
-        resolve({
-          ok: false,
-          width,
-          height,
-          message: `Photo is ${longEdge}px on the long edge. Use a photo under ${MAX_LONG_EDGE}px.`,
-        });
         return;
       }
       const ratio = width / height;

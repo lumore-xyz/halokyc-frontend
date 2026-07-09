@@ -9,6 +9,7 @@ Clients define verification workflows — named sequences of AI services plus a 
 - Toggle deterministic services per workflow: `selfie`, `liveness`, `document`, `age`
 - Set `min_age` (terminal rule: under-age is auto-rejected with score=100)
 - Configure agentic adjudication mode per workflow: `disabled`, `shadow`, `assist_review`, `auto_decide`
+- New workflow UI defaults to `auto_decide` while still allowing operators to choose safer rollout modes
 - Agentic validation: workflows cannot enable agentic review without at least one deterministic evidence service selected
 - Show effective agentic mode on the workflow card
 
@@ -24,6 +25,7 @@ Clients define verification workflows — named sequences of AI services plus a 
 ## Implementation notes
 - Workflow-scoped services determine which AI tools the worker runs
 - `auto_decide_confidence_threshold` is a nullable per-workflow field (default null = disabled); when set, the agent may auto-decide gray-zone sessions above the threshold
+- The workflow drawer uses compact scrollable content so service toggles, agentic mode, and submit controls remain reachable on short viewports
 - `timeout_recovery_enabled` is a per-workflow feature flag (default off)
 
 ## Related

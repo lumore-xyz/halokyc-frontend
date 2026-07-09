@@ -28,7 +28,7 @@ afterEach(() => {
 describe("useVerification", () => {
   it("returns data on a successful fetch", async () => {
     const { result } = renderHook(
-      () => useVerification({ verificationId: "abc", apiKey: "k" }),
+      () => useVerification({ verificationId: "abc" }),
       { wrapper: createWrapper() },
     );
     await waitFor(() => {
@@ -37,9 +37,9 @@ describe("useVerification", () => {
     expect(result.current.data?.status).toBe("processing");
   });
 
-  it("does not fetch when apiKey is missing", async () => {
+  it("does not fetch when verificationId is missing", async () => {
     const { result } = renderHook(
-      () => useVerification({ verificationId: "abc", apiKey: null }),
+      () => useVerification({ verificationId: "" }),
       { wrapper: createWrapper() },
     );
     await waitFor(() => expect(result.current.isLoading).toBe(false));
@@ -53,7 +53,7 @@ describe("useVerification", () => {
       ),
     );
     const { result } = renderHook(
-      () => useVerification({ verificationId: "missing", apiKey: "k" }),
+      () => useVerification({ verificationId: "missing" }),
       { wrapper: createWrapper() },
     );
     await waitFor(() => {
@@ -82,7 +82,7 @@ describe("useVerification", () => {
       }),
     );
     const { result } = renderHook(
-      () => useVerification({ verificationId: "abc", apiKey: "k" }),
+      () => useVerification({ verificationId: "abc" }),
       { wrapper: createWrapper() },
     );
     await waitFor(() => {

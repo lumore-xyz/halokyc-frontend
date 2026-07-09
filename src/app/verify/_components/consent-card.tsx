@@ -98,13 +98,13 @@ export function ConsentCard({
         <div className="flex flex-col gap-1">
           <h2
             id={`${checkboxId}-heading`}
-            className="text-foreground text-base font-semibold tracking-tight"
+            className="text-foreground text-base font-semibold"
           >
             Privacy Notice
           </h2>
           <p className="text-muted-foreground text-xs leading-relaxed">
-            Before you continue, tell us what we will collect, why we need it, how long we keep it,
-            and who can see it.
+            Review what we collect, why we need it, how long we keep it, and
+            who can see it.
           </p>
         </div>
       </header>
@@ -131,24 +131,12 @@ export function ConsentCard({
           checked={accepted}
           onCheckedChange={(value) => setAccepted(value === true)}
           disabled={pending}
-          aria-describedby={`${checkboxId}-description`}
         />
         <div className="flex flex-col gap-1">
           <Label htmlFor={checkboxId} className="text-sm font-medium leading-snug">
             I have read the Privacy Notice and consent to HaloKYC processing my biometric and
             identity data for this verification.
           </Label>
-          <p
-            id={`${checkboxId}-description`}
-            className="text-muted-foreground text-xs leading-relaxed"
-          >
-            Policy version <span className="font-mono">{policyVersion}</span>.
-            You can withdraw consent at any time from the{" "}
-            <a href="/privacy/dashboard" className="underline underline-offset-4">
-              privacy dashboard
-            </a>
-            .
-          </p>
         </div>
       </div>
 
@@ -171,7 +159,7 @@ export function ConsentCard({
           ) : (
             <ShieldCheckIcon data-icon="inline-start" />
           )}
-          {pending ? "Saving consent..." : "I consent, continue"}
+          {pending ? "Saving consent..." : "Agree and continue"}
         </Button>
       </form>
     </section>
@@ -181,7 +169,7 @@ export function ConsentCard({
 function ConsentRow({ label, value }: { label: string; value: string }) {
   return (
     <div className="grid gap-0.5">
-      <dt className="text-foreground text-[11px] font-semibold uppercase tracking-wide">
+      <dt className="text-foreground text-[11px] font-semibold uppercase">
         {label}
       </dt>
       <dd className="text-muted-foreground leading-relaxed">{value}</dd>

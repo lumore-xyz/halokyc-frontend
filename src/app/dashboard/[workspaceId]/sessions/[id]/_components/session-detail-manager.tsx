@@ -7,6 +7,7 @@ import {
   apiClient,
   type VerificationSessionDetail,
   type VerificationStatus,
+  type VerificationUserAction,
 } from "@/lib/api-client";
 import { publicEnv } from "@/lib/env";
 import {
@@ -26,6 +27,7 @@ import {
   CardTitle,
   CardDescription,
 } from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
 import { formatDate } from "@/lib/format";
 import { JsonViewer } from "@/components/json-viewer";
 import { CheckCard, orderedCheckKeys } from "@/components/check-card";
@@ -69,6 +71,7 @@ export function SessionDetailManager({
     role === "client_developer";
   const canViewProviderMetadata =
     role === "client_owner" || role === "client_admin";
+  const canViewRawData = role === "client_owner" || role === "client_admin";
 
   const { data, isLoading, error, isFetching, refetch } = useQuery({
     queryKey: ["workspace-verification", workspaceId, verificationId],
@@ -259,19 +262,126 @@ export function SessionDetailManager({
         </div>
 
         <div className="flex flex-col gap-6">
-          <Card>
-            <CardHeader>
-              <CardTitle>Raw Data</CardTitle>
-              <CardDescription>
-                The full API response for this verification session.
-              </CardDescription>
-            </CardHeader>
-            <CardContent>
-              <JsonViewer value={data} />
-            </CardContent>
-          </Card>
+          <SessionCaseSummaryCard
+            data={data}
+            fileCount={(data as VerificationSessionDetail).files?.length ?? 0}
+            duplicateSessionHref={duplicateSessionHref}
+          />
+
+          {canViewRawData ? (
+            <Card>
+              <CardHeader>
+                <CardTitle>Technical payload</CardTitle>
+                <CardDescription>
+                  Full API response. Visible only to workspace owners and
+                  admins.
+                </CardDescription>
+              </CardHeader>
+              <CardContent>
+                <JsonViewer
+                  value={data}
+                  initiallyCollapsed
+                  title="Raw response"
+                />
+              </CardContent>
+            </Card>
+          ) : null}
         </div>
       </div>
     </div>
   );
+}
+
+function SessionCaseSummaryCard({
+  data,
+  fileCount,
+  duplicateSessionHref,
+}: {
+  data: VerificationSessionDetail;
+  fileCount: number;
+  duplicateSessionHref?: string;
+}) {
+  const completedChecks = Object.values(data.checks ?? {}).filter(
+    (check) => check && check.status !== "pending" && check.status !== "skipped",
+  ).length;
+  const needsAction = data.requires_user_action
+    ? formatUserAction(data.requires_user_action)
+    : null;
+
+  return (
+    <Card>
+      <CardHeader>
+        <CardTitle>Case summary</CardTitle>
+        <CardDescription>
+          Reviewer-safe session context without raw API payloads.
+        </CardDescription>
+      </CardHeader>
+      <CardContent className="flex flex-col gap-4">
+        <div className="flex flex-wrap gap-2">
+          <Badge variant="secondary">{completedChecks} checks complete</Badge>
+          <Badge variant="outline">{fileCount} files uploaded</Badge>
+          {data.timeout_recovery ? (
+            <Badge variant="outline">Recovered from timeout</Badge>
+          ) : null}
+        </div>
+
+        <dl className="grid gap-3 text-sm">
+          <SummaryRow label="Subject" value={data.external_user_id} />
+          <SummaryRow
+            label="Risk score"
+            value={
+              typeof data.risk_score === "number"
+                ? `${Math.round(data.risk_score)} / 100`
+                : "Not scored yet"
+            }
+          />
+          <SummaryRow label="Updated" value={formatDate(data.updated_at)} />
+          {needsAction ? (
+            <SummaryRow label="User action" value={needsAction} />
+          ) : null}
+          {duplicateSessionHref ? (
+            <div className="grid gap-1">
+              <dt className="text-muted-foreground">Duplicate match</dt>
+              <dd>
+                <Link
+                  href={duplicateSessionHref}
+                  className="text-primary underline-offset-4 hover:underline"
+                >
+                  Open matched session
+                </Link>
+              </dd>
+            </div>
+          ) : null}
+        </dl>
+
+        {data.decision_reason ? (
+          <div className="rounded-md border border-border bg-muted/30 p-3 text-sm">
+            <p className="font-medium">Decision note</p>
+            <p className="mt-1 text-muted-foreground">{data.decision_reason}</p>
+          </div>
+        ) : null}
+      </CardContent>
+    </Card>
+  );
+}
+
+function SummaryRow({ label, value }: { label: string; value: string }) {
+  return (
+    <div className="grid gap-1">
+      <dt className="text-muted-foreground">{label}</dt>
+      <dd className="break-words font-medium">{value}</dd>
+    </div>
+  );
+}
+
+function formatMachineLabel(value: string): string {
+  return value.replaceAll("_", " ");
+}
+
+function formatUserAction(action: VerificationUserAction): string {
+  if (action.action === "retake_document") {
+    const fields = action.fields.map(formatMachineLabel).join(", ");
+    return `Retake document${fields ? ` (${fields})` : ""}`;
+  }
+  return formatMachineLabel(action.action);
 }

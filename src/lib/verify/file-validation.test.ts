@@ -26,7 +26,7 @@ describe("validateVerifyFile", () => {
     if (!result.ok) expect(result.code).toBe("empty");
   });
 
-  it("rejects files above 8 MB", () => {
+  it("rejects files above 50 MB", () => {
     const file = fakeFile("selfie.jpg", "image/jpeg", MAX_FILE_BYTES + 1);
     const result = validateVerifyFile(file);
     expect(result.ok).toBe(false);

@@ -13,24 +13,17 @@ const TERMINAL_STATUSES = new Set<VerificationDetail["status"]>([
 
 export type UseVerificationParams = {
   verificationId: string;
-  apiKey: string | null;
   enabled?: boolean;
 };
 
 export function useVerification({
   verificationId,
-  apiKey,
   enabled = true,
 }: UseVerificationParams) {
   const query = useQuery({
     queryKey: ["verification", verificationId],
-    queryFn: () => {
-      if (!apiKey) {
-        throw new Error("API key is required to fetch a verification.");
-      }
-      return apiClient.getVerification(verificationId, apiKey);
-    },
-    enabled: Boolean(enabled && verificationId && apiKey),
+    queryFn: () => apiClient.getVerification(verificationId),
+    enabled: Boolean(enabled && verificationId),
     refetchInterval: (query) => {
       const status = query.state.data?.status;
       if (status && TERMINAL_STATUSES.has(status)) {

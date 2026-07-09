@@ -26,12 +26,12 @@ export function VerifyProgress({
       className={cn("flex flex-col gap-2", className)}
     >
       <div className="flex items-center justify-between text-xs">
-        <span className="text-muted-foreground">{label}</span>
+        <span className="text-muted-foreground font-medium">{label}</span>
         <span className="text-muted-foreground font-mono tabular-nums">
           {clamped}%
         </span>
       </div>
-      <Progress className="mb-4" value={clamped} />
+      <Progress className="mb-4 h-1.5" value={clamped} />
     </div>
   );
 }

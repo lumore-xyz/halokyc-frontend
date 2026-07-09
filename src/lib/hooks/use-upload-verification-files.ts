@@ -11,7 +11,6 @@ import {
 type UploadVerificationInput = {
   verificationId: string;
   files: UploadVerificationFilesInput;
-  apiKey: string;
 };
 
 export function useUploadVerificationFiles() {
@@ -22,8 +21,8 @@ export function useUploadVerificationFiles() {
     Error,
     UploadVerificationInput
   >({
-    mutationFn: ({ verificationId, files, apiKey }) =>
-      apiClient.uploadVerificationFiles(verificationId, files, apiKey),
+    mutationFn: ({ verificationId, files }) =>
+      apiClient.uploadVerificationFiles(verificationId, files),
     onSuccess: (_data, { verificationId }) => {
       void queryClient.invalidateQueries({
         queryKey: ["verification", verificationId],

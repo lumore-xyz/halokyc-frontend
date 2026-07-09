@@ -44,7 +44,6 @@ describe("apiClient.getVerification", () => {
   it("returns the verification detail", async () => {
     const result = await apiClient.getVerification(
       "00000000-0000-0000-0000-000000000001",
-      "live_test_key",
     );
     expect(result.status).toBe("processing");
     expect(result.risk_score).toBe(15);
@@ -56,7 +55,7 @@ describe("apiClient.getVerification", () => {
         HttpResponse.json({ detail: "Not found" }, { status: 404 }),
       ),
     );
-    await expect(apiClient.getVerification("missing", "k")).rejects.toBeInstanceOf(
+    await expect(apiClient.getVerification("missing")).rejects.toBeInstanceOf(
       ApiError,
     );
   });
@@ -108,7 +107,6 @@ describe("apiClient.uploadVerificationFiles", () => {
         idFront: makeFile("f.jpg", "image/jpeg", 200),
         idBack: makeFile("b.jpg", "image/png", 300),
       },
-      "live_key",
     );
     expect(capturedContentType).toMatch(/multipart\/form-data/);
   });
@@ -121,7 +119,6 @@ describe("apiClient.uploadVerificationFiles", () => {
           selfie: makeFile("selfie.pdf", "application/pdf", 1024),
           idFront: makeFile("id.jpg", "image/jpeg", 1024),
         },
-        "live_key",
       ),
     ).rejects.toBeInstanceOf(ApiError);
   });

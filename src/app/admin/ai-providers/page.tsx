@@ -297,8 +297,8 @@ function AiProvidersHub() {
               after.
             </SheetDescription>
           </SheetHeader>
-          <form onSubmit={submitProvider} className="mt-4 grid gap-4">
-            <FieldGroup>
+          <form onSubmit={submitProvider} className="flex min-h-0 flex-1 flex-col gap-4">
+            <FieldGroup className="-mr-1 min-h-0 flex-1 overflow-y-auto pr-1">
               <Field data-invalid={providerSubmitted && !providerName.trim() ? true : undefined}>
                 <FieldLabel htmlFor="provider-name">Display name</FieldLabel>
                 <Input
@@ -375,7 +375,7 @@ function AiProvidersHub() {
               </Field>
             </FieldGroup>
 
-            <SheetFooter>
+            <SheetFooter className="shrink-0 border-t pt-4">
               <Button
                 type="button"
                 variant="outline"
@@ -542,7 +542,7 @@ function ProviderRow({
               </SheetDescription>
             </SheetHeader>
 
-            <div className="mt-4 flex flex-col gap-3">
+            <div className="-mr-1 flex min-h-0 flex-1 flex-col gap-3 overflow-y-auto pr-1">
               {keys.length === 0 ? (
                 <p className="text-muted-foreground text-sm">
                   No keys yet. Add one to enable routing to this provider.
@@ -647,7 +647,7 @@ function ProviderRow({
               )}
             </div>
 
-            <SheetFooter className="mt-4">
+            <SheetFooter className="shrink-0 border-t pt-4">
               <Button type="button" size="sm" onClick={onAddKey}>
                 <PlusIcon data-icon="inline-start" aria-hidden />
                 Add key
@@ -778,8 +778,8 @@ function AddKeySheet({
             last 4 characters are visible after creation.
           </SheetDescription>
         </SheetHeader>
-        <form onSubmit={onSubmit} className="mt-4 grid gap-4">
-          <FieldGroup>
+        <form onSubmit={onSubmit} className="flex min-h-0 flex-1 flex-col gap-4">
+          <FieldGroup className="-mr-1 min-h-0 flex-1 overflow-y-auto pr-1">
             <Field data-invalid={submitted && !keyLabel.trim() ? true : undefined}>
               <FieldLabel htmlFor="key-label">Label</FieldLabel>
               <Input
@@ -836,7 +836,7 @@ function AddKeySheet({
             </Field>
           </FieldGroup>
 
-          <SheetFooter>
+          <SheetFooter className="shrink-0 border-t pt-4">
             <Button
               type="button"
               variant="outline"

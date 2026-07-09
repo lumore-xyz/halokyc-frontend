@@ -49,8 +49,8 @@ import { cn } from "@/lib/utils";
 import { InlineError } from "./console-shared";
 
 const DEFAULT_METADATA = `{
-  "name": "Bruse Wane",
-  "dob": "29/02/2000",
+  "name": "Jane Doe",
+  "dob": "1995-02-28",
   "gender": "male"
 }`;
 

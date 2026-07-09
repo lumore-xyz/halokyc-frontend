@@ -384,3 +384,19 @@ avigator.userAgent + a coarse-pointer media query, and is dismissible — any fals
 - The user's "Use This Device" choice lives in component state only (not localStorage). A same-mount refresh re-evaluates device detection but never re-prompts within the same mount.
 - The QR code is rendered through the qrcode library to a <canvas> (a static image; no animation, so prefers-reduced-motion is automatically honoured). No selfie/ID data touches the QR; it is just a URL.
 - Modal accessibility uses the shared Dialog primitive (focus trap, ESC dismisses to the desktop flow, labelled QR region via ole="img" + ria-label).
+
+
+---
+
+### ADR-F030: Keep verification journey public by verification_id and hide raw diagnostics from normal users
+
+**Status**: Accepted
+**Date**: 2026-07-10
+**Reason**: End users should only need the verification link they were given. Asking for API/session keys in the verify journey creates support friction and unnecessary credential exposure. Operators need readable review evidence, while raw JSON is useful mainly for owners/admins and diagnostics.
+
+**Rules**:
+- `/verify` upload, polling, and config flows use `verification_id` only.
+- Document capture screens do not expose flashlight or generic file-select controls; they present a guided capture/upload path.
+- Large images are compressed client-side before upload, while the backend remains the final authority for raw and compressed size limits.
+- Normal session/review detail pages render human-readable check summaries. Raw JSON is reserved for owner/admin/platform diagnostic contexts.
+- Long admin/workflow drawers must have internal scroll areas so primary actions remain reachable on short viewports.

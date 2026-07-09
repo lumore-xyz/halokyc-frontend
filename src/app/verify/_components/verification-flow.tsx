@@ -17,7 +17,6 @@ import {
   type VerificationConfig,
   type VerificationUserAction,
 } from "@/lib/api-client";
-import { useApiKey } from "@/lib/hooks/use-api-key";
 import { useUploadVerificationFiles } from "@/lib/hooks/use-upload-verification-files";
 import { useVerification } from "@/lib/hooks/use-verification";
 
@@ -64,13 +63,13 @@ function errorMessage(error: Error | null): string | null {
   if (!error) return null;
   const status = (error as ApiError).status;
   if (status === 401)
-    return "The API key is missing or invalid. Check it and try again.";
+    return "This verification link is no longer available. Ask the requesting service for a new link.";
   if (status === 403)
     return "This API key is disabled. Contact your administrator.";
   if (status === 404)
     return "The verification session was not found.";
   if (status === 413)
-    return "The uploaded photo is too large. Use a file under 8 MB.";
+    return "The uploaded photo is too large. Use an image under 50 MB.";
   if (status === 409)
     return "This verification link has already been submitted.";
   if (status === 422)
@@ -83,7 +82,6 @@ function errorMessage(error: Error | null): string | null {
 export function VerificationFlow({
   initialVerificationId,
 }: VerificationFlowProps) {
-  const { apiKey } = useApiKey();
   const uploadFiles = useUploadVerificationFiles();
   const verificationId = initialVerificationId ?? "";
   const [files, setFiles] = useState<Record<CaptureStepKey, File | null>>({
@@ -119,7 +117,6 @@ export function VerificationFlow({
 
   const verification = useVerification({
     verificationId,
-    apiKey,
     enabled: state.step === "polling",
   });
 
@@ -138,7 +135,6 @@ export function VerificationFlow({
 
   const handoffPoll = useVerification({
     verificationId,
-    apiKey,
     enabled: handoffEligible,
   });
 
@@ -195,7 +191,7 @@ export function VerificationFlow({
   );
 
   const submit = useCallback(async () => {
-    if (!apiKey || !verificationId) return;
+    if (!verificationId) return;
     const selfie = files.selfie;
     const documentFront = files.document_front;
     if (!selfie || !documentFront) return;
@@ -203,7 +199,6 @@ export function VerificationFlow({
     try {
       const uploadResult = await uploadFiles.mutateAsync({
         verificationId,
-        apiKey,
         files: {
           selfie,
           idFront: documentFront,
@@ -224,7 +219,7 @@ export function VerificationFlow({
     } catch {
       dispatch({ type: "error" });
     }
-  }, [apiKey, files, refetchConfig, uploadFiles, verificationId]);
+  }, [files, refetchConfig, uploadFiles, verificationId]);
 
   if (!verificationId) {
     return (
@@ -379,10 +374,7 @@ export function VerificationFlow({
             }
             setConsentPending(true);
             setConsentError(null);
-            const consentPromise = apiKey
-              ? apiClient.captureConsent(verificationId, record, apiKey)
-              : apiClient.captureConsentPublic(verificationId, record);
-            consentPromise
+            apiClient.captureConsentPublic(verificationId, record)
               .then(() => {
                 consent.accept(record);
                 dispatch({ type: "consent_given" });
@@ -488,7 +480,7 @@ export function VerificationFlow({
           title="Something went wrong"
           description={
             errorMessage(uploadFiles.error) ??
-            "Your photos could not be uploaded. Check that each photo is JPEG, PNG, or WEBP and no larger than 8 MB."
+            "Your photos could not be uploaded. Check that each photo is JPEG, PNG, or WEBP and no larger than 50 MB."
           }
           primaryLabel="Try again"
           onPrimary={submit}
@@ -588,7 +580,6 @@ export function VerificationFlow({
           showBackButton={
             services.includes("selfie") || services.includes("liveness")
           }
-          cameraOnly={cameraOnly}
           frameType={frameType}
           instructionPill={instructionPill}
         />
@@ -605,7 +596,6 @@ export function VerificationFlow({
           onSkip={() => void submit()}
           showBackButton
           optional
-          cameraOnly={cameraOnly}
           frameType={frameType}
           instructionPill={instructionPill}
         />
@@ -615,7 +605,7 @@ export function VerificationFlow({
           <AlertTitle>Photos could not be uploaded</AlertTitle>
           <AlertDescription>
             {errorMessage(uploadFiles.error)} Check that each photo is JPEG,
-            PNG, or WEBP and no larger than 8 MB.
+            PNG, or WEBP and no larger than 50 MB.
           </AlertDescription>
         </Alert>
       ) : null}

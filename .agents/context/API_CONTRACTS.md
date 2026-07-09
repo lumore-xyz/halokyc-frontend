@@ -178,6 +178,31 @@ type OCRCheckResult = CheckResult & {
     dob: string | null; // Legacy-compatible alias of document.date_of_birth.value.
     document_number_hash: string | null;
     document: NormalizedDocument;
+    metadata_reconciliation?: {
+      status: "matched" | "mismatch";
+      source: "session_metadata" | "ai_provider";
+      mismatches: ("name" | "dob" | "gender")[];
+      comparisons: {
+        field: "name" | "dob" | "gender";
+        expected: string;
+        actual: string | null;
+        matched: boolean;
+      }[];
+    };
+    ai_extraction?: {
+      attempted: boolean;
+      status: "completed" | "failed" | "skipped";
+      provider?: string;
+      model?: string | null;
+      latency_ms?: number;
+      reason?: string;
+      validation?: {
+        status: "matched" | "mismatch" | "uncertain";
+        score: number;
+        mismatch_fields: string[];
+        reason: string | null;
+      };
+    };
   };
 };
 
@@ -1027,9 +1052,15 @@ redirect to query-string-supplied URLs.
 Response: `VerificationConfigResponse`
 
 ### `POST /api/v1/verifications/{verification_id}/upload`
-Auth: `X-API-Key`
+Public verification-session endpoint. The path `verification_id` is the only
+credential required for the end-user upload flow; callers do not send API keys,
+session keys, or workspace identifiers.
 Content-Type: `multipart/form-data`
 Fields: `selfie_image` (req), `id_front_image` (req), `id_back_image` (opt).
+JPEG, PNG, and WebP images up to 50 MB raw are accepted. The backend normalizes
+EXIF orientation, converts to WebP, and compresses stored evidence to the
+configured post-compression cap (currently 300 KB). If the image cannot be
+compressed under the cap, the API returns `413`.
 Only accepted while the session is `pending_upload`; reused submitted links
 return `409 Conflict`.
 If credits are available, the backend reserves them and returns `processing`.
@@ -1039,7 +1070,8 @@ purchased. Exhausted credits do not return `402` for active organizations.
 Response: `{ verification_id: string; status: "processing" | "awaiting_credits" }`
 
 ### `GET /api/v1/verifications/{verification_id}`
-Auth: `X-API-Key`
+Public verification-session status/detail endpoint for the end-user flow. The
+path `verification_id` is sufficient; no API key or session key is required.
 Response: `VerificationDetail`
 
 ### Subject Lifecycle APIs

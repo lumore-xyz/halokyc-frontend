@@ -78,6 +78,13 @@ const AGENTIC_MODE_LABELS: Record<AgenticMode, string> = {
   auto_decide: "Auto decide",
 };
 
+const AGENTIC_MODE_DETAILS: Record<AgenticMode, string> = {
+  disabled: "Run deterministic checks only.",
+  shadow: "Evaluate in the background without changing outcomes.",
+  assist_review: "Recommend decisions for human review.",
+  auto_decide: "Approve or reject when confidence and policy gates pass.",
+};
+
 type EditorState = {
   name: string;
   services: Service[];
@@ -93,7 +100,7 @@ function emptyState(): EditorState {
     services: [],
     minAge: "",
     autoDecideAllowed: true,
-    agenticMode: "disabled",
+    agenticMode: "auto_decide",
     confidenceThreshold: "",
   };
 }
@@ -714,11 +721,15 @@ function WorkflowFormFields({
           type="button"
           role="switch"
           aria-checked={editor.autoDecideAllowed}
-          onClick={() =>
-            onChange({ autoDecideAllowed: !editor.autoDecideAllowed })
-          }
+          onClick={() => {
+            const nextAllowed = !editor.autoDecideAllowed;
+            onChange({
+              autoDecideAllowed: nextAllowed,
+              agenticMode: nextAllowed ? "auto_decide" : "disabled",
+            });
+          }}
           className={cn(
-            "flex w-full items-center justify-between gap-4 rounded-lg border px-3 py-3 text-left",
+            "flex w-full items-center justify-between gap-4 rounded-lg border px-4 py-4 text-left",
             "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2",
             editor.autoDecideAllowed
               ? "border-primary/40 bg-primary/5"
@@ -727,12 +738,12 @@ function WorkflowFormFields({
         >
           <span className="flex flex-col gap-1">
             <span className="text-sm font-medium">
-              Allow automatic agent decisions
+              Automatic decisions
             </span>
             <span className="text-xs text-muted-foreground">
-              Enabled by default. Hard terminal overrides still prevent the
-              model from approving under-age, face mismatch, liveness failure,
-              or tenant duplicate cases.
+              On by default. Deterministic safeguards still block approvals for
+              under-age users, face mismatch, liveness failure, and tenant
+              duplicate cases.
             </span>
           </span>
           <span
@@ -755,40 +766,71 @@ function WorkflowFormFields({
         <div
           role="group"
           aria-label="Agentic decisioning mode"
-          className="grid gap-2 sm:grid-cols-2"
+          className="grid gap-3"
         >
           {AGENTIC_MODES.map((mode) => {
             const isCurrent = mode === editor.agenticMode;
-            const isUnavailable = mode !== "disabled" && !hasDeterministicService;
+            const isUnavailable =
+              mode !== "disabled" && !hasDeterministicService && !isCurrent;
+            const isBlocked = mode === "auto_decide" && !editor.autoDecideAllowed;
             return (
               <button
                 key={mode}
                 type="button"
-                onClick={() => onChange({ agenticMode: mode })}
+                onClick={() =>
+                  onChange({
+                    agenticMode: mode,
+                    autoDecideAllowed:
+                      mode === "auto_decide" ? true : editor.autoDecideAllowed,
+                  })
+                }
                 disabled={isUnavailable}
                 aria-disabled={isUnavailable}
                 aria-pressed={isCurrent}
                 className={cn(
-                  "flex items-center justify-between rounded-lg border px-3 py-2 text-left text-sm",
+                  "flex items-start gap-3 rounded-lg border p-3 text-left text-sm transition-colors",
+                  "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2",
                   isCurrent
-                    ? "border-primary/30 bg-primary/5 text-foreground"
+                    ? "border-primary/40 bg-primary/5 text-foreground"
                     : "border-border bg-muted/30 text-muted-foreground",
                   isUnavailable ? "opacity-50" : "hover:border-foreground/40",
                 )}
               >
-                <span className="flex items-center gap-2">
+                <span
+                  className={cn(
+                    "mt-0.5 flex size-8 shrink-0 items-center justify-center rounded-full border",
+                    isCurrent
+                      ? "border-primary bg-primary text-primary-foreground"
+                      : "border-border bg-background text-muted-foreground",
+                  )}
+                >
                   <BotIcon className="size-4" aria-hidden />
-                  {AGENTIC_MODE_LABELS[mode]}
                 </span>
-                {isCurrent ? (
-                  <span className="text-[11px] uppercase tracking-wide">
-                    Current
+                <span className="min-w-0 flex-1">
+                  <span className="flex flex-wrap items-center gap-2">
+                    <span className="font-medium">
+                      {AGENTIC_MODE_LABELS[mode]}
+                    </span>
+                    {mode === "auto_decide" ? (
+                      <Badge variant="outline" className="h-5 px-1.5 text-[10px]">
+                        Recommended
+                      </Badge>
+                    ) : null}
+                    {isCurrent ? (
+                      <Badge className="h-5 px-1.5 text-[10px]">
+                        Selected
+                      </Badge>
+                    ) : null}
+                    {isBlocked ? (
+                      <Badge variant="outline" className="h-5 px-1.5 text-[10px]">
+                        Blocked
+                      </Badge>
+                    ) : null}
                   </span>
-                ) : mode === "auto_decide" ? (
-                  <span className="text-[11px] uppercase tracking-wide">
-                    {editor.autoDecideAllowed ? "Allowed" : "Blocked"}
+                  <span className="text-muted-foreground mt-1 block text-xs leading-5">
+                    {AGENTIC_MODE_DETAILS[mode]}
                   </span>
-                ) : null}
+                </span>
               </button>
             );
           })}

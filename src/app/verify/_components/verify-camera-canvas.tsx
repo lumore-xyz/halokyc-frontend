@@ -9,7 +9,6 @@ import {
   RefreshCcwIcon,
   ShieldCheckIcon,
   SlashIcon,
-  ZapOffIcon,
 } from "lucide-react";
 import { CSSProperties, useCallback, useEffect, useRef, useState } from "react";
 
@@ -113,7 +112,7 @@ export function VerifyCameraCanvas({
       setCameraStatus("blocked");
       setCameraError(
         cameraOnly
-          ? "Camera access was blocked or unavailable. Allow camera access and try again."
+          ? "Camera access was blocked or unavailable. Allow camera access in your browser settings and try again."
           : "Camera access was blocked or unavailable. Allow camera access or choose a JPEG, PNG, or WEBP instead.",
       );
     }
@@ -181,9 +180,9 @@ export function VerifyCameraCanvas({
           "Look directly at the camera",
         ]
       : [
-          "Find an area with good lighting",
-          "All details must be easily readable",
-          "Avoid screen captures",
+          "All four corners visible",
+          "Keep text sharp and readable",
+          "Avoid glare or shadows",
         ]);
 
   return (
@@ -240,9 +239,7 @@ export function VerifyCameraCanvas({
           <h2 className="truncate text-center text-sm font-semibold text-white/95">
             {title}
           </h2>
-          <div className="flex size-10 items-center justify-center rounded-full text-white/90">
-            <ZapOffIcon className="size-5" strokeWidth={1.75} aria-hidden />
-          </div>
+          <div aria-hidden className="size-10" />
         </div>
 
         {frameType === "rectangle" ? (
@@ -259,12 +256,12 @@ export function VerifyCameraCanvas({
             <CameraIcon className="size-10 text-white/80" strokeWidth={1.5} />
             <div className="flex flex-col gap-2">
               <p className="text-lg font-semibold">
-                {facing === "user" ? "Open your camera" : "Capture your ID"}
+                {facing === "user" ? "Open your camera" : "Ready to capture"}
               </p>
               <p className="text-sm leading-6 text-white/72">
                 {facing === "user"
                   ? "Hold the phone steady and face the camera."
-                  : "Lay the document flat and keep all four corners visible."}
+                  : "Lay the document flat. The camera opens automatically."}
               </p>
             </div>
           </div>

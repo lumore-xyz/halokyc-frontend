@@ -1,11 +1,8 @@
 "use client";
 
-import { type FormEvent, useId, useState } from "react";
+import { type FormEvent, useState } from "react";
 import {
-  EyeIcon,
-  EyeOffIcon,
   ImagePlusIcon,
-  KeyRoundIcon,
   UploadIcon,
 } from "lucide-react";
 import { toast } from "sonner";
@@ -18,16 +15,7 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
-import { Input } from "@/components/ui/input";
 import { Spinner } from "@/components/ui/spinner";
-import {
-  Field,
-  FieldDescription,
-  FieldError,
-  FieldGroup,
-  FieldLabel,
-} from "@/components/ui/field";
-import { useApiKey } from "@/lib/hooks/use-api-key";
 import { useUploadVerificationFiles } from "@/lib/hooks/use-upload-verification-files";
 
 import { InlineError } from "@/components/console/console-shared";
@@ -38,19 +26,12 @@ type SessionUploadCardProps = {
 };
 
 export function SessionUploadCard({
-  workspaceId,
   verificationId,
 }: SessionUploadCardProps) {
-  const { apiKey, setApiKey } = useApiKey();
   const mutation = useUploadVerificationFiles();
   const [selfie, setSelfie] = useState<File | null>(null);
   const [idFront, setIdFront] = useState<File | null>(null);
   const [idBack, setIdBack] = useState<File | null>(null);
-  const [draftKey, setDraftKey] = useState("");
-  const [showKey, setShowKey] = useState(false);
-  const [keyError, setKeyError] = useState<string | null>(null);
-  const [touched, setTouched] = useState(false);
-  const apiKeyInputId = useId();
 
   const ready = selfie !== null && idFront !== null;
 
@@ -65,14 +46,13 @@ export function SessionUploadCard({
 
   async function onSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
-    if (!apiKey || !selfie || !idFront) {
+    if (!selfie || !idFront) {
       toast.error("Selfie and ID front are required.");
       return;
     }
     try {
       const result = await mutation.mutateAsync({
         verificationId,
-        apiKey,
         files: { selfie, idFront, idBack: idBack ?? undefined },
       });
       toast.success(
@@ -88,112 +68,6 @@ export function SessionUploadCard({
     }
   }
 
-  function onAuthorizeKey(event: FormEvent<HTMLFormElement>) {
-    event.preventDefault();
-    setTouched(true);
-    const trimmed = draftKey.trim();
-    if (!trimmed) {
-      setKeyError("Paste a workspace API key to continue.");
-      return;
-    }
-    setApiKey(trimmed);
-    setKeyError(null);
-    setDraftKey("");
-    setTouched(false);
-  }
-
-  if (!apiKey) {
-    return (
-      <Card>
-        <CardHeader>
-          <CardTitle className="flex items-center gap-2">
-            <KeyRoundIcon className="size-4 text-muted-foreground" aria-hidden />
-            Authorize this session
-          </CardTitle>
-          <CardDescription>
-            Uploaded files are sent with the workspace API key that started
-            this session. Paste the same key you used to create the session,
-            then upload the selfie and ID photos.
-          </CardDescription>
-        </CardHeader>
-        <CardContent>
-          <form
-            onSubmit={onAuthorizeKey}
-            className="flex flex-col gap-4"
-            noValidate
-            aria-labelledby={`${apiKeyInputId}-label`}
-          >
-            <FieldGroup>
-              <Field data-invalid={touched && keyError ? true : undefined}>
-                <FieldLabel id={`${apiKeyInputId}-label`} htmlFor={apiKeyInputId}>
-                  Workspace API key
-                </FieldLabel>
-                <div className="flex gap-2">
-                  <Input
-                    id={apiKeyInputId}
-                    type={showKey ? "text" : "password"}
-                    autoComplete="off"
-                    spellCheck={false}
-                    placeholder="live_... or test_..."
-                    value={draftKey}
-                    aria-invalid={
-                      touched && keyError ? "true" : undefined
-                    }
-                    aria-describedby={
-                      touched && keyError
-                        ? `${apiKeyInputId}-error`
-                        : undefined
-                    }
-                    onChange={(event) => {
-                      setDraftKey(event.target.value);
-                      if (touched) setTouched(false);
-                      if (keyError) setKeyError(null);
-                    }}
-                    className="font-mono text-xs"
-                    autoFocus
-                  />
-                  <Button
-                    type="button"
-                    variant="outline"
-                    size="icon"
-                    onClick={() => setShowKey((value) => !value)}
-                    aria-label={
-                      showKey ? "Hide API key" : "Show API key"
-                    }
-                  >
-                    {showKey ? (
-                      <EyeOffIcon className="size-4" aria-hidden />
-                    ) : (
-                      <EyeIcon className="size-4" aria-hidden />
-                    )}
-                  </Button>
-                </div>
-                <FieldDescription>
-                  Stored only in this browser tab on your local machine via
-                  session storage and cleared when the tab closes. Use a key
-                  issued to workspace{" "}
-                  <code className="font-mono">{workspaceId.slice(0, 8)}</code>
-                  .
-                </FieldDescription>
-                {touched && keyError ? (
-                  <FieldError id={`${apiKeyInputId}-error`}>
-                    {keyError}
-                  </FieldError>
-                ) : null}
-              </Field>
-            </FieldGroup>
-            <div className="flex justify-end">
-              <Button type="submit">
-                <KeyRoundIcon data-icon="inline-start" aria-hidden />
-                Authorize key
-              </Button>
-            </div>
-          </form>
-        </CardContent>
-      </Card>
-    );
-  }
-
   return (
     <Card>
       <CardHeader>
@@ -202,9 +76,10 @@ export function SessionUploadCard({
           Upload documents
         </CardTitle>
         <CardDescription>
-          HaloKYC accepts JPEG or PNG, up to 8 MB each. The ID back is
-          optional. Once uploaded, the worker pipeline takes over when credits
-          are reserved. The status flips to{" "}
+          HaloKYC accepts JPEG, PNG, or WEBP, up to 50 MB each. Images are
+          compressed before upload. The ID back is optional. Once uploaded, the
+          worker pipeline takes over when credits are reserved. The status flips
+          to{" "}
           <code className="font-mono">processing</code> or{" "}
           <code className="font-mono">awaiting_credits</code>.
         </CardDescription>
@@ -301,7 +176,7 @@ function FileRow({ label, file, inputId, onChange, required }: FileRowProps) {
         <input
           id={inputId}
           type="file"
-          accept="image/jpeg,image/png"
+          accept="image/jpeg,image/png,image/webp"
           onChange={onChange}
           className="text-foreground file:text-foreground w-full text-sm file:mr-3 file:rounded-md file:border-0 file:bg-secondary file:px-2 file:py-1 file:text-xs"
         />

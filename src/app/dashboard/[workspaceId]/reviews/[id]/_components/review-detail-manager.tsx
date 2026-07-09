@@ -6,6 +6,7 @@ import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import {
   apiClient,
   type AdminAuditLogItem,
+  type VerificationDetail,
   type VerificationSessionDetail,
   type AgenticReviewFeedbackRequest,
 } from "@/lib/api-client";
@@ -14,6 +15,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { ScoreMeter } from "@/components/score-meter";
 import { StatusPill } from "@/components/status-pill";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import {
@@ -51,6 +53,7 @@ export function ReviewDetailManager({
     role === "client_reviewer";
   const canViewProviderMetadata =
     role === "client_owner" || role === "client_admin";
+  const canViewRawData = role === "client_owner" || role === "client_admin";
 
   const reviewQuery = useQuery({
     queryKey: ["workspace-review", workspaceId, verificationId],
@@ -255,6 +258,12 @@ export function ReviewDetailManager({
         </div>
 
         <div className="flex flex-col gap-6">
+          <ReviewCaseSummaryCard
+            data={data}
+            auditLogCount={auditLogs.length}
+            evidenceLoaded={Boolean(sessionQuery.data)}
+          />
+
           <Card>
             <CardHeader>
               <CardTitle>Decision</CardTitle>
@@ -291,20 +300,80 @@ export function ReviewDetailManager({
             </CardContent>
           </Card>
 
-          <Card>
-            <CardHeader>
-              <CardTitle>Raw Data</CardTitle>
-              <CardDescription>
-                The full API response for this review.
-              </CardDescription>
-            </CardHeader>
-            <CardContent>
-              <JsonViewer value={data} />
-            </CardContent>
-          </Card>
+          {canViewRawData ? (
+            <Card>
+              <CardHeader>
+                <CardTitle>Technical payload</CardTitle>
+                <CardDescription>
+                  Full API response. Visible only to workspace owners and
+                  admins.
+                </CardDescription>
+              </CardHeader>
+              <CardContent>
+                <JsonViewer
+                  value={data}
+                  initiallyCollapsed
+                  title="Raw response"
+                />
+              </CardContent>
+            </Card>
+          ) : null}
         </div>
       </div>
     </div>
+  );
+}
+
+function ReviewCaseSummaryCard({
+  data,
+  auditLogCount,
+  evidenceLoaded,
+}: {
+  data: VerificationDetail;
+  auditLogCount: number;
+  evidenceLoaded: boolean;
+}) {
+  const completedChecks = Object.values(data.checks ?? {}).filter(
+    (check) => check && check.status !== "pending" && check.status !== "skipped",
+  ).length;
+
+  return (
+    <Card>
+      <CardHeader>
+        <CardTitle>Review summary</CardTitle>
+        <CardDescription>
+          The decision context reviewers need, without raw response data.
+        </CardDescription>
+      </CardHeader>
+      <CardContent className="flex flex-col gap-4">
+        <div className="flex flex-wrap gap-2">
+          <Badge variant="secondary">{completedChecks} checks complete</Badge>
+          <Badge variant="outline">{auditLogCount} audit events</Badge>
+          <Badge variant={evidenceLoaded ? "outline" : "secondary"}>
+            {evidenceLoaded ? "Evidence loaded" : "Evidence loading"}
+          </Badge>
+        </div>
+        <dl className="grid gap-3 text-sm">
+          <SummaryRow label="Subject" value={data.external_user_id} />
+          <SummaryRow
+            label="Risk score"
+            value={
+              typeof data.risk_score === "number"
+                ? `${Math.round(data.risk_score)} / 100`
+                : "Not scored yet"
+            }
+          />
+          <SummaryRow label="Created" value={formatDate(data.created_at)} />
+          <SummaryRow label="Updated" value={formatDate(data.updated_at)} />
+        </dl>
+        {data.decision_reason ? (
+          <div className="rounded-md border border-border bg-muted/30 p-3 text-sm">
+            <p className="font-medium">Decision note</p>
+            <p className="mt-1 text-muted-foreground">{data.decision_reason}</p>
+          </div>
+        ) : null}
+      </CardContent>
+    </Card>
   );
 }
 
@@ -359,10 +428,49 @@ function AuditPayloadCell({ value }: { value: Record<string, unknown> | null }) 
   return (
     <TableCell className="max-w-xs truncate text-xs">
       {value ? (
-        <code className="text-muted-foreground">{JSON.stringify(value)}</code>
+        <span className="text-muted-foreground">
+          {summarizeAuditPayload(value)}
+        </span>
       ) : (
         <span className="text-muted-foreground">-</span>
       )}
     </TableCell>
   );
+}
+
+function SummaryRow({ label, value }: { label: string; value: string }) {
+  return (
+    <div className="grid gap-1">
+      <dt className="text-muted-foreground">{label}</dt>
+      <dd className="break-words font-medium">{value}</dd>
+    </div>
+  );
+}
+
+function summarizeAuditPayload(value: Record<string, unknown>): string {
+  const entries = Object.entries(value).filter(
+    ([, entryValue]) => entryValue !== null && entryValue !== undefined,
+  );
+  if (entries.length === 0) return "No changes";
+
+  return entries
+    .slice(0, 2)
+    .map(([key, entryValue]) => `${formatMachineLabel(key)}: ${formatAuditValue(entryValue)}`)
+    .join("; ");
+}
+
+function formatAuditValue(value: unknown): string {
+  if (typeof value === "boolean") return value ? "Yes" : "No";
+  if (typeof value === "number") return Number.isInteger(value) ? String(value) : value.toFixed(2);
+  if (typeof value === "string") return formatMachineLabel(value);
+  if (Array.isArray(value)) return `${value.length} item${value.length === 1 ? "" : "s"}`;
+  if (value && typeof value === "object") {
+    const count = Object.keys(value).length;
+    return `${count} field${count === 1 ? "" : "s"}`;
+  }
+  return "Not provided";
+}
+
+function formatMachineLabel(value: string): string {
+  return value.replaceAll("_", " ");
 }

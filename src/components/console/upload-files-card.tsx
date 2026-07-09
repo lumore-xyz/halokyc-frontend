@@ -14,7 +14,6 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
-import { useApiKey } from "@/lib/hooks/use-api-key";
 import { useUploadVerificationFiles } from "@/lib/hooks/use-upload-verification-files";
 
 import { InlineError } from "./console-shared";
@@ -24,7 +23,6 @@ type UploadFilesCardProps = {
 };
 
 export function UploadFilesCard({ verificationId }: UploadFilesCardProps) {
-  const { apiKey } = useApiKey();
   const router = useRouter();
   const mutation = useUploadVerificationFiles();
   const [selfie, setSelfie] = useState<File | null>(null);
@@ -42,14 +40,13 @@ export function UploadFilesCard({ verificationId }: UploadFilesCardProps) {
 
   async function onSubmit(event: React.FormEvent<HTMLFormElement>) {
     event.preventDefault();
-    if (!apiKey || !selfie || !idFront) {
+    if (!selfie || !idFront) {
       toast.error("Selfie and ID front are required.");
       return;
     }
     try {
       await mutation.mutateAsync({
         verificationId,
-        apiKey,
         files: { selfie, idFront, idBack: idBack ?? undefined },
       });
       toast.success("Files uploaded. Polling for results…");
@@ -66,8 +63,9 @@ export function UploadFilesCard({ verificationId }: UploadFilesCardProps) {
       <CardHeader>
         <CardTitle>Upload documents</CardTitle>
         <CardDescription>
-          JPEG or PNG, up to 8 MB each. The ID back is optional. Once
-          uploaded, the worker pipeline takes over and the status flips to{" "}
+          JPEG, PNG, or WEBP, up to 50 MB each. Images are compressed before
+          upload. The ID back is optional. Once uploaded, the worker pipeline
+          takes over and the status flips to{" "}
           <code className="font-mono">processing</code>.
         </CardDescription>
       </CardHeader>
@@ -124,7 +122,7 @@ export function UploadFilesCard({ verificationId }: UploadFilesCardProps) {
               <Button
                 type="submit"
                 size="sm"
-                disabled={!apiKey || !ready || mutation.isPending}
+                disabled={!ready || mutation.isPending}
               >
                 <Upload data-icon="inline-start" aria-hidden />
                 {mutation.isPending ? "Uploading…" : "Upload"}
@@ -175,7 +173,7 @@ function FileRow({ label, file, inputId, onChange, required }: FileRowProps) {
         <input
           id={inputId}
           type="file"
-          accept="image/jpeg,image/png"
+          accept="image/jpeg,image/png,image/webp"
           onChange={onChange}
           className="text-foreground file:text-foreground w-full text-sm file:mr-3 file:rounded-md file:border-0 file:bg-secondary file:px-2 file:py-1 file:text-xs"
         />

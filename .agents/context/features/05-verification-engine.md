@@ -5,7 +5,8 @@
 The core evidence-processing pipeline. Runs the AI services selected by the workflow, produces normalized check payloads, computes a risk score, and applies terminal rules before any agentic layer.
 
 ## What it does
-- **OCR** (PaddleOCR): extracts structured identity data from uploaded documents
+- **OCR** (PaddleOCR): extracts structured identity data from uploaded documents; compares holder name/DOB/gender against client-supplied metadata when present
+- **Multimodal OCR fallback**: when OCR and metadata conflict, sends the document image to the configured AI provider to extract visible holder fields, validate against metadata, and return a validation score before the OCR check can pass
 - **Face matching** (InsightFace / ArcFace): compares selfie to ID photo; returns similarity score
 - **Liveness** (heuristic anti-spoof): challenge-response on selfie frames; pass/fail
 - **Duplicate detection** (pgvector face embeddings): searches across workspace embeddings; returns `match_kind` (`none`, `same_external_user`, `ban_match`, `ambiguous`)
@@ -34,7 +35,8 @@ The core evidence-processing pipeline. Runs the AI services selected by the work
 - Services run inside the existing Celery verification pipeline; no separate agent microservice
 - Document quality runs before OCR; if quality confidently recommends retry, session stays reusable (`requires_user_action` / `retake_document`) and worker is not queued
 - If quality service fails or times out, the system continues without it (fail-open)
-- Raw document images are not persisted in check payloads; the agentic layer receives only the structured quality result
+- Raw document images are not persisted in check payloads; OCR mismatch fallback stores only safe extracted fields, reconciliation details, provider/model metadata, and validation score
+- PAN-style holder-name extraction must ignore parent/guardian labels such as `Father's Name`; the holder `Name` line is authoritative for the OCR check
 
 ## Related
 - [`PRODUCT_PLAN.md`](PRODUCT_PLAN.md) §2.2, §7 (decision rules, agentic policy, document quality)
