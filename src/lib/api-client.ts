@@ -54,6 +54,7 @@ export type VerificationConfig = {
   workflow_name: string;
   services: ("selfie" | "liveness" | "document" | "age")[];
   min_age?: number;
+  callback_url?: string | null;
   step_sequence: VerifyStepConfig[];
   requires_user_action?: VerificationUserAction | null;
 };
@@ -86,6 +87,21 @@ export type DocumentQualityCheckResult = Omit<CheckResult, "result"> & {
     retry_recommended: boolean;
     quality_confidence: number;
     provider: "heuristic" | "multimodal_llm" | "unavailable";
+  };
+};
+
+export type MetadataMatchingCheckResult = Omit<CheckResult, "result"> & {
+  result: {
+    status: "pass" | "fail" | "manual_review" | "pending" | "skipped";
+    mismatches: string[];
+    skipped_fields: string[];
+    comparisons: Array<{
+      field: string;
+      expected: unknown;
+      actual: unknown;
+      matched: boolean;
+    }>;
+    informational_only: boolean;
   };
 };
 
@@ -175,6 +191,7 @@ export type VerificationDetail = {
   checks: Partial<Record<string, CheckResult>> & {
     duplicate?: DuplicateCheckResult;
     document_quality?: DocumentQualityCheckResult;
+    metadata_matching?: MetadataMatchingCheckResult;
   };
   timeout_recovery?: boolean;
   timed_out_services?: string[];

@@ -341,9 +341,9 @@ This document tracks the "why" behind the HaloKYC frontend. Decisions are groupe
 **Reason**: `/verify` previously accepted a `callback_url` query value and used it for browser navigation after submitted or terminal states. That made HaloKYC a trusted open redirect whenever a verification link was copied or modified. The backend `callback_url` also already means "server-to-server webhook target", so reusing the same field for browser return navigation created unsafe product semantics.
 **Rules**:
 - `/verify` is opened by `verification_id` only. It may tolerate stale `callback_url` query values for backwards compatibility, but it must ignore them.
-- Browser return navigation requires a future, separate `return_url` contract that is stored server-side during session creation or cryptographically signed. Query-string-only return URLs are not allowed.
-- Backend `callback_url` remains server-to-server webhook configuration. It is never exposed through `VerificationConfigResponse` and never passed to terminal verify UI components.
-- Terminal and submitted states may close the tab/window or show a neutral `Done` action; they must not assign caller-controlled values to `window.location.href`.
+- Browser return navigation may use only the callback URL stored server-side on the verification session and returned by `VerificationConfigResponse`. Query-string-only return URLs are not allowed.
+- Backend `callback_url` remains the signed server-to-server webhook target, and the same stored value may drive terminal verify UI Done/Continue navigation.
+- Terminal and submitted states navigate with `window.location.assign(config.callback_url)` when the config response includes one; otherwise they may close the tab/window or show a neutral `Done` action.
 **Date**: 2026-07-04
 
 
@@ -380,7 +380,7 @@ This document tracks the "why" behind the HaloKYC frontend. Decisions are groupe
 avigator.userAgent + a coarse-pointer media query, and is dismissible — any false positive is recoverable because the modal always offers "Use This Device".
 - The QR URL is built from window.location plus the existing erification_id (and tolerated external_user_id / callback_url query params) by src/app/verify/_lib/build-verify-url.ts. The QR is not a separate deep-link contract; it just re-encodes the current page URL with a stable erification_id.
 - Background polling reuses useVerification (ADR-F012) with enabled gated to "modal open AND config.status === pending_upload AND not dismissed AND state.step === intro". We do not poll once the desktop capture journey has started, to avoid racing the capture state machine.
-- On a terminal status observed via the background poll, dispatch the existing { type: "terminal", decision } transition and let the existing VerifyResultStep render. The terminal action mirrors what VerifyResultStep.onContinue already does (window.close()). Per ADR-F027 there is no browser-redirect return URL.
+- On a terminal status observed via the background poll, dispatch the existing { type: "terminal", decision } transition and let the existing VerifyResultStep render. The terminal action mirrors what VerifyResultStep.onContinue already does: navigate to the server-stored callback URL when present, otherwise close the window.
 - The user's "Use This Device" choice lives in component state only (not localStorage). A same-mount refresh re-evaluates device detection but never re-prompts within the same mount.
 - The QR code is rendered through the qrcode library to a <canvas> (a static image; no animation, so prefers-reduced-motion is automatically honoured). No selfie/ID data touches the QR; it is just a URL.
 - Modal accessibility uses the shared Dialog primitive (focus trap, ESC dismisses to the desktop flow, labelled QR region via ole="img" + ria-label).
@@ -400,3 +400,4 @@ avigator.userAgent + a coarse-pointer media query, and is dismissible — any fals
 - Large images are compressed client-side before upload, while the backend remains the final authority for raw and compressed size limits.
 - Normal session/review detail pages render human-readable check summaries. Raw JSON is reserved for owner/admin/platform diagnostic contexts.
 - Long admin/workflow drawers must have internal scroll areas so primary actions remain reachable on short viewports.
+

@@ -323,8 +323,10 @@ backend contract, not by the UI.
 - No authentication. The flow is opened with a `verification_id` query
   parameter for an already-created session.
 - `/verify` ignores `callback_url` query values and never redirects the
-  browser to a caller-supplied URL. The backend `callback_url` field is
-  server-to-server webhook configuration only.
+  browser to caller-supplied URL params. When the backend config response
+  includes the server-stored session `callback_url`, the Done/Continue action
+  navigates there with `window.location.assign`; otherwise it falls back to
+  closing the tab/window.
 - The end user's identity is the session's `external_user_id`; the developer's
   identity is the API key embedded in a build-time env var or injected
   by the host page. The MVP ships a "paste your API key" prompt for the

@@ -43,6 +43,18 @@
 
 ---
 
+## Phase 15 — OCR Pattern UI & Verify Callback Return ✅
+
+**Goal:** Keep operator UI aligned with the OCR/metadata split and let the end-user Done/Continue action return to the requesting service using only the server-stored callback value.
+
+- [x] Add `callback_url` to the typed `VerificationConfig` response and route verify completion through `window.location.assign(callback_url)` when configured.
+- [x] Keep `/verify` ignoring query-string `callback_url` values; query params are tolerated only for old/deep-link compatibility.
+- [x] Update review/session check cards to show OCR extraction source, learned pattern id, AI training metadata, and the separate informational `metadata_matching` check.
+- [x] Add `MetadataMatchingCheckResult` typing and include `metadata_matching` in ordered check rendering after OCR.
+- [x] Run frontend gating with `eslint` on the touched verify/check-card/API files and `tsc --noEmit`.
+
+---
+
 ## Phase 14 — Desktop-to-Mobile Verification Handoff
 
 **Goal:** When a user lands on `/verify` from a desktop browser, prompt them with a modal to either continue on the current device or hand off to a mobile device via a QR code. Background polling on the desktop detects when the mobile journey completes and renders the terminal result screen automatically.

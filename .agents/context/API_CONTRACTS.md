@@ -178,17 +178,8 @@ type OCRCheckResult = CheckResult & {
     dob: string | null; // Legacy-compatible alias of document.date_of_birth.value.
     document_number_hash: string | null;
     document: NormalizedDocument;
-    metadata_reconciliation?: {
-      status: "matched" | "mismatch";
-      source: "session_metadata" | "ai_provider";
-      mismatches: ("name" | "dob" | "gender")[];
-      comparisons: {
-        field: "name" | "dob" | "gender";
-        expected: string;
-        actual: string | null;
-        matched: boolean;
-      }[];
-    };
+    extraction_source?: "pattern" | "ai_training" | "ocr_heuristic";
+    document_pattern_id?: string | null;
     ai_extraction?: {
       attempted: boolean;
       status: "completed" | "failed" | "skipped";
@@ -206,6 +197,21 @@ type OCRCheckResult = CheckResult & {
   };
 };
 
+type MetadataMatchingCheckResult = CheckResult & {
+  result: {
+    status: "pass" | "fail" | "skipped";
+    informational_only: true;
+    mismatches: ("name" | "dob" | "age" | "gender")[];
+    skipped_fields: ("name" | "dob" | "age" | "gender")[];
+    comparisons: {
+      field: "name" | "dob" | "age" | "gender";
+      expected: unknown;
+      actual: unknown;
+      matched: boolean;
+    }[];
+  };
+};
+
 type VerificationDetail = {
   verification_id: string;
   external_user_id: string;
@@ -214,6 +220,7 @@ type VerificationDetail = {
   checks: Partial<Record<"ocr" | "face_match" | "liveness" | "age" | "agentic_review", CheckResult>> & {
     duplicate?: DuplicateCheckResult;
     document_quality?: DocumentQualityCheckResult;
+    metadata_matching?: MetadataMatchingCheckResult;
   };
   timeout_recovery?: boolean;
   timed_out_services?: string[];
@@ -978,6 +985,7 @@ type VerificationConfigResponse = {
   workflow_name: string;
   services: ("selfie" | "liveness" | "document" | "age")[];
   min_age?: number | null;
+  callback_url?: string | null; // Stored session callback used by Done/Continue browser navigation.
   step_sequence: VerifyStepConfig[];
 };
 
@@ -1011,7 +1019,7 @@ type StartVerificationRequest = {
   external_user_id: string;
   metadata?: Record<string, unknown>;
   client_metadata?: Record<string, unknown>;
-  callback_url?: string; // Server-to-server webhook URL only; never used as a browser redirect.
+  callback_url?: string; // Stored server-to-server webhook URL; also returned by config for browser Done/Continue navigation.
   workflow_id: string; // Mandatory: links session to client-defined workflow
 };
 ```
@@ -1023,9 +1031,11 @@ to the agentic layer. The client is responsible for the accuracy and privacy
 compliance of any metadata they send. Keys are not validated by the API, and
 clients should send this object only from trusted server-side integrations, not
 from end-user-controlled browser input.
-The optional `callback_url` is a signed server-to-server webhook target. It is
-not returned to `/verify` and must not be appended to verification deep links as
-a browser return URL.
+The optional `callback_url` is stored on the session for signed
+server-to-server webhook delivery. It is also returned by the public config
+endpoint so `/verify` can navigate the browser back to the requesting service
+from the Done/Continue button. `/verify` must ignore query-string
+`callback_url` values; only the server-stored value is trusted.
 Response: `StartVerificationResponse` (includes `verify_url` for deep linking)
 
 ### `GET /api/v1/workflows/{workflow_id}/verify-plan`
@@ -1037,8 +1047,9 @@ Response: `VerifyPlanResponse`
 Public. Returns the session status plus workflow services and the step sequence
 for the `/verify` page. Reopened links use `status` to render an already
 submitted or terminal screen instead of repeating capture.
-The response intentionally omits any callback/return URL; `/verify` must not
-redirect to query-string-supplied URLs.
+The response includes the server-stored `callback_url` when configured so the
+Done/Continue action can use a normal top-level navigation. `/verify` must not
+redirect to query-string-supplied callback URLs.
 
 > **Desktop-to-mobile handoff (client-only flow):** The `/verify` page may
 > render a "Continue on mobile" modal when the session is `pending_upload`

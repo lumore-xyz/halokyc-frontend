@@ -139,6 +139,14 @@ export function VerificationFlow({
   });
 
   const handoffStatus = handoffPoll.data?.status;
+  const completionRedirectUrl = configQuery.data?.callback_url?.trim() || null;
+  const finishVerification = useCallback(() => {
+    if (completionRedirectUrl) {
+      window.location.assign(completionRedirectUrl);
+      return;
+    }
+    window.close();
+  }, [completionRedirectUrl]);
 
   useEffect(() => {
     if (!handoffEligible) return;
@@ -279,9 +287,7 @@ export function VerificationFlow({
         <VerifyProgress value={100} label="Complete" />
         <VerifyResultStep
           status={configStatus}
-          onContinue={() => {
-            window.close();
-          }}
+          onContinue={finishVerification}
         />
       </VerifyShell>
     );
@@ -292,9 +298,7 @@ export function VerificationFlow({
       <VerifyShell>
         <VerifyProgress value={100} label="Submitted" />
         <VerifySubmittedStep
-          onContinue={() => {
-            window.close();
-          }}
+          onContinue={finishVerification}
         />
       </VerifyShell>
     );
@@ -410,9 +414,7 @@ export function VerificationFlow({
       <VerifyShell>
         <VerifyProgress value={100} label="Submitted" />
         <VerifySubmittedStep
-          onContinue={() => {
-            window.close();
-          }}
+          onContinue={finishVerification}
         />
       </VerifyShell>
     );
@@ -429,9 +431,7 @@ export function VerificationFlow({
           <VerifyProgress value={100} label="Complete" />
           <VerifyResultStep
             status={status}
-            onContinue={() => {
-              window.close();
-            }}
+            onContinue={finishVerification}
           />
         </VerifyShell>
       );
@@ -461,9 +461,7 @@ export function VerificationFlow({
         <VerifyProgress value={100} label="Complete" />
         <VerifyResultStep
           status={state.step}
-          onContinue={() => {
-            window.close();
-          }}
+          onContinue={finishVerification}
         />
       </VerifyShell>
     );

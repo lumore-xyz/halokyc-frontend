@@ -20,7 +20,7 @@ Workflow-driven end-user verification flow served at `/verify`. The step sequenc
 1. Intro → 2. Selfie Instruction → 3. Selfie Capture → 4. Liveness Instruction → 5. Liveness Capture → 6. Document Front Instruction → 7. Document Front Capture → 8. Document Back Instruction → 9. Document Back Capture (optional) → 10. Submitting → 11. Processing → 12. Result
 
 ## Key endpoints consumed
-- `GET /api/v1/verifications/{id}/config` (public, no auth) — step sequence, workflow name, services, min_age, `camera_only`, `facing_mode`, `frame_type`, `optional` per step
+- `GET /api/v1/verifications/{id}/config` (public, no auth) — step sequence, workflow name, services, min_age, server-stored `callback_url`, `camera_only`, `facing_mode`, `frame_type`, `optional` per step
 - `POST /api/v1/verifications/start` — begins a new session
 - `POST /api/v1/verifications/{id}/upload` — submits captured files
 - `GET /api/v1/verifications/{id}` — polls for terminal status
@@ -36,7 +36,7 @@ Workflow-driven end-user verification flow served at `/verify`. The step sequenc
 ## Implementation notes
 - State transitions are ≤ 150 ms and respect `prefers-reduced-motion`
 - `VerifyShell` renders a centered card with dotted backdrop on desktop; full-bleed on mobile
-- `/verify` ignores `callback_url` query param for security (ADR-F027); browser return navigation requires a server-side contract
+- `/verify` ignores `callback_url` query params for security (ADR-F027); Done/Continue browser return navigation uses only the server-stored callback URL returned by the config endpoint
 - Selfie and ID captures stay in component memory; object URLs revoked on unmount; never rendered via `<img src>` or uploaded to a third-party CDN
 - Verification-session upload and polling require only `verification_id`; `/verify` never asks the end user for API keys, session keys, or workspace credentials
 

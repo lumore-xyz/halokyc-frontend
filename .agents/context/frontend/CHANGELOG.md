@@ -17,6 +17,14 @@
 ## [Unreleased]
 
 ### Added
+- Verify completion now uses the server-stored session `callback_url` returned
+  by `GET /api/v1/verifications/{id}/config` for Done/Continue navigation.
+  `/verify` still ignores query-string `callback_url` values, avoiding the
+  open-redirect issue while letting browser return navigation work without
+  relying on blocked `window.close()` behavior.
+- Review/session check cards now render OCR extraction provenance
+  (`pattern`, `ai_training`, `ocr_heuristic`) and the new informational
+  `metadata_matching` check separately from OCR extraction quality.
 - Desktop-to-mobile verification handoff. When a non-mobile device lands on
   `/verify?verification_id=...` and the session is still `pending_upload`,
   the intro step now shows a modal with two paths: "Use this device"

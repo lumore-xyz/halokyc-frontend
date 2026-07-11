@@ -6,17 +6,19 @@ import {
   FileWarning,
   ScanFace,
   ScanText,
+  UserCheck,
   type LucideIcon,
 } from "lucide-react";
 import Link from "next/link";
 
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { StatusPill } from "@/components/status-pill";
 import type {
   CheckResult,
   DocumentQualityCheckResult,
   DuplicateMatchKind,
+  MetadataMatchingCheckResult,
   VerificationStatus,
 } from "@/lib/api-client";
 import { cn } from "@/lib/utils";
@@ -25,10 +27,23 @@ const CHECK_META: Record<
   string,
   { label: string; description: string; icon: LucideIcon }
 > = {
+  document_quality: {
+    label: "Document quality",
+    description:
+      "Readability, image quality, missing regions, and tamper signal.",
+    icon: FileWarning,
+  },
   ocr: {
     label: "OCR",
-    description: "Extracted name, DOB, and document number from the ID image.",
+    description:
+      "Extracts document fields using a learned pattern or AI fallback.",
     icon: ScanText,
+  },
+  metadata_matching: {
+    label: "Metadata match",
+    description:
+      "Compares submitted identity metadata with extracted document fields.",
+    icon: UserCheck,
   },
   face_match: {
     label: "Face match",
@@ -44,12 +59,6 @@ const CHECK_META: Record<
     label: "Duplicate",
     description: "Search for the same face across this client's history.",
     icon: Fingerprint,
-  },
-  document_quality: {
-    label: "Document quality",
-    description:
-      "Readability, image quality, missing regions, and tamper signal.",
-    icon: FileWarning,
   },
   age: {
     label: "Age",
@@ -85,9 +94,11 @@ export function CheckCard({
   const Icon = meta.icon;
   const status = result?.status ?? "pending";
   const score =
-    typeof result?.score === "number" ? result.score.toFixed(2) : "—";
+    typeof result?.score === "number" ? result.score.toFixed(2) : "-";
   const detail = result?.detail ?? result?.result;
   const quality = getDocumentQuality(checkKey, result);
+  const ocr = getOcrExtraction(checkKey, result);
+  const metadataMatching = getMetadataMatching(checkKey, result);
   const matchKind =
     duplicateMatchKind ??
     (checkKey === "duplicate" ? readDuplicateMatchKind(result) : null);
@@ -97,15 +108,12 @@ export function CheckCard({
       <CardHeader>
         <div className="flex items-start justify-between gap-3">
           <div className="flex items-center gap-2">
-            <Icon
-              className="text-muted-foreground size-4"
-              aria-hidden
-            />
+            <Icon className="text-muted-foreground size-4" aria-hidden />
             <CardTitle className="text-base">{meta.label}</CardTitle>
           </div>
           <StatusPill status={mapCheckStatus(status, verificationStatus)} />
         </div>
-        {timedOut || matchKind ? (
+        {timedOut || matchKind || ocr || metadataMatching?.informational_only ? (
           <div className="flex flex-wrap gap-1.5">
             {timedOut ? (
               <Badge variant="outline">
@@ -118,6 +126,17 @@ export function CheckCard({
               >
                 {formatDuplicateMatchKind(matchKind)}
               </Badge>
+            ) : null}
+            {ocr ? (
+              <Badge variant="outline">
+                {formatExtractionSource(ocr.extraction_source)}
+              </Badge>
+            ) : null}
+            {ocr?.document_pattern_id ? (
+              <Badge variant="outline">Pattern trained</Badge>
+            ) : null}
+            {metadataMatching?.informational_only ? (
+              <Badge variant="outline">Informational</Badge>
             ) : null}
           </div>
         ) : null}
@@ -143,13 +162,20 @@ export function CheckCard({
             </>
           ) : null}
           {quality ? <DocumentQualityMetrics quality={quality} /> : null}
+          {ocr ? <OcrExtractionMetrics ocr={ocr} /> : null}
+          {metadataMatching ? (
+            <MetadataMatchingMetrics metadata={metadataMatching} />
+          ) : null}
           {detail ? (
             <>
               <dt className="text-muted-foreground col-span-2 pt-2">
                 Detail
               </dt>
               <dd className="col-span-2">
-                <CheckDetailSummary value={detail} />
+                <CheckDetailSummary
+                  checkKey={checkKey}
+                  value={detail}
+                />
               </dd>
             </>
           ) : null}
@@ -162,7 +188,7 @@ export function CheckCard({
 function mapCheckStatus(
   status: CheckResult["status"] | "pending",
   verificationStatus?: VerificationStatus,
-): import("@/lib/api-client").VerificationStatus {
+): VerificationStatus {
   if (status === "pending" || status === "skipped") {
     return verificationStatus === "processing" ? "processing" : "pending_upload";
   }
@@ -175,11 +201,59 @@ export function orderedCheckKeys(): Array<keyof typeof CHECK_META> {
   return [
     "document_quality",
     "ocr",
+    "metadata_matching",
     "face_match",
     "liveness",
     "duplicate",
     "age",
   ];
+}
+
+type OcrExtractionSummary = {
+  extraction_source?: string;
+  document_pattern_id?: string;
+  ai_extraction?: {
+    status?: string;
+    provider?: string;
+    model?: string | null;
+    validation?: {
+      status?: string;
+      score?: number;
+      mismatch_fields?: string[];
+      reason?: string | null;
+    };
+  };
+};
+
+function OcrExtractionMetrics({ ocr }: { ocr: OcrExtractionSummary }) {
+  return (
+    <>
+      <dt className="text-muted-foreground">Source</dt>
+      <dd>{formatExtractionSource(ocr.extraction_source)}</dd>
+      {ocr.document_pattern_id ? (
+        <>
+          <dt className="text-muted-foreground">Pattern</dt>
+          <dd className="font-mono text-xs tabular-nums">
+            {ocr.document_pattern_id.slice(0, 8)}
+          </dd>
+        </>
+      ) : null}
+      {ocr.ai_extraction?.validation?.status ? (
+        <>
+          <dt className="text-muted-foreground">AI validation</dt>
+          <dd>{formatMachineLabel(ocr.ai_extraction.validation.status)}</dd>
+        </>
+      ) : null}
+      {typeof ocr.ai_extraction?.validation?.score === "number" ? (
+        <>
+          <dt className="text-muted-foreground">AI confidence</dt>
+          <dd className="font-mono tabular-nums">
+            {Math.round(ocr.ai_extraction.validation.score * 100)}%
+          </dd>
+        </>
+      ) : null}
+    </>
+  );
 }
 
 function DocumentQualityMetrics({
@@ -217,6 +291,33 @@ function DocumentQualityMetrics({
   );
 }
 
+function MetadataMatchingMetrics({
+  metadata,
+}: {
+  metadata: MetadataMatchingCheckResult["result"];
+}) {
+  return (
+    <>
+      <dt className="text-muted-foreground">Mismatches</dt>
+      <dd>
+        {metadata.mismatches.length > 0
+          ? metadata.mismatches.map(formatMachineLabel).join(", ")
+          : "None"}
+      </dd>
+      {metadata.skipped_fields.length > 0 ? (
+        <>
+          <dt className="text-muted-foreground">Skipped</dt>
+          <dd>{metadata.skipped_fields.map(formatMachineLabel).join(", ")}</dd>
+        </>
+      ) : null}
+      <dd className="col-span-2 rounded-md border border-border bg-muted/30 px-3 py-2 text-sm">
+        Metadata matching is recorded separately from OCR and does not affect
+        automated risk scoring.
+      </dd>
+    </>
+  );
+}
+
 function getDocumentQuality(
   checkKey: string,
   result: CheckResult | undefined,
@@ -236,6 +337,47 @@ function getDocumentQuality(
     return null;
   }
   return value as DocumentQualityCheckResult["result"];
+}
+
+function getOcrExtraction(
+  checkKey: string,
+  result: CheckResult | undefined,
+): OcrExtractionSummary | null {
+  if (checkKey !== "ocr") return null;
+  const value = result?.result ?? result?.detail;
+  if (!value || typeof value !== "object") return null;
+  const record = value as Record<string, unknown>;
+  const extractionSource = record.extraction_source;
+  const documentPatternId = record.document_pattern_id;
+  const aiExtraction = record.ai_extraction;
+  return {
+    extraction_source:
+      typeof extractionSource === "string" ? extractionSource : undefined,
+    document_pattern_id:
+      typeof documentPatternId === "string" ? documentPatternId : undefined,
+    ai_extraction:
+      aiExtraction && typeof aiExtraction === "object" && !Array.isArray(aiExtraction)
+        ? (aiExtraction as OcrExtractionSummary["ai_extraction"])
+        : undefined,
+  };
+}
+
+function getMetadataMatching(
+  checkKey: string,
+  result: CheckResult | undefined,
+): MetadataMatchingCheckResult["result"] | null {
+  if (checkKey !== "metadata_matching") return null;
+  const value = result?.result;
+  if (!value || typeof value !== "object") return null;
+  if (
+    !Array.isArray(value.mismatches) ||
+    !Array.isArray(value.skipped_fields) ||
+    !Array.isArray(value.comparisons) ||
+    typeof value.informational_only !== "boolean"
+  ) {
+    return null;
+  }
+  return value as MetadataMatchingCheckResult["result"];
 }
 
 function readDuplicateMatchKind(
@@ -266,18 +408,37 @@ function formatMachineLabel(value: string): string {
   return value.replaceAll("_", " ");
 }
 
-function CheckDetailSummary({ value }: { value: Record<string, unknown> }) {
-  const reconciliation = readMetadataReconciliation(value);
+function formatExtractionSource(value: string | undefined): string {
+  if (value === "ai_provider") return "AI trained";
+  if (value === "pattern") return "Learned pattern";
+  if (value === "ocr") return "OCR heuristic";
+  return "Extraction";
+}
+
+function CheckDetailSummary({
+  checkKey,
+  value,
+}: {
+  checkKey: string;
+  value: Record<string, unknown>;
+}) {
+  const metadataMatching =
+    checkKey === "metadata_matching" ? readMetadataMatching(value) : null;
   const entries = Object.entries(value).filter(
     ([key, entryValue]) =>
-      key !== "metadata_reconciliation" &&
+      ![
+        "comparisons",
+        "mismatches",
+        "skipped_fields",
+        "informational_only",
+      ].includes(key) &&
       entryValue !== null &&
       entryValue !== undefined,
   );
 
   if (entries.length === 0) {
-    return reconciliation ? (
-      <MetadataReconciliationSummary reconciliation={reconciliation} />
+    return metadataMatching ? (
+      <MetadataMatchingSummary metadata={metadataMatching} />
     ) : (
       <span className="text-muted-foreground text-sm">No extra detail</span>
     );
@@ -285,8 +446,8 @@ function CheckDetailSummary({ value }: { value: Record<string, unknown> }) {
 
   return (
     <div className="flex flex-col gap-2 rounded-md border border-border bg-muted/30 p-3">
-      {reconciliation ? (
-        <MetadataReconciliationSummary reconciliation={reconciliation} />
+      {metadataMatching ? (
+        <MetadataMatchingSummary metadata={metadataMatching} />
       ) : null}
       {entries.slice(0, 6).map(([key, entryValue]) => (
         <div
@@ -310,9 +471,11 @@ function CheckDetailSummary({ value }: { value: Record<string, unknown> }) {
   );
 }
 
-type MetadataReconciliation = {
-  status: "matched" | "mismatch";
+type MetadataMatchingSummaryValue = {
+  status: "pass" | "fail" | "manual_review" | "pending" | "skipped";
   mismatches: string[];
+  skipped_fields: string[];
+  informational_only: boolean;
   comparisons: Array<{
     field: string;
     expected: unknown;
@@ -321,22 +484,26 @@ type MetadataReconciliation = {
   }>;
 };
 
-function MetadataReconciliationSummary({
-  reconciliation,
+function MetadataMatchingSummary({
+  metadata,
 }: {
-  reconciliation: MetadataReconciliation;
+  metadata: MetadataMatchingSummaryValue;
 }) {
+  const hasMismatch = metadata.mismatches.length > 0;
   return (
     <div className="flex flex-col gap-2 rounded-md border border-border bg-background p-3">
       <div className="flex items-center justify-between gap-2">
-        <span className="font-medium">
-          Metadata match
-        </span>
-        <Badge variant={reconciliation.status === "mismatch" ? "destructive" : "outline"}>
-          {reconciliation.status === "mismatch" ? "Needs review" : "Matched"}
+        <span className="font-medium">Metadata match</span>
+        <Badge variant={hasMismatch ? "destructive" : "outline"}>
+          {hasMismatch ? "Mismatch" : "Matched"}
         </Badge>
       </div>
-      {reconciliation.comparisons.map((comparison) => (
+      {metadata.informational_only ? (
+        <p className="text-muted-foreground text-xs">
+          Informational only. OCR extraction is evaluated separately.
+        </p>
+      ) : null}
+      {metadata.comparisons.map((comparison) => (
         <div
           key={comparison.field}
           className="grid gap-1 text-sm sm:grid-cols-[minmax(0,0.35fr)_minmax(0,0.65fr)]"
@@ -355,29 +522,47 @@ function MetadataReconciliationSummary({
           </span>
         </div>
       ))}
+      {metadata.skipped_fields.length > 0 ? (
+        <p className="text-muted-foreground text-xs">
+          Skipped {metadata.skipped_fields.map(formatMachineLabel).join(", ")}
+        </p>
+      ) : null}
     </div>
   );
 }
 
-function readMetadataReconciliation(
+function readMetadataMatching(
   value: Record<string, unknown>,
-): MetadataReconciliation | null {
-  const raw = value.metadata_reconciliation;
-  if (!raw || typeof raw !== "object" || Array.isArray(raw)) return null;
-  const record = raw as Record<string, unknown>;
-  const status = record.status;
-  const comparisons = record.comparisons;
-  const mismatches = record.mismatches;
+): MetadataMatchingSummaryValue | null {
+  const status = value.status;
+  const comparisons = value.comparisons;
+  const mismatches = value.mismatches;
+  const skippedFields = value.skipped_fields;
+  const informationalOnly = value.informational_only;
   if (
-    status !== "matched" &&
-    status !== "mismatch"
+    status !== "pass" &&
+    status !== "fail" &&
+    status !== "manual_review" &&
+    status !== "pending" &&
+    status !== "skipped"
   ) {
     return null;
   }
-  if (!Array.isArray(comparisons) || !Array.isArray(mismatches)) return null;
+  if (
+    !Array.isArray(comparisons) ||
+    !Array.isArray(mismatches) ||
+    !Array.isArray(skippedFields) ||
+    typeof informationalOnly !== "boolean"
+  ) {
+    return null;
+  }
   return {
     status,
     mismatches: mismatches.filter((item): item is string => typeof item === "string"),
+    skipped_fields: skippedFields.filter(
+      (item): item is string => typeof item === "string",
+    ),
+    informational_only: informationalOnly,
     comparisons: comparisons.flatMap((item) => {
       if (!item || typeof item !== "object" || Array.isArray(item)) return [];
       const comparison = item as Record<string, unknown>;
@@ -409,7 +594,11 @@ function formatDetailValue(value: unknown): string {
   if (typeof value === "string") return formatMachineLabel(value);
   if (Array.isArray(value)) {
     if (value.length === 0) return "None";
-    if (value.every((item) => ["string", "number", "boolean"].includes(typeof item))) {
+    if (
+      value.every((item) =>
+        ["string", "number", "boolean"].includes(typeof item),
+      )
+    ) {
       return value.map(formatDetailValue).join(", ");
     }
     return `${value.length} item${value.length === 1 ? "" : "s"}`;
