@@ -218,7 +218,7 @@ function AiProvidersHub() {
       <AdminPageHeader
         icon={BrainCircuitIcon}
         title="AI providers"
-        description="Platform-owned model providers and keys used for agentic adjudication. Keys are stored encrypted; only the last 4 characters are visible."
+        description="Platform-owned model providers and keys used for AI-assisted document processing. Keys are stored encrypted; only the last 4 characters are visible."
         actions={
           <Button type="button" size="sm" onClick={openProvider}>
             <PlusIcon data-icon="inline-start" aria-hidden />
@@ -259,7 +259,7 @@ function AiProvidersHub() {
             <EmptyState
               icon={BrainCircuitIcon}
               title="No providers"
-              description="Add a Google, NVIDIA, Ollama Cloud, or OpenAI-compatible provider to start agentic adjudication."
+              description="Add a Google, NVIDIA, Ollama Cloud, or OpenAI-compatible provider to enable AI-assisted document processing."
             />
           ) : (
             <Table>

@@ -16,6 +16,14 @@
 
 ## [Unreleased]
 
+### Fixed
+
+- Repaired the production build after agentic adjudication removal by fixing
+  the analytics page JSX tree and removing stale agentic imports, filters,
+  workflow modes, recommendation panels, monitoring widgets, and the obsolete
+  admin metrics proxy. Workflow automatic-decision controls now use the
+  current deterministic API fields.
+
 ### Added
 - Verify completion now uses the server-stored session `callback_url` returned
   by `GET /api/v1/verifications/{id}/config` for Done/Continue navigation.

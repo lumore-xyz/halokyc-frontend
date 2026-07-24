@@ -144,61 +144,62 @@ export function AnalyticsPanel({ workspaceId }: { workspaceId: string }) {
           </CardContent>
         </Card>
       ) : (
-        <div className="grid gap-4 sm:grid-cols-3">
-          <Metric
-            label="Total sessions"
-            value={total}
-            icon={HelpCircleIcon}
-            description="All sessions started by this workspace"
-          />
-          {(Object.keys(STATUS_LABEL) as VerificationStatus[]).map((status) => {
-            const Icon = STATUS_ICON[status];
-            return (
-              <Metric
-                key={status}
-                label={STATUS_LABEL[status]}
-                value={counts[status] ?? 0}
-                icon={Icon}
-                description={`Sessions in ${STATUS_LABEL[status].toLowerCase()}`}
-              />
-            );
-          })}
-        </div>
+        <>
+          <div className="grid gap-4 sm:grid-cols-3">
+            <Metric
+              label="Total sessions"
+              value={total}
+              icon={HelpCircleIcon}
+              description="All sessions started by this workspace"
+            />
+            {(Object.keys(STATUS_LABEL) as VerificationStatus[]).map((status) => {
+              const Icon = STATUS_ICON[status];
+              return (
+                <Metric
+                  key={status}
+                  label={STATUS_LABEL[status]}
+                  value={counts[status] ?? 0}
+                  icon={Icon}
+                  description={`Sessions in ${STATUS_LABEL[status].toLowerCase()}`}
+                />
+              );
+            })}
+          </div>
 
-      <Card>
-        <CardHeader>
-          <CardTitle>Status breakdown</CardTitle>
-          <CardDescription>
-            Numerical share of each status. The terminal counts dominate the
-            long-run distribution; manual review shrinks as your reviewers
-            drain the queue.
-          </CardDescription>
-        </CardHeader>
-        <CardContent>
-          <dl className="grid gap-3 sm:grid-cols-2">
-            {(Object.keys(STATUS_LABEL) as VerificationStatus[]).map(
-              (status) => {
-                const value = counts[status] ?? 0;
-                const percent =
-                  total > 0 ? Math.round((value / total) * 100) : 0;
-                return (
-                  <div
-                    key={status}
-                    className="flex items-center justify-between rounded-lg border border-[var(--dashboard-rule)] bg-[var(--dashboard-canvas)] px-4 py-3"
-                  >
-                    <dt className="text-sm">{STATUS_LABEL[status]}</dt>
-                    <dd className="text-muted-foreground text-sm tabular-nums">
-                      {value} / {percent}%
-                    </dd>
-                  </div>
-                );
-              },
-            )}
-          </dl>
-        </CardContent>
-      </Card>
+          <Card>
+            <CardHeader>
+              <CardTitle>Status breakdown</CardTitle>
+              <CardDescription>
+                Numerical share of each status. The terminal counts dominate the
+                long-run distribution; manual review shrinks as your reviewers
+                drain the queue.
+              </CardDescription>
+            </CardHeader>
+            <CardContent>
+              <dl className="grid gap-3 sm:grid-cols-2">
+                {(Object.keys(STATUS_LABEL) as VerificationStatus[]).map(
+                  (status) => {
+                    const value = counts[status] ?? 0;
+                    const percent =
+                      total > 0 ? Math.round((value / total) * 100) : 0;
+                    return (
+                      <div
+                        key={status}
+                        className="flex items-center justify-between rounded-lg border border-[var(--dashboard-rule)] bg-[var(--dashboard-canvas)] px-4 py-3"
+                      >
+                        <dt className="text-sm">{STATUS_LABEL[status]}</dt>
+                        <dd className="text-muted-foreground text-sm tabular-nums">
+                          {value} / {percent}%
+                        </dd>
+                      </div>
+                    );
+                  },
+                )}
+              </dl>
+            </CardContent>
+          </Card>
 
-      <Card>
+          <Card>
         <CardHeader>
           <div className="flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
             <div>
@@ -302,7 +303,9 @@ export function AnalyticsPanel({ workspaceId }: { workspaceId: string }) {
             </div>
           )}
         </CardContent>
-      </Card>
+          </Card>
+        </>
+      )}
     </>
   );
 }

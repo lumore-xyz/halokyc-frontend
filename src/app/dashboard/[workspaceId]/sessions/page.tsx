@@ -47,8 +47,6 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import {
-  type AgenticMode,
-  type AgenticRecommendationFilter,
   apiClient,
   type VerificationListItem,
   type VerificationStatus,
@@ -76,41 +74,12 @@ const STATUS_LABEL: Record<VerificationStatus, string> = {
 };
 
 const PAGE_SIZE = 25;
-const AGENTIC_MODE_OPTIONS: AgenticMode[] = [
-  "disabled",
-  "shadow",
-  "assist_review",
-  "auto_decide",
-];
-const AGENTIC_RECOMMENDATION_OPTIONS: AgenticRecommendationFilter[] = [
-  "approved",
-  "rejected",
-  "manual_review",
-];
-
-const AGENTIC_MODE_LABELS: Record<AgenticMode, string> = {
-  disabled: "Disabled",
-  shadow: "Shadow",
-  assist_review: "Assist review",
-  auto_decide: "Auto decide",
-};
-
-const AGENTIC_RECOMMENDATION_LABELS: Record<
-  AgenticRecommendationFilter,
-  string
-> = {
-  approved: "Approved",
-  rejected: "Rejected",
-  manual_review: "Manual review",
-};
 
 type FilterForm = {
   status: "" | VerificationStatus;
   external_user_id: string;
   since: string;
   until: string;
-  agentic_mode: "" | AgenticMode;
-  agentic_recommendation: "" | AgenticRecommendationFilter;
 };
 
 function readFilters(params: URLSearchParams): FilterForm & { page: number } {
@@ -118,23 +87,11 @@ function readFilters(params: URLSearchParams): FilterForm & { page: number } {
   const status = ALL_STATUSES.includes(statusRaw as VerificationStatus)
     ? (statusRaw as VerificationStatus)
     : "";
-  const modeRaw = params.get("agentic_mode") ?? "";
-  const agentic_mode = AGENTIC_MODE_OPTIONS.includes(modeRaw as AgenticMode)
-    ? (modeRaw as AgenticMode)
-    : "";
-  const recommendationRaw = params.get("agentic_recommendation") ?? "";
-  const agentic_recommendation = AGENTIC_RECOMMENDATION_OPTIONS.includes(
-    recommendationRaw as AgenticRecommendationFilter,
-  )
-    ? (recommendationRaw as AgenticRecommendationFilter)
-    : "";
   return {
     status,
     external_user_id: params.get("external_user_id") ?? "",
     since: params.get("since") ?? "",
     until: params.get("until") ?? "",
-    agentic_mode,
-    agentic_recommendation,
     page: Math.max(1, Number(params.get("page") ?? "1") || 1),
   };
 }
@@ -146,8 +103,6 @@ function applyFilters(filters: FilterForm, page: number) {
     external_user_id: filters.external_user_id.trim() || undefined,
     since: filters.since || undefined,
     until: filters.until || undefined,
-    agentic_mode: filters.agentic_mode || undefined,
-    agentic_recommendation: filters.agentic_recommendation || undefined,
     limit: PAGE_SIZE,
     offset,
   };
@@ -169,8 +124,6 @@ export function SessionsManager({ workspaceId }: { workspaceId: string }) {
     external_user_id: initial.external_user_id,
     since: initial.since,
     until: initial.until,
-    agentic_mode: initial.agentic_mode,
-    agentic_recommendation: initial.agentic_recommendation,
   });
 
   const query = useQuery({
@@ -191,10 +144,6 @@ export function SessionsManager({ workspaceId }: { workspaceId: string }) {
     }
     if (next.since) params.set("since", next.since);
     if (next.until) params.set("until", next.until);
-    if (next.agentic_mode) params.set("agentic_mode", next.agentic_mode);
-    if (next.agentic_recommendation) {
-      params.set("agentic_recommendation", next.agentic_recommendation);
-    }
     if (next.page && next.page > 1) params.set("page", String(next.page));
     const qs = params.toString();
     router.push(
@@ -215,8 +164,6 @@ export function SessionsManager({ workspaceId }: { workspaceId: string }) {
       external_user_id: "",
       since: "",
       until: "",
-      agentic_mode: "",
-      agentic_recommendation: "",
     });
     router.push(`/dashboard/${workspaceId}/sessions`);
   }
@@ -328,54 +275,6 @@ export function SessionsManager({ workspaceId }: { workspaceId: string }) {
               external user id.
             </FieldDescription>
           </Field>
-
-          <div className="grid gap-4 sm:grid-cols-2">
-            <Field>
-              <FieldLabel htmlFor="filter-agentic-mode">Agent mode</FieldLabel>
-              <select
-                id="filter-agentic-mode"
-                value={form.agentic_mode}
-                onChange={(event) =>
-                  setForm((current) => ({
-                    ...current,
-                    agentic_mode: event.target.value as "" | AgenticMode,
-                  }))
-                }
-                className="border-input bg-background text-foreground focus-visible:ring-ring/50 h-10 rounded-lg border px-3 text-sm outline-none focus-visible:ring-[3px]"
-              >
-                <option value="">All modes</option>
-                {AGENTIC_MODE_OPTIONS.map((mode) => (
-                  <option key={mode} value={mode}>
-                    {AGENTIC_MODE_LABELS[mode]}
-                  </option>
-                ))}
-              </select>
-            </Field>
-            <Field>
-              <FieldLabel htmlFor="filter-agentic-recommendation">
-                Agent recommendation
-              </FieldLabel>
-              <select
-                id="filter-agentic-recommendation"
-                value={form.agentic_recommendation}
-                onChange={(event) =>
-                  setForm((current) => ({
-                    ...current,
-                    agentic_recommendation: event.target
-                      .value as "" | AgenticRecommendationFilter,
-                  }))
-                }
-                className="border-input bg-background text-foreground focus-visible:ring-ring/50 h-10 rounded-lg border px-3 text-sm outline-none focus-visible:ring-[3px]"
-              >
-                <option value="">All recommendations</option>
-                {AGENTIC_RECOMMENDATION_OPTIONS.map((recommendation) => (
-                  <option key={recommendation} value={recommendation}>
-                    {AGENTIC_RECOMMENDATION_LABELS[recommendation]}
-                  </option>
-                ))}
-              </select>
-            </Field>
-          </div>
 
           <div className="grid gap-4 sm:grid-cols-2">
             <Field>
@@ -620,9 +519,7 @@ function hasAnyFilter(filters: FilterForm & { page: number }): boolean {
     filters.status ||
     filters.external_user_id.trim() ||
     filters.since ||
-    filters.until ||
-    filters.agentic_mode ||
-    filters.agentic_recommendation,
+    filters.until,
   );
 }
 

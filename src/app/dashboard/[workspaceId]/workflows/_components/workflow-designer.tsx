@@ -2,7 +2,6 @@
 
 import { FormEvent, useEffect, useMemo, useState } from "react";
 import {
-  BotIcon,
   CalendarClockIcon,
   CheckIcon,
   PencilIcon,
@@ -46,7 +45,6 @@ import { Spinner } from "@/components/ui/spinner";
 import { Badge } from "@/components/ui/badge";
 import {
   apiClient,
-  type AgenticMode,
   type Workflow,
   type WorkflowUpdate,
 } from "@/lib/api-client";
@@ -54,12 +52,6 @@ import { useClientSession } from "@/lib/hooks/use-client-session";
 import { cn } from "@/lib/utils";
 
 const ALL_SERVICES = ["selfie", "liveness", "document", "age"] as const;
-const AGENTIC_MODES = [
-  "disabled",
-  "shadow",
-  "assist_review",
-  "auto_decide",
-] as const;
 type Service = (typeof ALL_SERVICES)[number];
 
 const EMPTY_WORKFLOWS: Workflow[] = [];
@@ -71,26 +63,11 @@ const SERVICE_LABELS: Record<Service, string> = {
   age: "Age",
 };
 
-const AGENTIC_MODE_LABELS: Record<AgenticMode, string> = {
-  disabled: "Disabled",
-  shadow: "Shadow",
-  assist_review: "Assist review",
-  auto_decide: "Auto decide",
-};
-
-const AGENTIC_MODE_DETAILS: Record<AgenticMode, string> = {
-  disabled: "Run deterministic checks only.",
-  shadow: "Evaluate in the background without changing outcomes.",
-  assist_review: "Recommend decisions for human review.",
-  auto_decide: "Approve or reject when confidence and policy gates pass.",
-};
-
 type EditorState = {
   name: string;
   services: Service[];
   minAge: string;
   autoDecideAllowed: boolean;
-  agenticMode: AgenticMode;
   confidenceThreshold: string;
 };
 
@@ -100,7 +77,6 @@ function emptyState(): EditorState {
     services: [],
     minAge: "",
     autoDecideAllowed: true,
-    agenticMode: "auto_decide",
     confidenceThreshold: "",
   };
 }
@@ -113,7 +89,6 @@ function fromWorkflow(workflow: Workflow): EditorState {
     ),
     minAge: workflow.min_age?.toString() ?? "",
     autoDecideAllowed: workflow.auto_decide_allowed ?? true,
-    agenticMode: workflow.agentic_mode ?? "disabled",
     confidenceThreshold:
       typeof workflow.auto_decide_confidence_threshold === "number"
         ? workflow.auto_decide_confidence_threshold.toFixed(2)
@@ -143,22 +118,11 @@ function validateServices(services: Service[]): string | null {
   return null;
 }
 
-function validateAgenticMode(
-  mode: AgenticMode,
-  services: Service[],
-): string | null {
-  if (mode === "disabled") return null;
-  if (services.length === 0) {
-    return "Agentic modes need at least one deterministic service selected.";
-  }
-  return null;
-}
-
 function validateConfidenceThreshold(
   value: string,
-  mode: AgenticMode,
+  autoDecideAllowed: boolean,
 ): string | null {
-  if (mode !== "auto_decide" || value.trim().length === 0) return null;
+  if (!autoDecideAllowed || value.trim().length === 0) return null;
   const n = Number(value);
   if (!Number.isFinite(n)) return "Enter a decimal between 0.0 and 1.0.";
   if (n < 0 || n > 1) return "Choose a value between 0.0 and 1.0.";
@@ -195,7 +159,6 @@ export function WorkflowDesigner({
       services: Service[];
       min_age?: number;
       auto_decide_allowed?: boolean;
-      agentic_mode?: AgenticMode;
       auto_decide_confidence_threshold?: number | null;
     }) => apiClient.createWorkspaceWorkflow(workspaceId, payload),
     onSuccess: () => {
@@ -291,10 +254,6 @@ export function WorkflowDesigner({
       return {
         ...current,
         services,
-        agenticMode:
-          services.length === 0 && current.agenticMode !== "disabled"
-            ? "disabled"
-            : current.agenticMode,
       };
     });
   }
@@ -305,17 +264,13 @@ export function WorkflowDesigner({
     const nameError = validateName(editor.name);
     const ageError = validateMinAge(editor.minAge);
     const servicesError = validateServices(editor.services);
-    const agenticError = validateAgenticMode(
-      editor.agenticMode,
-      editor.services,
-    );
     const confidenceError = canEditConfidenceThreshold
       ? validateConfidenceThreshold(
           editor.confidenceThreshold,
-          editor.agenticMode,
+          editor.autoDecideAllowed,
         )
       : null;
-    if (nameError || ageError || servicesError || agenticError || confidenceError) {
+    if (nameError || ageError || servicesError || confidenceError) {
       return;
     }
 
@@ -325,11 +280,10 @@ export function WorkflowDesigner({
       min_age:
         editor.minAge.trim().length > 0 ? Number(editor.minAge) : undefined,
       auto_decide_allowed: editor.autoDecideAllowed,
-      agentic_mode: editor.agenticMode,
     };
     if (canEditConfidenceThreshold) {
       payload.auto_decide_confidence_threshold =
-        editor.agenticMode === "auto_decide"
+        editor.autoDecideAllowed
           ? editor.confidenceThreshold.trim().length > 0
             ? Number(editor.confidenceThreshold)
             : null
@@ -344,7 +298,6 @@ export function WorkflowDesigner({
         services: payload.services as Service[],
         min_age: payload.min_age,
         auto_decide_allowed: payload.auto_decide_allowed,
-        agentic_mode: payload.agentic_mode,
         auto_decide_confidence_threshold:
           payload.auto_decide_confidence_threshold,
       });
@@ -498,12 +451,6 @@ export function WorkflowDesigner({
                               ? "allowed"
                               : "blocked"}
                           </Badge>
-                          <Badge variant="outline">
-                            Agent mode:{" "}
-                            {AGENTIC_MODE_LABELS[
-                              workflow.agentic_mode ?? "disabled"
-                            ]}
-                          </Badge>
                         </div>
                         <div className="flex flex-wrap items-center gap-x-4 gap-y-1 text-xs text-muted-foreground">
                           <span>
@@ -648,14 +595,12 @@ function WorkflowFormFields({
   const nameError = validateName(editor.name);
   const ageError = validateMinAge(editor.minAge);
   const servicesError = validateServices(editor.services);
-  const agenticError = validateAgenticMode(
-    editor.agenticMode,
-    editor.services,
-  );
   const confidenceError = canEditConfidenceThreshold
-    ? validateConfidenceThreshold(editor.confidenceThreshold, editor.agenticMode)
+    ? validateConfidenceThreshold(
+        editor.confidenceThreshold,
+        editor.autoDecideAllowed,
+      )
     : null;
-  const hasDeterministicService = editor.services.length > 0;
   return (
     <>
       <Field data-invalid={Boolean(nameError) || undefined}>
@@ -716,7 +661,7 @@ function WorkflowFormFields({
       </Field>
 
       <Field>
-        <FieldLabel>Agentic decisioning</FieldLabel>
+        <FieldLabel>Automatic decisioning</FieldLabel>
         <button
           type="button"
           role="switch"
@@ -725,7 +670,6 @@ function WorkflowFormFields({
             const nextAllowed = !editor.autoDecideAllowed;
             onChange({
               autoDecideAllowed: nextAllowed,
-              agenticMode: nextAllowed ? "auto_decide" : "disabled",
             });
           }}
           className={cn(
@@ -763,88 +707,13 @@ function WorkflowFormFields({
             />
           </span>
         </button>
-        <div
-          role="group"
-          aria-label="Agentic decisioning mode"
-          className="grid gap-3"
-        >
-          {AGENTIC_MODES.map((mode) => {
-            const isCurrent = mode === editor.agenticMode;
-            const isUnavailable =
-              mode !== "disabled" && !hasDeterministicService && !isCurrent;
-            const isBlocked = mode === "auto_decide" && !editor.autoDecideAllowed;
-            return (
-              <button
-                key={mode}
-                type="button"
-                onClick={() =>
-                  onChange({
-                    agenticMode: mode,
-                    autoDecideAllowed:
-                      mode === "auto_decide" ? true : editor.autoDecideAllowed,
-                  })
-                }
-                disabled={isUnavailable}
-                aria-disabled={isUnavailable}
-                aria-pressed={isCurrent}
-                className={cn(
-                  "flex items-start gap-3 rounded-lg border p-3 text-left text-sm transition-colors",
-                  "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2",
-                  isCurrent
-                    ? "border-primary/40 bg-primary/5 text-foreground"
-                    : "border-border bg-muted/30 text-muted-foreground",
-                  isUnavailable ? "opacity-50" : "hover:border-foreground/40",
-                )}
-              >
-                <span
-                  className={cn(
-                    "mt-0.5 flex size-8 shrink-0 items-center justify-center rounded-full border",
-                    isCurrent
-                      ? "border-primary bg-primary text-primary-foreground"
-                      : "border-border bg-background text-muted-foreground",
-                  )}
-                >
-                  <BotIcon className="size-4" aria-hidden />
-                </span>
-                <span className="min-w-0 flex-1">
-                  <span className="flex flex-wrap items-center gap-2">
-                    <span className="font-medium">
-                      {AGENTIC_MODE_LABELS[mode]}
-                    </span>
-                    {mode === "auto_decide" ? (
-                      <Badge variant="outline" className="h-5 px-1.5 text-[10px]">
-                        Recommended
-                      </Badge>
-                    ) : null}
-                    {isCurrent ? (
-                      <Badge className="h-5 px-1.5 text-[10px]">
-                        Selected
-                      </Badge>
-                    ) : null}
-                    {isBlocked ? (
-                      <Badge variant="outline" className="h-5 px-1.5 text-[10px]">
-                        Blocked
-                      </Badge>
-                    ) : null}
-                  </span>
-                  <span className="text-muted-foreground mt-1 block text-xs leading-5">
-                    {AGENTIC_MODE_DETAILS[mode]}
-                  </span>
-                </span>
-              </button>
-            );
-          })}
-        </div>
         <FieldDescription>
-          {agenticError ? (
-            <span className="text-destructive">{agenticError}</span>
-          ) : (
-            "Existing OCR, face, liveness, duplicate, and age tools run first. Model calls are reserved for ambiguous cases. Auto-decide can be allowed at the workflow level, but the backend still applies provider, budget, and deterministic override gates."
-          )}
+          Deterministic OCR, face, liveness, duplicate, and age safeguards run
+          before a session can be approved or rejected automatically.
         </FieldDescription>
       </Field>
 
-      {canEditConfidenceThreshold && editor.agenticMode === "auto_decide" ? (
+      {canEditConfidenceThreshold && editor.autoDecideAllowed ? (
         <Field data-invalid={Boolean(confidenceError) || undefined}>
           <FieldLabel htmlFor="workflow-confidence-threshold">
             Auto-decide confidence threshold

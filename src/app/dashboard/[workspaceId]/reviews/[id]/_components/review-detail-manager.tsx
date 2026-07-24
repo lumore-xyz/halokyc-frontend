@@ -8,7 +8,6 @@ import {
   type AdminAuditLogItem,
   type VerificationDetail,
   type VerificationSessionDetail,
-  type AgenticReviewFeedbackRequest,
 } from "@/lib/api-client";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -31,7 +30,6 @@ import { formatDate } from "@/lib/format";
 import { JsonViewer } from "@/components/json-viewer";
 import { CheckCard, orderedCheckKeys } from "@/components/check-card";
 import { useClientSession } from "@/lib/hooks/use-client-session";
-import { AgentRecommendationPanel } from "@/components/agent-recommendation-panel";
 import { TimeoutRecoveryBanner } from "@/components/timeout-recovery-banner";
 
 import { EvidenceViewer } from "../../../_components/evidence-viewer";
@@ -51,8 +49,6 @@ export function ReviewDetailManager({
     role === "client_owner" ||
     role === "client_admin" ||
     role === "client_reviewer";
-  const canViewProviderMetadata =
-    role === "client_owner" || role === "client_admin";
   const canViewRawData = role === "client_owner" || role === "client_admin";
 
   const reviewQuery = useQuery({
@@ -63,19 +59,6 @@ export function ReviewDetailManager({
   const sessionQuery = useQuery({
     queryKey: ["workspace-verification", workspaceId, verificationId],
     queryFn: () => apiClient.getWorkspaceVerification(workspaceId, verificationId),
-  });
-
-  const feedbackMutation = useMutation({
-    mutationFn: (feedback: AgenticReviewFeedbackRequest) =>
-      apiClient.submitAgenticReviewFeedback(workspaceId, verificationId, feedback),
-    onSuccess: () => {
-      void queryClient.invalidateQueries({
-        queryKey: ["workspace-review", workspaceId, verificationId],
-      });
-      void queryClient.invalidateQueries({
-        queryKey: ["workspace-verification", workspaceId, verificationId],
-      });
-    },
   });
 
   const decideMutation = useMutation({
@@ -209,21 +192,6 @@ export function ReviewDetailManager({
               </div>
             </CardContent>
           </Card>
-
-          <AgentRecommendationPanel
-            check={data.checks?.agentic_review}
-            deterministicStatus={data.status}
-            canViewProviderMetadata={canViewProviderMetadata}
-            reviewerFeedback={
-              (data.checks?.agentic_review?.result?.reviewer_feedback as
-                | { agreed_with_agent: boolean; reviewer_user_id: string; recorded_at: string }
-                | undefined) ?? null
-            }
-            onSubmitFeedback={async (agreed) => {
-              await feedbackMutation.mutateAsync({ agreed_with_agent: agreed });
-            }}
-            isSubmittingFeedback={feedbackMutation.isPending}
-          />
 
           {sessionQuery.error ? (
             <Alert variant="destructive">

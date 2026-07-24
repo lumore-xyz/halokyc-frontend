@@ -3,7 +3,6 @@
 import {
   ActivityIcon,
   AlertTriangleIcon,
-  BotIcon,
   Building2Icon,
   CircleDollarSignIcon,
   FilterIcon,
@@ -19,7 +18,7 @@ import {
   WebhookIcon,
 } from "lucide-react";
 import Link from "next/link";
-import { useMemo, useState } from "react";
+import { useMemo } from "react";
 
 import { Metric } from "@/components/dashboard/metric";
 import { AdminPageHeader, AdminPageSkeleton } from "@/app/admin/_components/admin-page-header";
@@ -47,15 +46,12 @@ import {
 import { useAdminSession } from "@/lib/hooks/use-admin-session";
 import {
   useAdminAuditLogs,
-  useAdminAgenticMonitoring,
   useAdminBillingCredits,
   useAdminOrganizations,
   useAdminSupportWebhookLogs,
   useAdminVerifications,
-  useAdminWorkspaces,
 } from "@/lib/hooks/use-admin-console";
 import { formatDate } from "@/lib/format";
-import type { AgenticMode, AgenticRecommendationFilter } from "@/lib/api-client";
 
 export default function AdminOverviewPage() {
   return (
@@ -79,29 +75,10 @@ export default function AdminOverviewPage() {
 function AdminOverview() {
   const session = useAdminSession();
   const orgs = useAdminOrganizations();
-  const workspaces = useAdminWorkspaces();
   const credits = useAdminBillingCredits();
   const verifications = useAdminVerifications({ limit: 5 });
   const webhookLogs = useAdminSupportWebhookLogs({ limit: 5 });
   const auditLogs = useAdminAuditLogs({ limit: 5 });
-  const [agentWindow, setAgentWindow] = useState("24h");
-  const [agentOrganizationId, setAgentOrganizationId] = useState("");
-  const [agentWorkspaceId, setAgentWorkspaceId] = useState("");
-  const [agentMode, setAgentMode] = useState<"" | AgenticMode>("");
-  const [agentRecommendation, setAgentRecommendation] = useState<
-    "" | AgenticRecommendationFilter
-  >("");
-  const agentSince = useMemo(() => windowToSince(agentWindow), [agentWindow]);
-  const canSeeProviderMetrics =
-    session.data?.platformRole === "platform_owner" ||
-    session.data?.platformRole === "platform_business_admin";
-  const agenticMetrics = useAdminAgenticMonitoring({
-    organizationId: agentOrganizationId || null,
-    workspaceId: agentWorkspaceId || null,
-    since: agentSince,
-    agenticMode: agentMode || null,
-    agenticRecommendation: agentRecommendation || null,
-  }, { enabled: canSeeProviderMetrics });
 
   const totalOrgs = orgs.data?.length ?? 0;
   const activeOrgs = useMemo(
@@ -114,15 +91,6 @@ function AdminOverview() {
   );
   const totalAvailable = credits.data?.balance.available_credits ?? 0;
   const totalReserved = credits.data?.balance.reserved_credits ?? 0;
-  const scopedWorkspaces = useMemo(
-    () =>
-      (workspaces.data ?? []).filter((workspace) =>
-        agentOrganizationId
-          ? workspace.organization_id === agentOrganizationId
-          : true,
-      ),
-    [agentOrganizationId, workspaces.data],
-  );
 
   const failedDeliveries = useMemo(
     () =>
@@ -313,142 +281,6 @@ function AdminOverview() {
         </Card>
       </div>
 
-      {canSeeProviderMetrics ? (
-        <Card>
-          <CardHeader>
-            <div className="flex flex-col gap-3 lg:flex-row lg:items-start lg:justify-between">
-              <div>
-                <CardTitle className="flex items-center gap-2">
-                  <BotIcon className="text-muted-foreground size-4" aria-hidden />
-                  Agentic rollout health
-                </CardTitle>
-                <CardDescription>
-                  Provider fallback, validation, and auto-decision volume for
-                  the selected operating window.
-                </CardDescription>
-              </div>
-              <div className="flex flex-wrap items-center gap-2">
-                <select
-                  aria-label="Agentic metrics time window"
-                  className="border-input bg-background text-foreground focus-visible:ring-ring/50 h-9 rounded-lg border px-3 text-sm outline-none focus-visible:ring-[3px]"
-                  value={agentWindow}
-                  onChange={(event) => setAgentWindow(event.target.value)}
-                >
-                  <option value="24h">Last 24 hours</option>
-                  <option value="7d">Last 7 days</option>
-                  <option value="30d">Last 30 days</option>
-                  <option value="all">All time</option>
-                </select>
-                <select
-                  aria-label="Agentic metrics organization"
-                  className="border-input bg-background text-foreground focus-visible:ring-ring/50 h-9 rounded-lg border px-3 text-sm outline-none focus-visible:ring-[3px]"
-                  value={agentOrganizationId}
-                  onChange={(event) => {
-                    setAgentOrganizationId(event.target.value);
-                    setAgentWorkspaceId("");
-                  }}
-                >
-                  <option value="">All organizations</option>
-                  {orgs.data?.map((organization) => (
-                    <option
-                      key={organization.organization_id}
-                      value={organization.organization_id}
-                    >
-                      {organization.name}
-                    </option>
-                  ))}
-                </select>
-                <select
-                  aria-label="Agentic metrics workspace"
-                  className="border-input bg-background text-foreground focus-visible:ring-ring/50 h-9 rounded-lg border px-3 text-sm outline-none focus-visible:ring-[3px]"
-                  value={agentWorkspaceId}
-                  onChange={(event) => setAgentWorkspaceId(event.target.value)}
-                >
-                  <option value="">All workspaces</option>
-                  {scopedWorkspaces.map((workspace) => (
-                    <option
-                      key={workspace.workspace_id}
-                      value={workspace.workspace_id}
-                    >
-                      {workspace.name}
-                    </option>
-                  ))}
-                </select>
-                <select
-                  aria-label="Agentic metrics mode"
-                  className="border-input bg-background text-foreground focus-visible:ring-ring/50 h-9 rounded-lg border px-3 text-sm outline-none focus-visible:ring-[3px]"
-                  value={agentMode}
-                  onChange={(event) =>
-                    setAgentMode(event.target.value as "" | AgenticMode)
-                  }
-                >
-                  <option value="">All modes</option>
-                  <option value="disabled">Disabled</option>
-                  <option value="shadow">Shadow</option>
-                  <option value="assist_review">Assist review</option>
-                  <option value="auto_decide">Auto decide</option>
-                </select>
-                <select
-                  aria-label="Agentic metrics recommendation"
-                  className="border-input bg-background text-foreground focus-visible:ring-ring/50 h-9 rounded-lg border px-3 text-sm outline-none focus-visible:ring-[3px]"
-                  value={agentRecommendation}
-                  onChange={(event) =>
-                    setAgentRecommendation(
-                      event.target.value as "" | AgenticRecommendationFilter,
-                    )
-                  }
-                >
-                  <option value="">All recommendations</option>
-                  <option value="approved">Approved</option>
-                  <option value="rejected">Rejected</option>
-                  <option value="manual_review">Manual review</option>
-                </select>
-              </div>
-            </div>
-          </CardHeader>
-          <CardContent className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-            <AgentMetric
-              label="Provider failure rate"
-              value={
-                agenticMetrics.isLoading
-                  ? "-"
-                  : formatPercent(
-                      agenticMetrics.data?.totals.provider_failure_rate ?? 0,
-                    )
-              }
-              description={`${agenticMetrics.data?.totals.provider_failures ?? 0} provider fallbacks`}
-            />
-            <AgentMetric
-              label="Budget fallbacks"
-              value={
-                agenticMetrics.isLoading
-                  ? "-"
-                  : agenticMetrics.data?.totals.budget_fallbacks ?? 0
-              }
-              description="Deterministic fallback after budget guard"
-            />
-            <AgentMetric
-              label="Invalid output fallbacks"
-              value={
-                agenticMetrics.isLoading
-                  ? "-"
-                  : agenticMetrics.data?.totals.invalid_output_fallbacks ?? 0
-              }
-              description="Schema validation failed closed"
-            />
-            <AgentMetric
-              label="Auto decisions"
-              value={
-                agenticMetrics.isLoading
-                  ? "-"
-                  : agenticMetrics.data?.totals.auto_decisions ?? 0
-              }
-              description={`${agenticMetrics.data?.totals.agentic_reviews ?? 0} agentic reviews`}
-            />
-          </CardContent>
-        </Card>
-      ) : null}
-
       <Card>
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
@@ -507,44 +339,6 @@ function AdminOverview() {
           </Button>
         </CardContent>
       </Card>
-    </div>
-  );
-}
-
-function windowToSince(value: string): string | null {
-  if (value === "all") return null;
-  const now = Date.now();
-  const durationMs =
-    value === "30d"
-      ? 30 * 24 * 60 * 60 * 1000
-      : value === "7d"
-        ? 7 * 24 * 60 * 60 * 1000
-        : 24 * 60 * 60 * 1000;
-  return new Date(now - durationMs).toISOString();
-}
-
-function formatPercent(value: number): string {
-  return `${Math.round(value * 1000) / 10}%`;
-}
-
-function AgentMetric({
-  label,
-  value,
-  description,
-}: {
-  label: string;
-  value: string | number;
-  description: string;
-}) {
-  return (
-    <div className="flex min-h-28 flex-col justify-between rounded-lg border bg-background p-4">
-      <span className="text-muted-foreground text-xs font-medium">
-        {label}
-      </span>
-      <span className="font-mono text-2xl font-semibold tabular-nums text-[var(--dashboard-ink)]">
-        {value}
-      </span>
-      <span className="text-muted-foreground text-xs">{description}</span>
     </div>
   );
 }

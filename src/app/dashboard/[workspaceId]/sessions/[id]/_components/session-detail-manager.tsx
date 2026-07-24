@@ -32,7 +32,6 @@ import { formatDate } from "@/lib/format";
 import { JsonViewer } from "@/components/json-viewer";
 import { CheckCard, orderedCheckKeys } from "@/components/check-card";
 import { useClientSession } from "@/lib/hooks/use-client-session";
-import { AgentRecommendationPanel } from "@/components/agent-recommendation-panel";
 import { TimeoutRecoveryBanner } from "@/components/timeout-recovery-banner";
 
 import { EvidenceViewer } from "../../../_components/evidence-viewer";
@@ -69,8 +68,6 @@ export function SessionDetailManager({
     role === "client_owner" ||
     role === "client_admin" ||
     role === "client_developer";
-  const canViewProviderMetadata =
-    role === "client_owner" || role === "client_admin";
   const canViewRawData = role === "client_owner" || role === "client_admin";
 
   const { data, isLoading, error, isFetching, refetch } = useQuery({
@@ -240,12 +237,6 @@ export function SessionDetailManager({
               </div>
             </CardContent>
           </Card>
-
-          <AgentRecommendationPanel
-            check={data.checks?.agentic_review}
-            deterministicStatus={data.status}
-            canViewProviderMetadata={canViewProviderMetadata}
-          />
 
           {canUpload && data.status === "pending_upload" ? (
             <SessionUploadCard
