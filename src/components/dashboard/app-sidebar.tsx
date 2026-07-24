@@ -68,7 +68,7 @@ export function AppSidebar({ audience }: AppSidebarProps) {
             >
               <BrandLogo
                 variant="icon-color"
-                className="size-8 rounded-lg shadow-sm"
+                className="size-8 shadow-sm"
                 imageClassName="object-cover"
               />
               <div className="flex flex-col items-start gap-0 group-data-[collapsible=icon]:hidden">
@@ -81,9 +81,7 @@ export function AppSidebar({ audience }: AppSidebarProps) {
               </div>
             </SidebarMenuButton>
           </SidebarMenuItem>
-          {audience === "client" ? (
-            <AppWorkspaceSwitcher />
-          ) : null}
+          {audience === "client" ? <AppWorkspaceSwitcher /> : null}
         </SidebarMenu>
       </SidebarHeader>
       <SidebarContent className="px-1 py-3">

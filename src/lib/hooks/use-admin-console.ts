@@ -7,7 +7,6 @@ import {
   type AdminBillingCatalogItem,
   type AdminBillingCatalogItemUpdate,
   type AdminCreditAdjustmentRequest,
-  type AgenticMonitoringFilters,
   type AdminOrganizationUpdateRequest,
   type AdminSalesNoteRequest,
   type AdminSupportNoteRequest,
@@ -97,8 +96,6 @@ export function useAdminVerifications(
   filters: {
     organizationId?: string | null;
     workspaceId?: string | null;
-    agenticMode?: AgenticMonitoringFilters["agenticMode"];
-    agenticRecommendation?: AgenticMonitoringFilters["agenticRecommendation"];
     limit?: number;
     offset?: number;
   } = {},
@@ -106,17 +103,6 @@ export function useAdminVerifications(
   return useQuery({
     queryKey: ["admin-verifications", filters],
     queryFn: () => apiClient.listAdminVerifications(filters),
-  });
-}
-
-export function useAdminAgenticMonitoring(
-  filters: AgenticMonitoringFilters = {},
-  options: { enabled?: boolean } = {},
-) {
-  return useQuery({
-    queryKey: ["admin-agentic-monitoring", filters],
-    queryFn: () => apiClient.getAdminAgenticMonitoring(filters),
-    enabled: options.enabled ?? true,
   });
 }
 

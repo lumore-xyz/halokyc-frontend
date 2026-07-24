@@ -1,6 +1,7 @@
 "use client";
 
 import { type FormEvent, useId, useState } from "react";
+import NextLink from "next/link";
 import { MoreHorizontalIcon, PlusIcon, UserPlusIcon } from "lucide-react";
 import { toast } from "sonner";
 import { format } from "date-fns";
@@ -69,6 +70,7 @@ import {
   type UserStatus,
 } from "@/lib/api-client";
 import { useClientSession } from "@/lib/hooks/use-client-session";
+import { useBillingEntitlements } from "@/lib/hooks/use-billing";
 import { useOrganization, useOrganizationMembers } from "@/lib/hooks/use-organization";
 
 const ROLE_LABEL: Record<ClientRole, string> = {
@@ -89,12 +91,18 @@ export function TeamManager() {
   const organizationId = session.data?.organizationId ?? null;
   const organization = useOrganization();
   const members = useOrganizationMembers();
+  const entitlements = useBillingEntitlements();
   const [inviteOpen, setInviteOpen] = useState(false);
 
   const ownerCount = (members.data ?? []).filter(
     (member) => member.role === "client_owner" && member.status === "active",
   ).length;
   const currentMemberId = session.data?.organizationMemberId ?? null;
+  const memberLimit = entitlements.data?.limits.members ?? null;
+  const memberLimitReached =
+    memberLimit !== null &&
+    (entitlements.data?.usage.members ?? members.data?.length ?? 0) >=
+      memberLimit;
 
   return (
     <>
@@ -113,13 +121,27 @@ export function TeamManager() {
           disabled={
             !organizationId ||
             members.isLoading ||
-            organization.data?.status !== "active"
+            organization.data?.status !== "active" ||
+            memberLimitReached
           }
         >
           <UserPlusIcon data-icon="inline-start" />
           Invite teammate
         </Button>
       </header>
+
+      {memberLimitReached ? (
+        <Alert>
+          <AlertTitle>Sandbox team limit reached</AlertTitle>
+          <AlertDescription>
+            Your plan includes {memberLimit} team member.{" "}
+            <NextLink href="/dashboard/billing" className="underline">
+              Upgrade to Launch
+            </NextLink>{" "}
+            to invite teammates.
+          </AlertDescription>
+        </Alert>
+      ) : null}
 
       <OrganizationSummaryCard
         name={organization.data?.name ?? null}

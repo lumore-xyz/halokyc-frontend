@@ -112,7 +112,7 @@ export function FeatureGrid() {
       )}
             >
               The checks are{" "}
-              <span className="text-(--landing-cyan) italic">modular.</span> The
+              <span className="text-(--landing-cyan)">modular.</span> The
               record is continuous.
             </h2>
           </div>

@@ -55,20 +55,20 @@ export function DecisionSection() {
           <Reveal className="flex flex-col gap-6">
             <SectionMarker
               index={2}
-              eyebrow="The build vs. buy question"
-              meta="Editorial · 2026"
+              eyebrow="Why not to rebuild the wheel."
+              meta=""
               tone="paper"
             />
             <h2
               id="decision-headline"
               className={cn(
-                "font-serif font-normal tracking-[-0.03em]",
+                "font-display font-semibold tracking-[-0.035em]",
                 "text-4xl leading-tight",
                 "sm:text-5xl",
               )}
             >
               You can verify users yourself.
-              <span className="italic text-[color-mix(in_oklch,var(--landing-ink)_55%,transparent)]">
+              <span className="text-[color-mix(in_oklch,var(--landing-ink)_55%,transparent)]">
                 {" "}
                 The question is what it costs to get there.
               </span>
@@ -81,15 +81,14 @@ export function DecisionSection() {
           >
             <p>
               Most early-stage products need basic trust signals before they
-              need enterprise compliance platforms. Existing KYC tools come
-              with per-check pricing that punishes experimentation, days of
-              integration, and dashboards designed for large compliance
-              teams.
+              need enterprise compliance platforms. Existing KYC tools come with
+              per-check pricing that punishes experimentation, days of
+              integration, and dashboards designed for large compliance teams.
             </p>
-            <p className="border-l-2 border-[var(--landing-stamp)] pl-5 font-serif text-[1.35rem] leading-snug text-[var(--landing-ink)] sm:text-[1.5rem]">
+            <p className="font-display border-l-2 border-[var(--landing-stamp)] pl-5 text-[1.35rem] leading-snug font-semibold text-[var(--landing-ink)] sm:text-[1.5rem]">
               HaloKYC is the first version of your trust stack — one API,
-              practical checks, clear decisions, and a review queue your
-              team controls.
+              practical checks, clear decisions, and a review queue your team
+              controls.
             </p>
           </Reveal>
         </div>
@@ -110,7 +109,7 @@ export function DecisionSection() {
                     className="absolute inset-x-6 top-0 h-px bg-[var(--landing-cyan)]"
                   />
                 )}
-                <p className="font-mono text-[11px] uppercase tracking-[0.22em] text-[var(--landing-stamp)]">
+                <p className="font-mono text-[11px] tracking-[0.22em] text-[var(--landing-stamp)] uppercase">
                   Argument {p.k}
                 </p>
                 <p className="font-sans text-xl font-semibold tracking-tight text-[var(--landing-ink)]">

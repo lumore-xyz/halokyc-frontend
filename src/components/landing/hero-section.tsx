@@ -3,10 +3,8 @@
 /**
  * Hero - the page opener.
  *
- * Dark "technical" canvas carrying a single display headline in
- * Space Grotesk at the design-system hero scale. Left column:
- * eyebrow + display headline + subhead + dual CTA + three-stat
- * strip. Right column: animated "case file" poster.
+ * Forest canvas with a Manrope display headline, direct actions,
+ * operational proof points, and a human verification photo mosaic.
  */
 
 import {
@@ -21,6 +19,7 @@ import {
 import { motion, useReducedMotion } from "motion/react";
 import Link from "next/link";
 
+import { HumanVerificationMosaic } from "@/components/landing/human-verification-mosaic";
 import { SectionMarker } from "@/components/landing/section-marker";
 import { cn } from "@/lib/utils";
 
@@ -57,10 +56,10 @@ export function Hero() {
       aria-labelledby="hero-headline"
       className="relative isolate overflow-hidden bg-(--landing-canvas) text-(--landing-canvas-ink)"
     >
-      {/* Soft technical background: gentle grid + bleed stripe */}
+      {/* Quiet tonal depth keeps the hero expressive without competing with the photography. */}
       <div
         aria-hidden
-        className="landing-grid-soft absolute inset-0 opacity-[0.18]"
+        className="landing-grid-soft absolute inset-0 opacity-[0.06]"
         style={{
           maskImage:
             "linear-gradient(to bottom, black 0%, black 60%, transparent 100%)",
@@ -68,10 +67,9 @@ export function Hero() {
             "linear-gradient(to bottom, black 0%, black 60%, transparent 100%)",
         }}
       />
-      <div aria-hidden className="landing-stripe absolute inset-0 opacity-[0.06]" />
       <div
         aria-hidden
-        className="landing-halo pointer-events-none absolute top-[34%] right-[-18%] h-215 w-215 rounded-full bg-(--landing-cyan-soft) opacity-50 blur-3xl"
+        className="landing-halo pointer-events-none absolute top-[34%] right-[-18%] h-215 w-215 rounded-full bg-(--landing-cyan-soft) opacity-30 blur-3xl"
       />
 
       <motion.div
@@ -82,21 +80,25 @@ export function Hero() {
       >
         <div className="flex flex-col gap-9">
           <motion.div variants={fadeUp}>
-            <SectionMarker index={1} eyebrow="The verification API" meta="v0.1.0 · 2026" />
+            <SectionMarker
+              index={1}
+              eyebrow="The Trust Layer for your app"
+              meta=""
+            />
           </motion.div>
 
           <motion.div variants={fadeUp} className="flex flex-col gap-6">
             <h1
               id="hero-headline"
-className={cn(
-  "max-w-5xl font-display font-medium text-(--landing-canvas-ink)",
-  "text-5xl leading-[0.95] tracking-[-0.04em]",
-  "sm:text-6xl",
-  "lg:text-7xl",
-)}
+              className={cn(
+                "font-display max-w-5xl font-medium text-(--landing-canvas-ink)",
+                "text-5xl leading-[0.95] tracking-[-0.04em]",
+                "sm:text-6xl",
+                "lg:text-7xl",
+              )}
             >
               Stop fake users from
-              <span className="block text-(--landing-cyan) italic">
+              <span className="block text-(--landing-cyan)">
                 becoming your growth tax.
               </span>
             </h1>
@@ -142,38 +144,40 @@ className={cn(
             variants={fadeUp}
             className="grid max-w-xl grid-cols-3 gap-x-6 border-y border-[var(--landing-hair)] py-5"
           >
-      {[
-        ["Same day", "to first verification"],
-        ["Zero vendors", "to wire and maintain"],
-        ["One workflow ID", "to start"],
-      ].map(([value, label]) => (
-        <div key={label}>
-          <dt className="font-mono text-base font-medium text-[var(--landing-canvas-ink)] tabular-nums sm:text-lg">
-            {value}
-          </dt>
-          <dd className="mt-1.5 text-[11px] leading-snug text-[var(--landing-canvas-mute)]">
-            {label}
-          </dd>
-        </div>
-      ))}
+            {[
+              ["Same day", "to first verification"],
+              ["Zero vendors", "to wire and maintain"],
+              ["One workflow ID", "to start"],
+            ].map(([value, label]) => (
+              <div key={label}>
+                <dt className="font-mono text-base font-medium text-[var(--landing-canvas-ink)] tabular-nums sm:text-lg">
+                  {value}
+                </dt>
+                <dd className="mt-1.5 text-[11px] leading-snug text-[var(--landing-canvas-mute)]">
+                  {label}
+                </dd>
+              </div>
+            ))}
           </motion.dl>
         </div>
 
         {/* Signature poster: a "case file" typeset on dark canvas. */}
         <motion.div
-          initial={reduce ? { opacity: 0 } : { opacity: 0, y: 22, scale: 0.985 }}
+          initial={
+            reduce ? { opacity: 0 } : { opacity: 0, y: 22, scale: 0.985 }
+          }
           animate={{ opacity: 1, y: 0, scale: 1 }}
           transition={{ duration: 0.7, ease: [0.22, 1, 0.36, 1], delay: 0.18 }}
           className="relative"
         >
-          <CaseFilePoster />
+          <HumanVerificationMosaic />
         </motion.div>
       </motion.div>
     </section>
   );
 }
 
-function CaseFilePoster() {
+export function CaseFilePoster() {
   return (
     <article
       aria-label="Verification case file preview"
@@ -181,7 +185,7 @@ function CaseFilePoster() {
         "relative mx-auto w-full max-w-xl overflow-hidden",
         "border border-[var(--landing-hair)] bg-[var(--landing-canvas-edge)]",
         "shadow-[0_40px_120px_-60px_rgba(0,0,0,0.85)]",
-        "rounded-[6px]",
+        "rounded-[1.25rem]",
       )}
     >
       {/* File header bar */}
@@ -206,7 +210,7 @@ function CaseFilePoster() {
         </div>
         <span
           className={cn(
-            "inline-flex items-center gap-1.5 rounded-sm border px-2 py-1",
+            "inline-flex items-center gap-1.5 rounded-full border px-2.5 py-1",
             "border-[var(--landing-mint)] bg-[color-mix(in_oklch,var(--landing-mint)_18%,transparent)]",
             "font-mono text-[10px] tracking-[0.2em] text-[var(--landing-mint)] uppercase",
           )}
@@ -251,7 +255,10 @@ function CaseFilePoster() {
                   </span>
                 </p>
               </div>
-              <ShieldCheck className="size-10 text-[var(--landing-mint)]" strokeWidth={1.5} />
+              <ShieldCheck
+                className="size-10 text-[var(--landing-mint)]"
+                strokeWidth={1.5}
+              />
             </div>
             <div
               aria-hidden
@@ -274,7 +281,10 @@ function CaseFilePoster() {
                 className="flex items-center justify-between gap-3 border-b border-dashed border-[var(--landing-hair)] pb-2 last:border-b-0"
               >
                 <span className="flex items-center gap-2 text-sm text-[var(--landing-canvas-ink-soft)]">
-                  <CheckCircle2 className="size-4 text-[var(--landing-mint)]" strokeWidth={2} />
+                  <CheckCircle2
+                    className="size-4 text-[var(--landing-mint)]"
+                    strokeWidth={2}
+                  />
                   {label}
                 </span>
                 <span className="font-mono text-xs text-[var(--landing-canvas-ink)] tabular-nums">
@@ -286,7 +296,10 @@ function CaseFilePoster() {
 
           <div className="mt-5 rounded-md border border-[var(--landing-hair)] bg-[var(--landing-canvas-soft)] p-4">
             <div className="flex items-center gap-2">
-              <ClipboardCheck className="size-4 text-[var(--landing-cyan)]" strokeWidth={1.75} />
+              <ClipboardCheck
+                className="size-4 text-[var(--landing-cyan)]"
+                strokeWidth={1.75}
+              />
               <p className="text-sm font-medium">Audit trail</p>
             </div>
             <p className="mt-2 font-mono text-[11px] leading-5 text-[var(--landing-canvas-ink-soft)]">

@@ -18,6 +18,13 @@ export function useBillingSubscription() {
   });
 }
 
+export function useBillingEntitlements() {
+  return useQuery({
+    queryKey: ["billing-entitlements"],
+    queryFn: () => apiClient.getBillingEntitlements(),
+  });
+}
+
 export function useCreateSubscriptionCheckout() {
   return useMutation({
     mutationFn: (catalogKey: string) =>

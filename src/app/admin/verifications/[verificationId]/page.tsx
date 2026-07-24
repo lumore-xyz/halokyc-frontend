@@ -34,7 +34,6 @@ import { AppShell } from "@/components/dashboard/app-shell";
 import { PlatformRouteGuard } from "@/components/dashboard/platform-route-guard";
 import { ApiError } from "@/lib/api-client";
 import { cn } from "@/lib/utils";
-import { AgentRecommendationPanel } from "@/components/agent-recommendation-panel";
 import { CheckCard, orderedCheckKeys } from "@/components/check-card";
 import { TimeoutRecoveryBanner } from "@/components/timeout-recovery-banner";
 
@@ -249,12 +248,6 @@ function VerificationDetailBody({ verificationId }: { verificationId: string }) 
           </CardContent>
         </Card>
       </div>
-
-      <AgentRecommendationPanel
-        check={detail.checks?.agentic_review}
-        deterministicStatus={detail.status}
-        canViewProviderMetadata
-      />
 
       <Card>
         <CardHeader>

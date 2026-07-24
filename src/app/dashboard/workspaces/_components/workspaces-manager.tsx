@@ -73,6 +73,7 @@ import {
   type WorkspaceUpdate,
 } from "@/lib/api-client";
 import { useClientSession } from "@/lib/hooks/use-client-session";
+import { useBillingEntitlements } from "@/lib/hooks/use-billing";
 import { useWorkspaces } from "@/lib/hooks/use-workspaces";
 
 const STATUS_LABEL: Record<Workspace["status"], string> = {
@@ -84,9 +85,15 @@ const STATUS_LABEL: Record<Workspace["status"], string> = {
 export function WorkspacesManager() {
   const session = useClientSession();
   const workspaces = useWorkspaces();
+  const entitlements = useBillingEntitlements();
   const [createOpen, setCreateOpen] = useState(false);
   const [editing, setEditing] = useState<Workspace | null>(null);
   const workspacesData = workspaces.data ?? [];
+  const workspaceLimit = entitlements.data?.limits.workspaces ?? null;
+  const workspaceLimitReached =
+    workspaceLimit !== null &&
+    (entitlements.data?.usage.workspaces ?? workspacesData.length) >=
+      workspaceLimit;
 
   return (
     <>
@@ -98,11 +105,28 @@ export function WorkspacesManager() {
             admin only.
           </p>
         </div>
-        <Button type="button" onClick={() => setCreateOpen(true)}>
+        <Button
+          type="button"
+          onClick={() => setCreateOpen(true)}
+          disabled={workspaceLimitReached}
+        >
           <PlusIcon data-icon="inline-start" />
           New workspace
         </Button>
       </header>
+
+      {workspaceLimitReached ? (
+        <Alert>
+          <AlertTitle>Sandbox workspace limit reached</AlertTitle>
+          <AlertDescription>
+            Your plan includes {workspaceLimit} workspace.{" "}
+            <NextLink href="/dashboard/billing" className="underline">
+              Upgrade to Launch
+            </NextLink>{" "}
+            to create more.
+          </AlertDescription>
+        </Alert>
+      ) : null}
 
       {workspaces.error ? (
         <Alert variant="destructive">

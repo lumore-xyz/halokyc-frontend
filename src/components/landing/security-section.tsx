@@ -106,7 +106,7 @@ function AccordionItem({
         <span
           aria-hidden
           className={cn(
-            "flex size-6 shrink-0 items-center justify-center rounded-sm border border-[var(--landing-rule)] text-[var(--landing-ink-soft)]",
+            "flex size-6 shrink-0 items-center justify-center rounded-full border border-[var(--landing-rule)] text-[var(--landing-ink-soft)]",
             "transition-transform duration-200",
             isOpen && "rotate-45",
           )}
@@ -159,7 +159,7 @@ export function SecuritySection() {
               )}
             >
               We take your users&apos;
-              <span className="italic text-[var(--landing-stamp)]">
+              <span className="text-[var(--landing-stamp)]">
                 {" "}
                 data personally.
               </span>

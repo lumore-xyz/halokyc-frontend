@@ -5,250 +5,251 @@
 **See also:** [`AI_RULES.md`](AI_RULES.md) §"Component Conventions" · [`frontend/ARCHITECTURE.md`](ARCHITECTURE.md) (data flow) · [`frontend/DECISIONS.md`](DECISIONS.md) (ADRs that introduced new tokens or primitives)
 
 HaloKYC's frontend uses shadcn/ui (base-nova style) on top of Tailwind, with a few customizations to match the brand and product language. The design system is documented here as of V1, version
-v4. This document is the source of truth for the design language: every
+v5. This document is the source of truth for the design language: every
 visual decision the team makes should trace back to a token or
 primitive documented here.
 
 ## Brand Foundations
 
-HaloKYC is the **anti-abuse layer for serious products**. The brand
-voice is developer-first, blunt about fraud, calm under pressure, and
-respectful of operator time. It should feel like a serious trust
-infrastructure product - not a generic AI wrapper, not a playful
-onboarding tool, and not a fake enterprise compliance brand.
+HaloKYC is the **calm anti-abuse layer for serious products**. The brand
+voice is developer-first, direct about fraud, calm under pressure, and
+respectful of operator time. It should feel like premium trust
+infrastructure built by people who understand both technology and the
+human consequences of identity decisions.
 
-### Archetype: Outlaw + Control
+### Archetype: Guardian + Challenger
 
 The brand sits at the intersection of two character archetypes:
 
-- **Outlaw** - anti-abuse, challenger, blunt, developer-first, not
-  afraid to call out fraud. HaloKYC should sound like the team that
-  built identity verification because they were tired of identity
-  vendors that did the opposite.
-- **Control** - policy-driven, auditable, precise, calm, operationally
-  serious. Every decision has a reason, every reason lands in the
-  audit log, every reviewer sees the same evidence.
+- **Guardian** — protective, dependable, humane, and composed. Sensitive
+  identity data is handled with care, and every user-facing decision is
+  explained clearly.
+- **Challenger** — blunt about fraud, developer-first, and willing to
+  question weak industry defaults. HaloKYC should sound experienced,
+  not loud.
 
-Three words anchor every design decision:
+Five words anchor every design decision:
 
-- **Clarity** - every state is legible at a glance
-- **Restraint** - decoration is reserved for moments that need it
-- **Auditability** - the UI shows its work, never hides the source
+- **Clarity** — every state is legible at a glance
+- **Calm** — interfaces reduce anxiety instead of amplifying it
+- **Restraint** — decoration supports comprehension
+- **Humanity** — people remain visible behind the verification process
+- **Auditability** — the UI shows its work and preserves the source
 
 The product should feel:
 
-- sharp, but not aggressive
-- controlled, but not sterile
+- premium, but not luxurious for its own sake
+- calm, but not passive
 - technical, but not cold
-- challenging, but not cocky
-- trustworthy, but not stuffy
+- organic, but not playful
+- trustworthy, but not bureaucratic
 
-The landing page is allowed to lean more "outlaw": dark technical
-canvas for the hero, sharp anti-abuse copy, concrete numbers over
-vague claims. The dashboard always leans "control": warm paper, calm
-typography, evidence-first surfaces. The two modes alternate by
-intent, not by symmetry.
-
+The landing page may be more expressive through large photography,
+editorial spacing, and bold green surfaces. The dashboard stays denser
+and operational, using the same palette with quieter contrast and
+stronger information hierarchy. The two modes are related by colour,
+type, radius, and rhythm rather than by identical layouts.
 
 ## Visual Direction
 
-HaloKYC uses a **controlled challenger** visual system: warm paper
-surfaces, ink-like text, restrained blue accents, sharp display
-headlines, and precise UI components. The landing page may lean
-slightly more "anti-abuse infrastructure" while the dashboard stays
-highly functional and evidence-first.
+HaloKYC uses a **calm editorial technology** system inspired by premium
+wellness and human-services brands: deep forest green canvases, warm
+cream typography, soft olive surfaces, lime action accents, rounded
+photography, generous whitespace, and restrained motion.
 
-Avoid these visual traps:
+The visual system must still communicate trust infrastructure. Organic
+styling is used to humanise the product, not to make security controls
+feel casual.
 
-- Purple/pink AI gradients
+### Reference characteristics
+
+- Deep monochromatic green backgrounds with subtle tonal layering
+- Warm cream text instead of pure white
+- Acid-lime accents used only for primary actions and key highlights
+- Large, confident sans-serif headlines with tight tracking
+- Rounded image crops and soft rectangular cards
+- Natural photography showing real people and real environments
+- Thin translucent borders instead of heavy shadows
+- Spacious editorial layouts with clear section numbering
+- Pill-shaped actions and compact circular icon controls
+
+### Avoid
+
+- Purple or pink AI gradients
 - Neon cyber-security palettes
-- Overused glassmorphism
-- Playful rounded SaaS illustrations
-- Fake customer logo strips
-- Excessive motion or scroll effects
+- Heavy glassmorphism
+- Pure black backgrounds
+- Cartoon SaaS illustrations
+- Large decorative blobs unrelated to content
+- Excessive shadows or glowing cards
+- Dense walls of cards on marketing pages
+- Scroll-jacking, bouncy motion, or constant animation
 - Compliance claims the product has not earned
 
-Reference mood:
+### Reference mood
 
-- Stripe-like precision
-- Linear-like restraint
-- Vercel-like technical clarity
-- Cloudflare-like anti-abuse infrastructure voice
-- "We are the anti-abuse layer for serious products" — sharp,
-  controlled, slightly rebellious
-
+- Premium wellness calm
+- Editorial clarity
+- Human-centred technology
+- Boutique service confidence
+- Developer-grade precision
+- “Serious verification without cold enterprise theatre”
 
 ## Color Palette
 
-The core app ships light only. Dark mode is a post-MVP feature. All core
-colors are defined as CSS variables in `src/app/globals.css` and exposed
-via `@theme inline` to Tailwind utilities.
+The core product uses a dark forest-green theme with warm cream text.
+Authenticated product screens may introduce lighter green surfaces for
+dense data views, but the brand should never fall back to generic white
+SaaS chrome.
 
-The palette is intentionally warm, not pure white. Identity verification
-involves sensitive data, so the interface should feel stable and human,
-not sterile.
+All core colours are defined as CSS variables in `src/app/globals.css`
+and exposed via `@theme inline` to Tailwind utilities.
 
 ```css
 /* Core app tokens */
---background: #fafaf8; /* warm off-white canvas */
---foreground: #111111; /* ink text */
+--background: #173426; /* primary forest canvas */
+--foreground: #f7f3e8; /* warm cream text */
 
---card: #ffffff;
---card-foreground: #111111;
+--card: #234333; /* raised green surface */
+--card-foreground: #f7f3e8;
 
---popover: #ffffff;
---popover-foreground: #111111;
+--popover: #294b39;
+--popover-foreground: #f7f3e8;
 
---primary: #0f172a; /* deep slate, primary action */
---primary-foreground: #ffffff;
+--primary: #c8e64f; /* lime primary action */
+--primary-foreground: #172318;
 
---secondary: #f1f0ec; /* warm secondary surface */
---secondary-foreground: #1f2937;
+--secondary: #2d503d;
+--secondary-foreground: #f4f0e5;
 
---muted: #f4f3ef;
---muted-foreground: #6b7280;
+--muted: #294736;
+--muted-foreground: #aeb8a6;
 
---accent: #2563eb; /* restrained verification blue */
---accent-foreground: #ffffff;
+--accent: #c8e64f;
+--accent-foreground: #172318;
 
---destructive: #b42318;
---destructive-foreground: #ffffff;
+--destructive: #e78178;
+--destructive-foreground: #25110f;
 
---border: #e7e5e4;
---input: #dad7d0;
---ring: #2563eb;
+--border: rgba(247, 243, 232, 0.1);
+--input: rgba(247, 243, 232, 0.14);
+--ring: #d6f15a;
 
---radius: 0.75rem;
+--radius: 1rem;
 ```
 
-Equivalent OKLCH values may be used if the existing shadcn theme is kept
-in OKLCH format:
+Equivalent OKLCH values may be used when the shadcn theme remains in
+OKLCH format:
 
 ```css
---background: oklch(0.985 0.005 95);
---foreground: oklch(0.145 0 0);
---card: oklch(1 0 0);
---card-foreground: oklch(0.145 0 0);
---popover: oklch(1 0 0);
---popover-foreground: oklch(0.145 0 0);
---primary: oklch(0.208 0.04 265);
---primary-foreground: oklch(1 0 0);
---secondary: oklch(0.965 0.006 95);
---secondary-foreground: oklch(0.23 0.02 265);
---muted: oklch(0.968 0.006 95);
---muted-foreground: oklch(0.47 0.01 260);
---accent: oklch(0.546 0.215 262);
---accent-foreground: oklch(1 0 0);
---destructive: oklch(0.47 0.19 27);
---destructive-foreground: oklch(1 0 0);
---border: oklch(0.92 0.006 80);
---input: oklch(0.88 0.006 80);
---ring: oklch(0.546 0.215 262);
+--background: oklch(0.28 0.055 150);
+--foreground: oklch(0.96 0.018 90);
+--card: oklch(0.34 0.055 150);
+--card-foreground: oklch(0.96 0.018 90);
+--popover: oklch(0.38 0.055 150);
+--popover-foreground: oklch(0.96 0.018 90);
+--primary: oklch(0.86 0.17 115);
+--primary-foreground: oklch(0.24 0.035 145);
+--secondary: oklch(0.4 0.055 150);
+--secondary-foreground: oklch(0.95 0.018 90);
+--muted: oklch(0.37 0.045 150);
+--muted-foreground: oklch(0.74 0.025 125);
+--accent: oklch(0.86 0.17 115);
+--accent-foreground: oklch(0.24 0.035 145);
+--destructive: oklch(0.68 0.14 25);
+--destructive-foreground: oklch(0.2 0.03 25);
+--border: oklch(0.96 0.018 90 / 10%);
+--input: oklch(0.96 0.018 90 / 14%);
+--ring: oklch(0.89 0.18 115);
+```
+
+### Extended Brand Tokens
+
+```css
+--forest-950: #10271c;
+--forest-900: #173426;
+--forest-850: #1d3b2c;
+--forest-800: #234333;
+--forest-750: #294b39;
+--forest-700: #2d503d;
+
+--cream-50: #fbf8ef;
+--cream-100: #f7f3e8;
+--cream-200: #e8e2d3;
+--cream-300: #d1ccbf;
+
+--lime-400: #d6f15a;
+--lime-500: #c8e64f;
+--lime-600: #afd33d;
+--lime-soft: rgba(200, 230, 79, 0.12);
+
+--olive-400: #aebc8b;
+--olive-500: #87956f;
+--olive-soft: rgba(174, 188, 139, 0.12);
 ```
 
 ### Semantic Accent Tokens
 
-Use these sparingly. They are semantic, not decorative.
+Semantic colours remain distinct from the brand lime. Use them only for
+status, alerts, and data meaning.
 
 ```css
---success: #16803c;
---success-soft: #eaf7ef;
---warning: #b45309;
---warning-soft: #fff7e6;
---danger: #b42318;
---danger-soft: #feecec;
---info: #2563eb;
---info-soft: #eaf1ff;
---ink-soft: #374151;
---paper: #f4f0e8;
---paper-edge: #ded8cc;
+--success: #82cf8a;
+--success-soft: rgba(130, 207, 138, 0.13);
+--warning: #e7c46f;
+--warning-soft: rgba(231, 196, 111, 0.13);
+--danger: #e78178;
+--danger-soft: rgba(231, 129, 120, 0.13);
+--info: #8eb8d8;
+--info-soft: rgba(142, 184, 216, 0.13);
+--ink-soft: #d1ccbf;
+--paper: #f7f3e8;
+--paper-edge: #dcd6c8;
 ```
 
 ### Status-Specific Accents
 
-Status pills must pair color with text and an icon. Color alone is never
-the signal.
+Status pills must pair colour with text and an icon. Colour alone is
+never the signal.
 
-| Status           | Foreground | Background | Border    |
-| ---------------- | ---------- | ---------- | --------- |
-| `approved`       | `#16803C`  | `#EAF7EF`  | `#BFE8CC` |
-| `rejected`       | `#B42318`  | `#FEECEC`  | `#F9C7C3` |
-| `manual_review`  | `#B45309`  | `#FFF7E6`  | `#F7D48B` |
-| `processing`     | `#2563EB`  | `#EAF1FF`  | `#BFD3FF` |
-| `awaiting_credits` | `#2563EB` | `#EAF1FF` | `#BFD3FF` |
-| `pending_upload` | `#4B5563`  | `#F4F3EF`  | `#DAD7D0` |
+| Status             | Foreground | Background              | Border                  |
+| ------------------ | ---------- | ----------------------- | ----------------------- |
+| `approved`         | `#9DDEA2`  | `rgba(130,207,138,.13)` | `rgba(130,207,138,.30)` |
+| `rejected`         | `#F09A92`  | `rgba(231,129,120,.13)` | `rgba(231,129,120,.30)` |
+| `manual_review`    | `#EED48F`  | `rgba(231,196,111,.13)` | `rgba(231,196,111,.30)` |
+| `processing`       | `#A8CBE4`  | `rgba(142,184,216,.13)` | `rgba(142,184,216,.30)` |
+| `awaiting_credits` | `#A8CBE4`  | `rgba(142,184,216,.13)` | `rgba(142,184,216,.30)` |
+| `pending_upload`   | `#C9D0C1`  | `rgba(174,188,139,.10)` | `rgba(174,188,139,.24)` |
 
-Do not introduce new color tokens without updating this file. Any new
+Do not introduce new colour tokens without updating this file. Any new
 accent used across more than one component must be documented here and
 recorded in `DECISIONS.md`.
 
 ## Typography
 
-HaloKYC uses a layered type stack built around **Control** — the brand
-personality that governs how the system is read, operated, and audited:
+HaloKYC uses a restrained sans-serif type system. The reference style
+gets its personality from scale, spacing, and weight rather than from a
+decorative display face.
 
-- **Display / editorial headlines**: `Fraunces` — A contemporary variable
-  serif with optical-size intelligence and a subtle wonk axis. Gives
-  landing and dashboard headlines the editorial weight of a
-  broadsheet without feeling historical. Reads as a brand that makes
-  decisions and owns the outcome.
-- **Body / UI / dashboard**: `Inter` — Neutral, authoritative,
-  legible at every size. Disappears into the interface so the display
-  face carries the emotional weight.
-- **Mono**: `JetBrains Mono` — Ligature-aware, tabular figures.
-  Purpose-built for evidence data, IDs, hashes, and API snippets.
-
-### Why Fraunces Replaces Space Grotesk
-
-The previous display face was a geometric sans that read as a modern
-dev tool. Control requires editorial authority — something that borrows
-from the tradition of law, banking, and institutional publishing rather
-than consumer SaaS. Fraunces delivers that because:
-
-1. **Variable optical size.** Fraunces adjusts weight and contrast
-   automatically across sizes. A 5rem headline renders with firmer
-   contrast than the same font at 0.875rem. The font contracts or
-   expands its personality with the layout. That is control.
-
-2. **The wonk axis.** A subtle variable axis that adds controlled
-   irregularity to letterforms. In a brand about precision, the wonk
-   axis reads as intentional — a deliberate choice to feel human
-   within structure. Used at display sizes only.
-
-3. **Weight range 300–900 + italics with independent color.**
-   Build a five-level hierarchy from whisper-quote weight to full
-   institutional headline. The italics have a different width and color
-   from the roman — they read as an editorial device with intent, not a
-   slanted version of the same word.
-
-4. **It is on Google Fonts as a variable font.** One request, infinite
-   weights, no layout shifts, no self-hosting infrastructure.
-
-### Alternate Display Faces (if Fraunces is rejected)
-
-| Font | Trade-off |
-|------|-----------|
-| Instrument Serif | Softer, more contemporary. Less institutional authority, more design-forward. |
-| Newsreader | More newspaper-tract. Exceptional at body sizes; slightly more literary than institutional. |
-| Recoleta | Warm and distinctive. Slightly nostalgic. Works if Control reads as "reassuring authority" rather than "imposing authority." |
-
-Keep `Space Grotesk` out of the project after the swap — loading three
-display families simultaneously negates the performance benefit of a
-single variable font.
+- **Display / marketing / page titles:** `Manrope` — modern, geometric,
+  warm, and highly legible at large sizes.
+- **Body / UI / dashboard:** `Inter` — neutral and efficient for dense
+  product interfaces.
+- **Mono:** `JetBrains Mono` — reserved for evidence data, identifiers,
+  hashes, timestamps, API snippets, and tabular numerals.
 
 ### Font Loading
 
 Use `next/font/google` unless the project later decides to self-host
-fonts for stricter privacy/performance control.
+fonts for stricter privacy or performance control.
 
 ```ts
-import { Fraunces, Inter, JetBrains_Mono } from "next/font/google";
+import { Inter, JetBrains_Mono, Manrope } from "next/font/google";
 
-export const display = Fraunces({
+export const display = Manrope({
   variable: "--font-display",
   subsets: ["latin"],
-  weight: ["300", "500", "700", "900"],
-  style: ["normal", "italic"],
+  weight: ["400", "500", "600", "700", "800"],
 });
 
 export const sans = Inter({
@@ -265,79 +266,75 @@ export const mono = JetBrains_Mono({
 The root `layout.tsx` applies the three CSS variables to `<html>`:
 
 ```html
-<html className={`${sans.variable} ${display.variable} ${mono.variable}`}>
+<html
+  className="{`${sans.variable}"
+  ${display.variable}
+  ${mono.variable}`}
+></html>
 ```
 
-`globals.css` exposes both `--font-display` and `--font-serif` (legacy
-alias) so any existing `font-serif` Tailwind classes keep working
-without a mass rewrite.
+`globals.css` exposes `--font-display`, `--font-sans`, and `--font-mono`
+through `@theme inline`.
 
 ### Usage Rules
 
-- `Fraunces` is the display family. It appears on landing-page hero
-  and section headlines, audit-log detail page titles,
-  data-retention / terms / privacy headings, dashboard page titles,
-  and any brand-led surface that needs an authoritative editorial voice.
-- Do not use `Fraunces` for body text, form labels, buttons, tables,
-  status pills, card bodies, navigation, sidebar, or any element below
-  `text-display-sm` (1.5rem / 24px).
-- `Inter` is the default for the application shell, dashboard, forms,
-  cards, navigation, sidebar, topbar, body copy, and all non-display
+- `Manrope` is used for landing-page headlines, section titles,
+  dashboard page titles, modal titles, large metrics, and prominent card
   headings.
+- Display headlines rely on size, line height, and controlled weight.
+  Do not use italics as a brand device.
+- `Inter` is the default for navigation, buttons, forms, table content,
+  helper text, long body copy, and dense dashboard surfaces.
 - `JetBrains Mono` is reserved for IDs, hashes, JSON, API snippets,
   timestamps, document numbers, risk scores, and numeric developer
-  surfaces. The tabular glyphs make audit rows align cleanly.
+  surfaces.
 - Never use more than these three families without updating this file.
 
 ### Type Scale
 
-Two tiers: **Display** (Fraunces) and **UI** (Inter / Mono).
+#### Display — Manrope
 
-#### Display — Fraunces
+| Token             | Size                         | Weight | Line height | Usage                          |
+| ----------------- | ---------------------------- | ------ | ----------- | ------------------------------ |
+| `text-display-xl` | `clamp(3.5rem, 7vw, 6.5rem)` | 600    | 0.98        | Landing hero                   |
+| `text-display-lg` | `clamp(2.5rem, 5vw, 4.5rem)` | 600    | 1.02        | Landing sections and final CTA |
+| `text-display-md` | `clamp(2rem, 3vw, 3rem)`     | 600    | 1.08        | Dashboard page titles          |
+| `text-display-sm` | `1.5rem`                     | 600    | 1.2         | Card and modal titles          |
 
-| Token name | Size | Weight | Line | Where |
-|------------|------|--------|------|-------|
-| `text-display-xl` | `clamp(3.5rem, 8vw, 7rem)` | 500 | 0.95 | Landing hero headline |
-| `text-display-lg` | `clamp(2.5rem, 5vw, 4.5rem)` | 500 | 0.95 | Landing section headlines, final CTA |
-| `text-display-md` | `2.25rem` | 500 | 1.1 | Dashboard page titles |
-| `text-display-sm` | `1.5rem` | 500 | 1.2 | Card titles, modal headers, legal H1 |
-
-Floor: Fraunces is not used below `text-display-sm`. All display sizes
-use `tracking-[-0.03em]` as a base; tighten to `[-0.04em]` only at
-`display-xl`.
+Display sizes use `tracking-[-0.035em]` at XL/LG and
+`tracking-[-0.02em]` at MD/SM.
 
 #### UI — Inter
 
-| Role | Class | Weight | Line | Where |
-|------|-------|--------|------|-------|
-| Body large | `text-base leading-7` | 400 | 1.7 | Landing body, long-form |
-| Body | `text-sm leading-6` | 400 | 1.6 | Dashboard body, forms, cards |
-| Caption | `text-xs leading-5 text-muted-foreground` | 400 | 1.5 | Metadata, timestamps, helper text |
+| Role       | Class                 | Weight | Line height | Usage                           |
+| ---------- | --------------------- | ------ | ----------- | ------------------------------- |
+| Body large | `text-base leading-7` | 400    | 1.7         | Landing body and long-form copy |
+| Body       | `text-sm leading-6`   | 400    | 1.6         | Dashboard, forms, and cards     |
+| Label      | `text-sm`             | 500    | 1.4         | Form labels and controls        |
+| Caption    | `text-xs leading-5`   | 400    | 1.5         | Metadata and helper text        |
 
 #### Mono — JetBrains Mono
 
-| Role | Class | Weight | Line | Where |
-|------|-------|--------|------|-------|
-| Mono-md | `text-sm` | 500 | 1.5 | Stats, route labels, metadata |
-| Mono-sm | `text-xs` | 500 | 1.4 | Inline data, audit log entries |
+| Role    | Class     | Weight | Line height | Usage                          |
+| ------- | --------- | ------ | ----------- | ------------------------------ |
+| Mono-md | `text-sm` | 500    | 1.5         | Stats, routes, and metadata    |
+| Mono-sm | `text-xs` | 500    | 1.4         | Inline evidence and audit rows |
 
-No font-size below `text-xs`. Every numeric value — risk score,
-timestamp, verification count — uses `tabular-nums`.
+No font size below `text-xs`. Every numeric value — risk score,
+timestamp, verification count, and amount — uses `tabular-nums`.
 
 ### Copy Rhythm
 
-- Landing headlines should be short, sharp, and confident. Lead with a
-  verb; finish with a noun.
-- Dashboard text should be literal and operational.
-- Avoid hype words like "revolutionary", "magical", "unlimited", or
-  "bank-grade" unless legally and technically true.
-- Prefer verbs like verify, approve, review, reject, detect, sign,
-  queue, resolve, attribute, and disclose.
-- The landing hero copy may be blunt about identity fraud: the brand
-  is not afraid to say "your current vendor does not care about
-  duplicate detection" or call out a violation class by name.
-- The dashboard never editorialises. Error messages explain what
-  happened, why, and what to do next.
+- Landing headlines are short, calm, and confident.
+- Prefer plain verbs: verify, review, approve, reject, detect, protect,
+  resolve, and disclose.
+- Use sentence case everywhere except compact eyebrow labels.
+- Eyebrow labels may use uppercase with `tracking-[0.16em]` at `text-xs`.
+- Dashboard text is literal and operational.
+- Avoid hype words such as “revolutionary”, “magical”, “unlimited”, or
+  “bank-grade” unless legally and technically true.
+- Error messages explain what happened, why it happened, and what the
+  operator should do next.
 
 ## Layout Primitives
 
@@ -397,31 +394,54 @@ Cards use `p-6` internally. Large marketing cards may use `p-8` or
 
 ## Radius
 
-`--radius: 0.75rem` (12px). Buttons and inputs inherit `rounded-lg`.
-Cards use `rounded-2xl` for marketing surfaces and `rounded-xl` for
-product dashboards. Avatars and status dots use `rounded-full`.
+The system uses soft, confident geometry inspired by the reference.
+Corners should feel premium and human without becoming bubbly.
 
-Do not use extremely large blob radii on serious product surfaces.
+```css
+--radius-sm: 0.75rem; /* 12px */
+--radius-md: 1rem; /* 16px */
+--radius-lg: 1.25rem; /* 20px */
+--radius-xl: 1.75rem; /* 28px */
+--radius-full: 999px;
+```
+
+Usage:
+
+- Buttons and compact controls: `rounded-full` or `rounded-xl`
+- Inputs and selects: `rounded-xl`
+- Dashboard cards: `rounded-2xl`
+- Marketing cards and image frames: `rounded-[1.25rem]`
+- Feature panels and final CTA surfaces: up to `rounded-[1.75rem]`
+- Avatars, status dots, and icon chips: `rounded-full`
+
+Avoid exaggerated blob radii, asymmetrical blobs, and unrelated organic
+shapes on operational product surfaces.
 
 ## Borders and Shadows
 
-HaloKYC uses borders and layered surfaces more than heavy shadows.
+HaloKYC uses tonal surfaces and translucent borders more than shadows.
+Cards should feel layered through colour before elevation.
 
-- Sticky headers: `border-b border-border/70 bg-background/80 backdrop-blur-xl`
-- Product cards: 1px border, no default shadow
-- Marketing cards: soft border + optional subtle shadow
-- Hover lift: allowed only on landing-page cards and upload/capture zones
-- Dashboard cards: no dramatic hover motion
+- Sticky headers: `border-b border-white/10 bg-background/85 backdrop-blur-xl`
+- Product cards: 1px translucent cream border, no default shadow
+- Marketing cards: tonal border with an optional soft ambient shadow
+- Image cards: no border when the image reaches the edge
+- Hover lift: allowed only on landing cards, upload zones, and primary
+  selection cards
+- Dashboard cards: no dramatic elevation or spring movement
 
-Recommended marketing card shadow:
+Recommended shadows:
 
 ```css
-box-shadow:
-  0 1px 2px rgba(15, 23, 42, 0.04),
-  0 24px 80px rgba(15, 23, 42, 0.08);
+--shadow-card:
+  0 1px 2px rgba(8, 20, 13, 0.12), 0 16px 48px rgba(8, 20, 13, 0.16);
+
+--shadow-hover:
+  0 2px 4px rgba(8, 20, 13, 0.16), 0 24px 64px rgba(8, 20, 13, 0.22);
 ```
 
-Do not use neon glow shadows in the core app.
+Do not use neon glow shadows. Lime glows are limited to tiny focus or
+status accents and must never surround large cards.
 
 ## Motion
 
@@ -512,12 +532,12 @@ No emoji in the UI - ever.
 HaloKYC logo artwork lives in `public/assets/logo/` and is consumed
 through `src/components/brand-logo.tsx`.
 
-- `halokyc-hr-dark.png` - horizontal wordmark for light surfaces.
-- `halokyc-hr-light.png` - horizontal wordmark for dark landing and
+- `halokyc-hr-dark.svg` - horizontal wordmark for light surfaces.
+- `halokyc-hr-light.svg` - horizontal wordmark for dark landing and
   auth surfaces.
-- `halokyc-icon.png` - square app icon for browser metadata and
+- `halokyc-icon.svg` - square app icon for browser metadata and
   light-background icon use.
-- `halokyc-color-icon.png` - square blue icon for compact dark app
+- `halokyc-color-icon.svg` - square lime-accented icon for compact dark app
   chrome such as the collapsed sidebar.
 
 Use `BrandLogo` for nav, footer, login, legal headers, and app-shell
@@ -596,17 +616,17 @@ Shared feature components in `src/components/`:
 Landing-only components live under `src/components/landing/`:
 
 - `landing-navbar` - scroll-aware sticky with shield/halo mark
-- `hero-section` - serif headline, floating VerificationReceipt, halo
+- `hero-section` - large sans-serif headline, floating VerificationReceipt, halo
 - `trusted-pipeline` - 6 check cells animating on scroll
-- `problem-section` - warm-paper editorial block
-- `feature-grid` - 8 verification primitives on dark canvas
+- `problem-section` - forest-surface editorial block
+- `feature-grid` - 8 verification primitives on deep forest canvas
 - `api-section` - code + signed-webhook payload
 - `workflow-section` - 6-step vertical timeline
 - `use-cases-section` - 6 product-shape cards
 - `client-control-section` - mock client policy/review controls with audit labels
 - `pricing-section` - 3 plans, no hardcoded prices
 - `security-section` - 8-point checklist
-- `final-cta` - cyan halo with two CTAs
+- `final-cta` - soft lime halo with two CTAs
 - `landing-footer` - 4-column marketing navigation
 - `reveal` - viewport-triggered fade-up wrapper (motion/react)
 - `gradient-orb` - soft radial glow for hero / CTA
@@ -635,109 +655,111 @@ readers. The MVP sets this as a quality bar, not a stretch goal:
   and an icon
 - All images carry meaningful `alt` text or `alt=""` for decorative
 - Landing-page Framer Motion must respect reduced-motion preferences
-- Text contrast must remain readable on warm paper and tinted surfaces
+- Text contrast must remain readable on deep forest and warm cream and tinted surfaces
 
 ## Landing Page Tokens (additive, scoped)
 
-`src/app/page.tsx` ships a brand-led landing-page language: editorial
-headlines, warm paper surfaces, restrained blue accents, and precise
-verification UI mockups. Landing tokens are separately namespaced so
-they never bleed into the dashboard.
+`src/app/page.tsx` uses the most expressive version of the brand:
+forest-green sections, warm cream text, lime actions, natural
+photography, spacious layouts, and rounded image-led cards. Landing
+tokens are separately namespaced so they never unintentionally change
+dashboard primitives.
 
 ```css
---landing-bg: #fafaf8; /* warm editorial canvas */
---landing-ink: #111111; /* hero/headline text */
---landing-ink-soft: #52525b; /* secondary copy */
---landing-paper: #ffffff; /* elevated cards */
---landing-paper-warm: #f4f0e8; /* trust receipt surfaces */
---landing-rule: #e7e5e4; /* dividers and hairlines */
---landing-blue: #2563eb; /* primary accent */
---landing-blue-soft: #eaf1ff; /* soft accent surface */
---landing-green: #16803c; /* pass / approved */
---landing-green-soft: #eaf7ef;
---landing-amber: #b45309; /* review / warning */
---landing-amber-soft: #fff7e6;
+--landing-bg: #173426;
+--landing-bg-deep: #10271c;
+--landing-surface: #234333;
+--landing-surface-raised: #294b39;
+--landing-surface-soft: #2d503d;
+--landing-ink: #f7f3e8;
+--landing-ink-soft: #d1ccbf;
+--landing-muted: #aeb8a6;
+--landing-rule: rgba(247, 243, 232, 0.1);
+--landing-lime: #c8e64f;
+--landing-lime-hover: #d6f15a;
+--landing-lime-soft: rgba(200, 230, 79, 0.12);
+--landing-olive: #aebc8b;
+--landing-cream: #fbf8ef;
 ```
 
 Landing-page visual motifs:
 
-- Verification receipt
-- Verification case file / dossier
-- Policy manifest
-- Audit trail slip
-- Risk score meter
-- Signed webhook card
-- ID/selfie check rows
-- Subtle paper fold or rule lines
+- Large human photography mosaics
+- Rounded editorial image cards
+- Section counters such as `01 / Platform`
+- Floating evidence receipt or verification card
+- Calm statistics with thin rules
+- Human stories paired with product proof
+- Compact lime action pills
+- Testimonial panels with portrait photography
+- Dark-on-cream contrast cards used sparingly
 
-The landing page may use a "case file" composition: a dark technical
-canvas with structured dossier panels that show the relationship
-between workflow policy, captured evidence, check results, risk score,
-audit trail, and signed webhook. This motif is specific to HaloKYC's
-auditability promise and should replace generic SaaS dashboard mockups
-when a product visual is needed.
-
-The landing page should not use dark cyber-security visuals by default.
-Dark sections are allowed only as short contrast breaks, never as the
-entire identity.
+A landing section should normally have one visual idea. Prefer one
+large composition over a grid of decorative widgets. Product visuals
+must remain truthful representations of HaloKYC workflows.
 
 ### Landing Chrome (additive, scoped)
 
-The landing page uses an additional set of tokens for its dark canvas
-sections. These are additive and do not affect the dashboard or the
-warm-paper system above.
+The landing page remains predominantly dark green. Contrast sections
+may use warm cream, but black, slate, and blue cyber-security canvases
+are not part of the visual identity.
 
 ```css
---landing-canvas: oklch(0.16 0.018 250); /* hero / dark section bg */
---landing-canvas-edge: oklch(0.22 0.02 250); /* elevated card on canvas */
---landing-canvas-soft: oklch(0.32 0.02 250); /* hover / pressed */
---landing-canvas-ink: oklch(0.96 0.01 250); /* primary text on canvas */
---landing-canvas-ink-soft: oklch(0.74 0.015 250);
---landing-canvas-mute: oklch(0.56 0.02 250);
---landing-hair: oklch(0.28 0.015 250); /* hairlines, borders */
---landing-cyan: oklch(0.82 0.13 200); /* halo accent */
---landing-cyan-soft: oklch(0.32 0.07 200);
---landing-cyan-edge: oklch(0.45 0.09 200);
---landing-amber-stamp: oklch(0.78 0.15 80); /* manual review signal */
---landing-mint: oklch(0.78 0.16 155);
+--landing-canvas: #173426;
+--landing-canvas-deep: #10271c;
+--landing-canvas-edge: #234333;
+--landing-canvas-soft: #2d503d;
+--landing-canvas-ink: #f7f3e8;
+--landing-canvas-ink-soft: #d1ccbf;
+--landing-canvas-mute: #aeb8a6;
+--landing-hair: rgba(247, 243, 232, 0.1);
+--landing-action: #c8e64f;
+--landing-action-hover: #d6f15a;
+--landing-action-edge: #afd33d;
+--landing-warning: #e7c46f;
+--landing-success: #82cf8a;
 ```
 
-Use the warm-paper tokens (`--landing-ink`, `--landing-paper`, etc.)
-for editorial / human sections (problem, use cases, security) and
-the landing-canvas tokens for technical / product surfaces (hero,
-feature grid, API, workflow, client control, pricing, final CTA).
-The two systems alternate by intent, not by symmetry.
+Use deep forest tokens for hero, feature, API, workflow, pricing, and
+final CTA sections. Use warm cream contrast panels for customer stories,
+legal explanations, long-form content, or image-led human sections.
+The alternation follows content intent, not a fixed dark/light pattern.
 
 ## Dashboard Chrome Tokens (additive, scoped)
 
-Authenticated app routes use a quieter continuation of the landing
-page's case-file motif: warm paper canvas, dark ink navigation, thin
-record-grid rules, and small evidence-strip accents. These tokens are
-defined in `src/app/globals.css` and are reserved for `/dashboard`,
-`/admin`, and `/console` shell surfaces.
+Authenticated routes use a quieter continuation of the landing system:
+a deep forest navigation shell, tonal green surfaces, warm cream text,
+subtle borders, and high-contrast semantic status colours. Dense tables
+may use a slightly lighter forest surface to improve scanning.
 
 ```css
---dashboard-rule: oklch(0.86 0.008 80);
---dashboard-canvas: oklch(0.97 0.006 90);
---dashboard-paper: oklch(0.99 0.006 92);
---dashboard-ink: oklch(0.18 0.025 255);
---dashboard-blue: oklch(0.58 0.17 242);
---dashboard-cyan: oklch(0.79 0.13 199);
---dashboard-mint: oklch(0.79 0.14 155);
---dashboard-amber: oklch(0.77 0.15 78);
+--dashboard-rule: rgba(247, 243, 232, 0.1);
+--dashboard-canvas: #173426;
+--dashboard-canvas-deep: #10271c;
+--dashboard-paper: #234333;
+--dashboard-paper-raised: #294b39;
+--dashboard-ink: #f7f3e8;
+--dashboard-ink-soft: #d1ccbf;
+--dashboard-muted: #aeb8a6;
+--dashboard-action: #c8e64f;
+--dashboard-success: #82cf8a;
+--dashboard-warning: #e7c46f;
+--dashboard-danger: #e78178;
+--dashboard-info: #8eb8d8;
 ```
 
 Dashboard chrome rules:
 
-- The sidebar is an ink surface so authenticated areas feel distinct
-  from public marketing pages.
-- Main content sits on a warm ruled canvas, not pure white.
-- Use the evidence strip only as a small brand signal: logo mark,
-  header rule, or status rail. Do not turn it into a large gradient
-  background.
-- Product cards may use `app-shell-panel` for layered paper surfaces.
-  Repeated list items should still rely on borders and spacing, not
-  heavy shadows.
+- The sidebar uses the deepest forest surface.
+- Main content uses `--dashboard-canvas`; cards use
+  `--dashboard-paper` or `--dashboard-paper-raised`.
+- Primary actions use lime. Do not use lime for ordinary decorative
+  borders, large backgrounds, or every selected state.
+- Repeated list items rely on borders, spacing, and tonal contrast.
+- Table headers may use `rgba(247,243,232,.04)` to separate columns.
+- Dense evidence JSON and code surfaces may use `--dashboard-canvas-deep`.
+- Human photography belongs primarily to marketing, onboarding, empty
+  states, and support content — not routine audit tables.
 
 ### Landing Motion (additive)
 
@@ -751,17 +773,15 @@ allowed motion source for landing-only components. Use the
 
 ### Landing Font (additive)
 
-`Fraunces` is loaded via `next/font/google` in the root layout and
-exposed as `--font-display` in `@theme inline` (with the legacy
-`--font-serif` alias retained so existing `font-serif` Tailwind classes
-keep mapping to the same face). The landing page applies `font-display`
-for hero and section headlines. The dashboard uses `font-display` for
-page titles and card titles; dashboard body copy stays on Inter.
+`Manrope` is loaded through `next/font/google` and exposed as
+`--font-display`. Landing hero and section headlines use `font-display`
+with medium or semibold weights, tight tracking, and compact line
+heights. Dashboard page and card titles also use `font-display`, while
+body copy, controls, and data tables stay on Inter.
 
-The display face is an editorial serif — variable optical size, wonk
-axis, weight range 300–900 — chosen to express the Control half of the
-brand personality. It reads as a brand that makes decisions and owns
-the outcome.
+The personality comes from scale and rhythm rather than from decorative
+letterforms. Do not add a serif font, script font, or italic brand style
+without a documented design decision.
 
 ## Future Decisions
 
@@ -876,20 +896,20 @@ filter exists to reduce noise.
 
 Customer audience:
 
-| Role          | Visible groups                                                                                                         |
-| ------------- | ---------------------------------------------------------------------------------------------------------------------- |
-| Owner / Admin | Workspace (all), Organization (Workspaces, Team, Billing), Account (Settings), Developer (API console, Integration logs, Docs) |
+| Role          | Visible groups                                                                                                                             |
+| ------------- | ------------------------------------------------------------------------------------------------------------------------------------------ |
+| Owner / Admin | Workspace (all), Organization (Workspaces, Team, Billing), Account (Settings), Developer (API console, Integration logs, Docs)             |
 | Reviewer      | Workspace (Overview, Verifications, Manual review, Assigned reviews, Completed reviews), Account (Settings), Developer (API console, Docs) |
-| Developer     | Workspace (Overview, Verifications, Workflows, API keys, Webhooks), Account (Settings), Developer (API console, Integration logs, Docs) |
+| Developer     | Workspace (Overview, Verifications, Workflows, API keys, Webhooks), Account (Settings), Developer (API console, Integration logs, Docs)    |
 
 Platform audience:
 
-| Role             | Visible Operator entries                                                                                    |
-| ---------------- | ----------------------------------------------------------------------------------------------------------- |
-| Platform Owner   | All Operator entries + legacy Admin group (Clients, Ledger, Review queue)                                   |
-| Business Admin   | Overview, Organizations, Workspaces, Verifications, Billing & credits, Support, Audit logs                   |
-| Support          | Overview, Organizations, Workspaces, Verifications, Support (read-only)                                     |
-| Sales            | Overview, Sales (Customers, Plans, Usage Summary, Sales Notes)                                              |
+| Role           | Visible Operator entries                                                                   |
+| -------------- | ------------------------------------------------------------------------------------------ |
+| Platform Owner | All Operator entries + legacy Admin group (Clients, Ledger, Review queue)                  |
+| Business Admin | Overview, Organizations, Workspaces, Verifications, Billing & credits, Support, Audit logs |
+| Support        | Overview, Organizations, Workspaces, Verifications, Support (read-only)                    |
+| Sales          | Overview, Sales (Customers, Plans, Usage Summary, Sales Notes)                             |
 
 Hidden surfaces must still render an explicit `<RouteAccessDenied>` or
 `<PlatformAccessDenied>` state when accessed directly. Do not rely on
@@ -923,11 +943,11 @@ every addition is consistent with the brand language.
 ### Components
 
 - `VerifyShell` (in `src/app/verify/_components/verify-shell.tsx`) renders
-  the warm-paper canvas, the dotted backdrop, the brand mark, the card
+  the forest-surface canvas, the dotted backdrop, the brand mark, the card
   surface, and the `Secured by HaloKYC` footer.
 - `VerifyProgress` (in the same folder) renders a top progress bar bound
   to the verify state machine. Track uses `--muted`, indicator uses
-  `--accent` (the same blue used by the landing CTA).
+  `--accent` (the same lime used by the landing CTA).
 - `VerifyStepIntro`, `VerifySelfieStep`, `VerifyDocumentStep`,
   `VerifyStepProcessing`, `VerifyResultStep`, and `VerifyErrorStep` are
   the six step surfaces. Each is wrapped in `VerifyShell` and uses

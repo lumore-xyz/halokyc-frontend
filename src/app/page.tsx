@@ -60,9 +60,9 @@ export default async function Home() {
       ? "/admin"
       : undefined;
 
-return (
-  <div className="min-h-screen bg-(--landing-paper) text-(--landing-ink) overflow-x-hidden">
-    <LandingNavbar dashboardHref={dashboardHref} />
+  return (
+    <div className="min-h-screen overflow-x-hidden bg-(--landing-canvas) text-(--landing-canvas-ink) selection:bg-(--landing-cyan) selection:text-(--landing-canvas)">
+      <LandingNavbar dashboardHref={dashboardHref} />
 
       <main>
         <Hero />

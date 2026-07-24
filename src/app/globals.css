@@ -11,7 +11,7 @@
   --font-mono: var(--font-mono);
   --font-serif: var(--font-display);
   --font-display: var(--font-display);
-  --font-heading: var(--font-sans);
+  --font-heading: var(--font-display);
   --color-sidebar-ring: var(--sidebar-ring);
   --color-sidebar-border: var(--sidebar-border);
   --color-sidebar-accent-foreground: var(--sidebar-accent-foreground);
@@ -41,144 +41,124 @@
   --color-popover: var(--popover);
   --color-card-foreground: var(--card-foreground);
   --color-card: var(--card);
-  --radius-sm: calc(var(--radius) * 0.6);
-  --radius-md: calc(var(--radius) * 0.8);
-  --radius-lg: var(--radius);
-  --radius-xl: calc(var(--radius) * 1.4);
-  --radius-2xl: calc(var(--radius) * 1.8);
-  --radius-3xl: calc(var(--radius) * 2.2);
-  --radius-4xl: calc(var(--radius) * 2.6);
+  --radius-sm: 0.75rem;
+  --radius-md: 1rem;
+  --radius-lg: 1.25rem;
+  --radius-xl: 1.75rem;
+  --radius-2xl: 2rem;
+  --radius-3xl: 2.25rem;
+  --radius-4xl: 2.5rem;
 }
 
 :root {
-  --background: oklch(0.985 0.006 95);
-  --foreground: oklch(0.16 0.025 255);
-  --card: oklch(1 0 0);
-  --card-foreground: oklch(0.16 0.025 255);
-  --popover: oklch(1 0 0);
-  --popover-foreground: oklch(0.16 0.025 255);
-  --primary: oklch(0.22 0.035 258);
-  --primary-foreground: oklch(0.985 0.006 95);
-  --secondary: oklch(0.958 0.011 88);
-  --secondary-foreground: oklch(0.24 0.03 258);
-  --muted: oklch(0.955 0.009 88);
-  --muted-foreground: oklch(0.47 0.018 260);
-  --accent: oklch(0.55 0.18 252);
-  --accent-foreground: oklch(1 0 0);
-  --destructive: oklch(0.49 0.18 28);
-  --border: oklch(0.89 0.01 82);
-  --input: oklch(0.84 0.012 82);
-  --ring: oklch(0.55 0.18 252);
-  --chart-1: oklch(0.62 0.16 252);
-  --chart-2: oklch(0.58 0.13 155);
-  --chart-3: oklch(0.68 0.14 82);
-  --chart-4: oklch(0.53 0.17 28);
-  --chart-5: oklch(0.45 0.05 258);
-  --radius: 0.625rem;
-  --sidebar: oklch(0.18 0.025 255);
-  --sidebar-foreground: oklch(0.92 0.012 90);
-  --sidebar-primary: oklch(0.79 0.13 199);
-  --sidebar-primary-foreground: oklch(0.16 0.025 255);
-  --sidebar-accent: oklch(0.25 0.03 255);
-  --sidebar-accent-foreground: oklch(0.97 0.01 95);
-  --sidebar-border: oklch(0.32 0.028 255);
-  --sidebar-ring: oklch(0.79 0.13 199);
-  --status-pending-bg: oklch(0.96 0.02 250);
-  --status-pending-fg: oklch(0.55 0.02 250);
-  --status-processing-bg: oklch(0.96 0.04 250);
-  --status-processing-fg: oklch(0.55 0.14 250);
-  --status-approved-bg: oklch(0.96 0.04 150);
-  --status-approved-fg: oklch(0.55 0.15 150);
-  --status-rejected-bg: oklch(0.96 0.04 27);
-  --status-rejected-fg: oklch(0.55 0.20 27);
-  --status-review-bg: oklch(0.96 0.05 80);
-  --status-review-fg: oklch(0.55 0.14 80);
-  --success: oklch(0.48 0.14 150);
-  --success-soft: oklch(0.95 0.04 150);
-  --warning: oklch(0.56 0.13 75);
-  --warning-soft: oklch(0.96 0.05 82);
-  --danger: oklch(0.49 0.18 28);
-  --danger-soft: oklch(0.96 0.04 28);
-  --info: oklch(0.55 0.18 252);
-  --info-soft: oklch(0.95 0.035 252);
+  --background: #173426;
+  --foreground: #f7f3e8;
+  --card: #234333;
+  --card-foreground: #f7f3e8;
+  --popover: #294b39;
+  --popover-foreground: #f7f3e8;
+  --primary: #c8e64f;
+  --primary-foreground: #172318;
+  --secondary: #2d503d;
+  --secondary-foreground: #f4f0e5;
+  --muted: #294736;
+  --muted-foreground: #aeb8a6;
+  --accent: #c8e64f;
+  --accent-foreground: #172318;
+  --destructive: #e78178;
+  --destructive-foreground: #25110f;
+  --border: rgb(247 243 232 / 10%);
+  --input: rgb(247 243 232 / 14%);
+  --ring: #d6f15a;
+  --chart-1: #c8e64f;
+  --chart-2: #82cf8a;
+  --chart-3: #e7c46f;
+  --chart-4: #8eb8d8;
+  --chart-5: #aebc8b;
+  --radius: 1rem;
+  --sidebar: #10271c;
+  --sidebar-foreground: #f7f3e8;
+  --sidebar-primary: #c8e64f;
+  --sidebar-primary-foreground: #172318;
+  --sidebar-accent: #234333;
+  --sidebar-accent-foreground: #f7f3e8;
+  --sidebar-border: rgb(247 243 232 / 10%);
+  --sidebar-ring: #d6f15a;
+  --status-pending-bg: rgb(174 188 139 / 10%);
+  --status-pending-fg: #c9d0c1;
+  --status-processing-bg: rgb(142 184 216 / 13%);
+  --status-processing-fg: #a8cbe4;
+  --status-approved-bg: rgb(130 207 138 / 13%);
+  --status-approved-fg: #9ddea2;
+  --status-rejected-bg: rgb(231 129 120 / 13%);
+  --status-rejected-fg: #f09a92;
+  --status-review-bg: rgb(231 196 111 / 13%);
+  --status-review-fg: #eed48f;
+  --success: #82cf8a;
+  --success-soft: rgb(130 207 138 / 13%);
+  --warning: #e7c46f;
+  --warning-soft: rgb(231 196 111 / 13%);
+  --danger: #e78178;
+  --danger-soft: rgb(231 129 120 / 13%);
+  --info: #8eb8d8;
+  --info-soft: rgb(142 184 216 / 13%);
+  --ink-soft: #d1ccbf;
+  --paper: #f7f3e8;
+  --paper-edge: #dcd6c8;
 
-  /* Landing editorial paper palette (used only by src/app/page.tsx).
-     A near-white dossier stock for paper sections and slightly cooler
-     edges, with deep ink on top. The verdict stamp is a warm emerald;
-     the signal amber is reserved for "needs decision". Do not import
-     into dashboard routes. */
-  --landing-paper: oklch(0.97 0.012 90);
-  --landing-paper-edge: oklch(0.85 0.025 85);
-  --landing-paper-soft: oklch(0.93 0.018 88);
-  --landing-ink: oklch(0.18 0.028 260);
-  --landing-ink-soft: oklch(0.42 0.02 260);
-  --landing-rule: oklch(0.84 0.014 82);
-  --landing-stamp: oklch(0.5 0.14 155);
-  --landing-signal: oklch(0.72 0.14 78);
+  /* Landing tonal surfaces. The names are retained for compatibility
+     with existing sections, but all surfaces now belong to the same
+     monochromatic forest family used by the brand reference. */
+  --landing-paper: #234333;
+  --landing-paper-edge: rgb(247 243 232 / 10%);
+  --landing-paper-soft: #294b39;
+  --landing-ink: #f7f3e8;
+  --landing-ink-soft: #d1ccbf;
+  --landing-rule: rgb(247 243 232 / 10%);
+  --landing-stamp: #c8e64f;
+  --landing-signal: #a47b25;
 
   /* Dashboard surface tokens (used by /dashboard/* only).
      A slightly warmer hairline and a softer background block
      than --border / --muted so cards group on the page canvas
      without needing shadow. Do not import into landing routes. */
-  --dashboard-rule: oklch(0.86 0.008 80);
-  --dashboard-canvas: oklch(0.97 0.006 90);
-  --dashboard-paper: oklch(0.99 0.006 92);
-  --dashboard-ink: oklch(0.18 0.025 255);
-  --dashboard-blue: oklch(0.58 0.17 242);
-  --dashboard-cyan: oklch(0.79 0.13 199);
-  --dashboard-mint: oklch(0.79 0.14 155);
-  --dashboard-amber: oklch(0.77 0.15 78);
+  --dashboard-rule: rgb(247 243 232 / 10%);
+  --dashboard-canvas: #173426;
+  --dashboard-canvas-deep: #10271c;
+  --dashboard-paper: #234333;
+  --dashboard-panel: #294b39;
+  --dashboard-paper-raised: #294b39;
+  --dashboard-ink: #f7f3e8;
+  --dashboard-ink-soft: #d1ccbf;
+  --dashboard-muted: #aeb8a6;
+  --dashboard-blue: #8eb8d8;
+  --dashboard-cyan: #c8e64f;
+  --dashboard-mint: #82cf8a;
+  --dashboard-amber: #e7c46f;
 
   /* Landing chrome (additive, scoped to src/app/page.tsx).
      Dark ink canvas for technical sections, cyan halo accent, warm
      paper for human/editorial sections. Do not import into
      dashboard routes. */
-  --landing-canvas: oklch(0.14 0.018 250);
-  --landing-canvas-edge: oklch(0.21 0.022 250);
-  --landing-canvas-soft: oklch(0.3 0.022 250);
-  --landing-canvas-ink: oklch(0.97 0.008 95);
-  --landing-canvas-ink-soft: oklch(0.76 0.012 250);
-  --landing-canvas-mute: oklch(0.58 0.018 250);
-  --landing-hair: oklch(0.27 0.018 250);
-  --landing-cyan: oklch(0.84 0.14 198);
-  --landing-cyan-soft: oklch(0.34 0.08 200);
-  --landing-cyan-edge: oklch(0.46 0.1 200);
-  --landing-amber-stamp: oklch(0.8 0.16 78);
-  --landing-mint: oklch(0.8 0.17 155);
+  --landing-canvas: #173426;
+  --landing-canvas-deep: #10271c;
+  --landing-canvas-edge: #234333;
+  --landing-canvas-soft: #2d503d;
+  --landing-canvas-ink: #f7f3e8;
+  --landing-canvas-ink-soft: #d1ccbf;
+  --landing-canvas-mute: #aeb8a6;
+  --landing-hair: rgb(247 243 232 / 10%);
+  --landing-cyan: #c8e64f;
+  --landing-cyan-soft: rgb(200 230 79 / 12%);
+  --landing-cyan-edge: #afd33d;
+  --landing-amber-stamp: #e7c46f;
+  --landing-mint: #82cf8a;
+  --shadow-card: 0 1px 2px rgb(8 20 13 / 12%), 0 16px 48px rgb(8 20 13 / 16%);
+  --shadow-hover: 0 2px 4px rgb(8 20 13 / 16%), 0 24px 64px rgb(8 20 13 / 22%);
 }
 
 .dark {
-  --background: oklch(0.145 0 0);
-  --foreground: oklch(0.985 0 0);
-  --card: oklch(0.205 0 0);
-  --card-foreground: oklch(0.985 0 0);
-  --popover: oklch(0.205 0 0);
-  --popover-foreground: oklch(0.985 0 0);
-  --primary: oklch(0.922 0 0);
-  --primary-foreground: oklch(0.205 0 0);
-  --secondary: oklch(0.269 0 0);
-  --secondary-foreground: oklch(0.985 0 0);
-  --muted: oklch(0.269 0 0);
-  --muted-foreground: oklch(0.708 0 0);
-  --accent: oklch(0.269 0 0);
-  --accent-foreground: oklch(0.985 0 0);
-  --destructive: oklch(0.704 0.191 22.216);
-  --border: oklch(1 0 0 / 10%);
-  --input: oklch(1 0 0 / 15%);
-  --ring: oklch(0.556 0 0);
-  --chart-1: oklch(0.87 0 0);
-  --chart-2: oklch(0.556 0 0);
-  --chart-3: oklch(0.439 0 0);
-  --chart-4: oklch(0.371 0 0);
-  --chart-5: oklch(0.269 0 0);
-  --sidebar: oklch(0.205 0 0);
-  --sidebar-foreground: oklch(0.985 0 0);
-  --sidebar-primary: oklch(0.488 0.243 264.376);
-  --sidebar-primary-foreground: oklch(0.985 0 0);
-  --sidebar-accent: oklch(0.269 0 0);
-  --sidebar-accent-foreground: oklch(0.985 0 0);
-  --sidebar-border: oklch(1 0 0 / 10%);
-  --sidebar-ring: oklch(0.556 0 0);
+  color-scheme: dark;
 }
 
 @layer base {
@@ -195,21 +175,15 @@
 
 .app-shell {
   background:
-    linear-gradient(90deg, color-mix(in oklch, var(--dashboard-rule) 36%, transparent) 1px, transparent 1px),
-    linear-gradient(0deg, color-mix(in oklch, var(--dashboard-rule) 28%, transparent) 1px, transparent 1px),
-    radial-gradient(circle at 28% 0%, color-mix(in oklch, var(--dashboard-cyan) 22%, transparent), transparent 34rem),
-    radial-gradient(circle at 95% 18%, color-mix(in oklch, var(--dashboard-amber) 18%, transparent), transparent 28rem),
+    radial-gradient(circle at 24% 0%, rgb(200 230 79 / 5%), transparent 32rem),
+    radial-gradient(circle at 100% 15%, rgb(174 188 139 / 5%), transparent 28rem),
     var(--background);
-  background-size: 42px 42px, 42px 42px, auto, auto, auto;
 }
 
 .app-shell-panel {
-  background:
-    linear-gradient(180deg, color-mix(in oklch, white 86%, transparent), color-mix(in oklch, var(--dashboard-paper) 94%, transparent)),
-    var(--dashboard-paper);
-  box-shadow:
-    0 1px 0 color-mix(in oklch, white 82%, transparent) inset,
-    0 24px 80px color-mix(in oklch, var(--dashboard-ink) 8%, transparent);
+  background: var(--dashboard-paper);
+  border: 1px solid var(--dashboard-rule);
+  box-shadow: var(--shadow-card);
 }
 
 .dashboard-evidence-strip {

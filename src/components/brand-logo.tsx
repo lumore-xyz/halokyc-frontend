@@ -20,25 +20,25 @@ const LOGO_META: Record<
   { src: string; alt: string; width: number; height: number }
 > = {
   "wordmark-dark": {
-    src: "/assets/logo/halokyc-hr-dark.png",
+    src: "/assets/logo/halokyc-hr-dark.svg",
     alt: "HaloKYC",
     width: 1774,
     height: 887,
   },
   "wordmark-light": {
-    src: "/assets/logo/halokyc-hr-light.png",
+    src: "/assets/logo/halokyc-hr-light.svg",
     alt: "HaloKYC",
     width: 1774,
     height: 887,
   },
   icon: {
-    src: "/assets/logo/halokyc-icon.png",
+    src: "/assets/logo/halokyc-icon.svg",
     alt: "HaloKYC",
     width: 2000,
     height: 2000,
   },
   "icon-color": {
-    src: "/assets/logo/halokyc-icon.png",
+    src: "/assets/logo/halokyc-color-icon.svg",
     alt: "HaloKYC",
     width: 2000,
     height: 2000,
@@ -58,7 +58,7 @@ export function BrandLogo({
     <span
       className={cn(
         "relative block shrink-0 overflow-hidden",
-        isWordmark ? "h-8 w-32" : "size-9 rounded-xl",
+        isWordmark ? "h-8 w-32" : "size-9",
         className,
       )}
     >

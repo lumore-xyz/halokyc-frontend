@@ -35,6 +35,7 @@ import type { CreditLedgerEntryType } from "@/lib/api-client";
 import { formatDate } from "@/lib/format";
 import {
   useBillingCatalog,
+  useBillingEntitlements,
   useBillingSubscription,
   useCreateCreditPackCheckout,
   useCreateSubscriptionCheckout,
@@ -90,6 +91,7 @@ export function BillingPanel() {
   const ledger = useMyCreditLedger({ workspaceId: filter });
   const catalog = useBillingCatalog();
   const subscription = useBillingSubscription();
+  const entitlements = useBillingEntitlements();
   const subscriptionCheckout = useCreateSubscriptionCheckout();
   const creditPackCheckout = useCreateCreditPackCheckout();
   const balance = ledger.data?.balance;
@@ -128,7 +130,12 @@ export function BillingPanel() {
   return (
     <>
       <header className="flex flex-col gap-2">
-        <h1 className="text-3xl font-semibold tracking-tight">Billing</h1>
+        <div className="flex items-center gap-3">
+          <h1 className="text-3xl font-semibold tracking-tight">Billing</h1>
+          {entitlements.data ? (
+            <Badge variant="outline">{entitlements.data.plan_name} plan</Badge>
+          ) : null}
+        </div>
         <p className="text-muted-foreground max-w-2xl">
           Organization-level credit balance. Every verification is reserved
           before processing and settled only when the session reaches approved,

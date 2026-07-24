@@ -103,7 +103,7 @@ export function UseCasesSection() {
       )}
           >
             Made for products where{" "}
-            <span className="italic text-[var(--landing-stamp)]">fake users</span>{" "}
+            <span className="text-[var(--landing-stamp)]">fake users</span>{" "}
             are expensive.
           </h2>
           <p className="max-w-2xl text-[15.5px] leading-relaxed text-[color-mix(in_oklch,var(--landing-ink)_78%,var(--landing-paper))]">

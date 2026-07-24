@@ -5,7 +5,6 @@ import { useQuery } from "@tanstack/react-query";
 import {
   ActivityIcon,
   AlertTriangleIcon,
-  BotIcon,
   CheckCircle2Icon,
   ClockIcon,
   GitCompareArrowsIcon,
@@ -26,7 +25,6 @@ import {
 import { Spinner } from "@/components/ui/spinner";
 import {
   apiClient,
-  type AgenticReviewCheckResult,
   type DuplicateCheckResult,
   type VerificationSessionDetail,
   type VerificationStatus,
@@ -87,9 +85,9 @@ export function AnalyticsPanel({ workspaceId }: { workspaceId: string }) {
     enabled: Boolean(session.data?.authenticated && workspaceId),
   });
 
-  const agenticQuery = useQuery({
+  const automationQuery = useQuery({
     queryKey: [
-      "workspace-agentic-analytics",
+      "workspace-automation-analytics",
       workspaceId,
       since ?? "all",
       workflowId,
@@ -110,7 +108,6 @@ export function AnalyticsPanel({ workspaceId }: { workspaceId: string }) {
         ),
       );
       return {
-        agentic: summarizeAgentic(details),
         automation: summarizeAutomation(details),
       };
     },
@@ -167,7 +164,6 @@ export function AnalyticsPanel({ workspaceId }: { workspaceId: string }) {
             );
           })}
         </div>
-      )}
 
       <Card>
         <CardHeader>
@@ -207,7 +203,7 @@ export function AnalyticsPanel({ workspaceId }: { workspaceId: string }) {
           <div className="flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
             <div>
               <CardTitle className="flex items-center gap-2">
-                <BotIcon className="size-4 text-muted-foreground" aria-hidden />
+                <GitCompareArrowsIcon className="size-4 text-muted-foreground" aria-hidden />
                 Automation rollout
               </CardTitle>
               <CardDescription>
@@ -255,13 +251,13 @@ export function AnalyticsPanel({ workspaceId }: { workspaceId: string }) {
           </div>
         </CardHeader>
         <CardContent>
-          {agenticQuery.isLoading ? (
+          {automationQuery.isLoading ? (
             <div className="flex justify-center py-8">
               <Spinner />
             </div>
-          ) : agenticQuery.error ? (
+          ) : automationQuery.error ? (
             <p className="text-sm text-muted-foreground">
-              Agentic rollout metrics could not be loaded. Verification status
+              Automation metrics could not be loaded. Verification status
               analytics are still available above.
             </p>
           ) : (
@@ -269,75 +265,38 @@ export function AnalyticsPanel({ workspaceId }: { workspaceId: string }) {
               <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
                 <Metric
                   label="Manual review rate"
-                  value={`${agenticQuery.data?.automation.manualReviewRate ?? 0}%`}
+                  value={`${automationQuery.data?.automation.manualReviewRate ?? 0}%`}
                   icon={ScanSearchIcon}
-                  description={`${agenticQuery.data?.automation.manualReviewTotal ?? 0} of ${agenticQuery.data?.automation.sessionsTotal ?? 0} sampled sessions`}
+                  description={`${automationQuery.data?.automation.manualReviewTotal ?? 0} of ${automationQuery.data?.automation.sessionsTotal ?? 0} sampled sessions`}
                   variant={
-                    (agenticQuery.data?.automation.manualReviewRate ?? 0) > 25
+                    (automationQuery.data?.automation.manualReviewRate ?? 0) > 25
                       ? "warning"
                       : "default"
                   }
                 />
                 <Metric
                   label="Timeout recovery"
-                  value={`${agenticQuery.data?.automation.timeoutRecoverySuccessRate ?? 0}%`}
+                  value={`${automationQuery.data?.automation.timeoutRecoverySuccessRate ?? 0}%`}
                   icon={TimerIcon}
-                  description={`${agenticQuery.data?.automation.timeoutRecoverySuccess ?? 0} resolved without review`}
+                  description={`${automationQuery.data?.automation.timeoutRecoverySuccess ?? 0} resolved without review`}
                   variant="info"
                 />
                 <Metric
                   label="Duplicate coverage"
-                  value={`${agenticQuery.data?.automation.duplicateCoverage ?? 0}%`}
+                  value={`${automationQuery.data?.automation.duplicateCoverage ?? 0}%`}
                   icon={GitCompareArrowsIcon}
-                  description={`${agenticQuery.data?.automation.duplicateAutoDecisions ?? 0} duplicate decisions automated`}
+                  description={`${automationQuery.data?.automation.duplicateAutoDecisions ?? 0} duplicate decisions automated`}
                 />
                 <Metric
                   label="Top review factor"
-                  value={agenticQuery.data?.automation.topFactor ?? "-"}
+                  value={automationQuery.data?.automation.topFactor ?? "-"}
                   icon={AlertTriangleIcon}
                   description="Most common reason in manual-review samples"
                   variant={
-                    agenticQuery.data?.automation.topFactor
+                    automationQuery.data?.automation.topFactor
                       ? "warning"
                       : "default"
                   }
-                />
-              </div>
-              <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-                <Metric
-                  label="Agreement rate"
-                  value={`${agenticQuery.data?.agentic.agreementRate ?? 0}%`}
-                  icon={GitCompareArrowsIcon}
-                  description={`${agenticQuery.data?.agentic.agenticSessions ?? 0} recent agent recommendations`}
-                />
-                <Metric
-                  label="Deflection estimate"
-                  value={`${agenticQuery.data?.agentic.manualReviewDeflectionRate ?? 0}%`}
-                  icon={ScanSearchIcon}
-                  description="Manual-review sessions the agent would resolve"
-                  variant="info"
-                />
-                <Metric
-                  label="Fallbacks"
-                  value={agenticQuery.data?.agentic.fallbackCount ?? 0}
-                  icon={AlertTriangleIcon}
-                  description="Provider, budget, timeout, or validation fallback"
-                  variant={
-                    (agenticQuery.data?.agentic.fallbackCount ?? 0) > 0
-                      ? "warning"
-                      : "default"
-                  }
-                />
-                <Metric
-                  label="Avg latency"
-                  value={
-                    typeof agenticQuery.data?.agentic.averageLatencyMs ===
-                    "number"
-                      ? `${agenticQuery.data.agentic.averageLatencyMs} ms`
-                      : "-"
-                  }
-                  icon={TimerIcon}
-                  description="Provider latency when reported"
                 />
               </div>
             </div>
@@ -347,14 +306,6 @@ export function AnalyticsPanel({ workspaceId }: { workspaceId: string }) {
     </>
   );
 }
-
-type AgenticSummary = {
-  agenticSessions: number;
-  agreementRate: number;
-  manualReviewDeflectionRate: number;
-  fallbackCount: number;
-  averageLatencyMs: number | null;
-};
 
 type AutomationSummary = {
   sessionsTotal: number;
@@ -366,50 +317,6 @@ type AutomationSummary = {
   duplicateCoverage: number;
   topFactor: string | null;
 };
-
-function summarizeAgentic(details: VerificationSessionDetail[]): AgenticSummary {
-  const agentic = details
-    .map((detail) => {
-      const check = detail.checks?.agentic_review as
-        | AgenticReviewCheckResult
-        | undefined;
-      return check?.result;
-    })
-    .filter((result): result is NonNullable<typeof result> => Boolean(result));
-
-  const agenticSessions = agentic.length;
-  const agreements = agentic.filter(
-    (result) => result.evaluation?.agreed_with_deterministic,
-  ).length;
-  const deterministicManualReviews = agentic.filter(
-    (result) => result.evaluation?.deterministic_status === "manual_review",
-  ).length;
-  const deflections = agentic.filter(
-    (result) => result.evaluation?.would_deflect_manual_review,
-  ).length;
-  const fallbackCount = agentic.filter(
-    (result) => result.fallback_reason ?? result.policy_gate.skip_reason,
-  ).length;
-  const latencies = agentic
-    .map((result) => result.provider?.latency_ms)
-    .filter((value): value is number => typeof value === "number");
-
-  return {
-    agenticSessions,
-    agreementRate: percentage(agreements, agenticSessions),
-    manualReviewDeflectionRate: percentage(
-      deflections,
-      deterministicManualReviews,
-    ),
-    fallbackCount,
-    averageLatencyMs:
-      latencies.length > 0
-        ? Math.round(
-            latencies.reduce((sum, value) => sum + value, 0) / latencies.length,
-          )
-        : null,
-  };
-}
 
 function summarizeAutomation(
   details: VerificationSessionDetail[],

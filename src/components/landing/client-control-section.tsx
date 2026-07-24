@@ -59,7 +59,7 @@ export function ClientControlSection() {
             )}
           >
             Keep control of how{" "}
-            <span className="text-[var(--landing-cyan)] italic">
+            <span className="text-[var(--landing-cyan)]">
               verification works
             </span>{" "}
             in your product.
@@ -84,7 +84,7 @@ export function ClientControlSection() {
               >
                 <span
                   className={cn(
-                    "mt-1 inline-flex size-5 shrink-0 items-center justify-center rounded-sm",
+                    "mt-1 inline-flex size-5 shrink-0 items-center justify-center rounded-full",
                     "border border-[var(--landing-cyan-edge)] bg-[var(--landing-cyan-soft)] text-[var(--landing-cyan)]",
                   )}
                 >
@@ -109,7 +109,7 @@ export function ClientControlSection() {
               "border border-[var(--landing-paper-edge)] bg-[var(--landing-paper)]",
               "font-mono text-[12.5px] leading-relaxed text-[var(--landing-ink)]",
               "shadow-[0_28px_70px_-32px_rgba(0,0,0,0.7)]",
-              "rounded-sm",
+              "rounded-[1.25rem]",
             )}
             aria-label="Client workspace preview"
           >
@@ -185,9 +185,9 @@ export function ClientControlSection() {
               <button
                 type="button"
                 className={cn(
-                  "inline-flex h-10 items-center justify-center gap-2 rounded-sm text-sm font-medium",
-                  "border border-[var(--landing-stamp)] bg-[color-mix(in_oklch,var(--landing-stamp)_10%,white)] text-[var(--landing-stamp)]",
-                  "transition-colors hover:bg-[color-mix(in_oklch,var(--landing-stamp)_18%,white)]",
+                  "inline-flex h-10 items-center justify-center gap-2 rounded-full text-sm font-medium",
+                  "border border-[var(--landing-cyan-edge)] bg-[var(--landing-cyan)] text-[var(--landing-canvas)]",
+                  "transition-colors hover:bg-[var(--landing-cyan-hover,var(--landing-cyan-edge))]",
                   "focus-visible:ring-2 focus-visible:ring-[var(--landing-stamp)] focus-visible:outline-none",
                 )}
               >
@@ -197,7 +197,7 @@ export function ClientControlSection() {
               <button
                 type="button"
                 className={cn(
-                  "inline-flex h-10 items-center justify-center gap-2 rounded-sm text-sm font-medium",
+                  "inline-flex h-10 items-center justify-center gap-2 rounded-full text-sm font-medium",
                   "border border-[color-mix(in_oklch,var(--landing-ink)_25%,transparent)] bg-transparent text-[var(--landing-ink)]",
                   "transition-colors hover:bg-[var(--landing-rule)]",
                   "focus-visible:ring-2 focus-visible:ring-[var(--landing-ink)] focus-visible:outline-none",

@@ -59,7 +59,7 @@ export function WorkflowSection() {
             )}
           >
             Every verification follows the same{" "}
-            <span className="italic text-[var(--landing-cyan)]">auditable route.</span>
+            <span className="text-[var(--landing-cyan)]">auditable route.</span>
           </h2>
           <p className="text-[15.5px] leading-7 text-[var(--landing-canvas-ink-soft)]">
             The flow is sequential because accountability is sequential:

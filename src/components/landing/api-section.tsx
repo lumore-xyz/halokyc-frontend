@@ -90,7 +90,7 @@ export function ApiSection() {
             )}
           >
             Start with a{" "}
-            <span className="text-[var(--landing-stamp)] italic">
+            <span className="text-[var(--landing-stamp)]">
               workflow ID.
             </span>{" "}
             Finish with a signed decision.
@@ -125,7 +125,8 @@ export function ApiSection() {
         showLineNumbers
         scrollable
         maxHeight={380}
-        bodyClassName="bg-[var(--landing-paper-soft)]"
+        theme="light"
+        bodyClassName="bg-[#fbf8ef] text-[#173426]"
         className="border border-[var(--landing-paper-edge)]"
       />
     </Reveal>

@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { Fraunces, Inter, JetBrains_Mono } from "next/font/google";
+import { Inter, JetBrains_Mono, Manrope } from "next/font/google";
 import { Toaster } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryProvider } from "@/lib/query-provider";
@@ -11,11 +11,10 @@ const sans = Inter({
   subsets: ["latin"],
 });
 
-const display = Fraunces({
+const display = Manrope({
   variable: "--font-display",
   subsets: ["latin"],
-  weight: ["300", "500", "700", "900"],
-  style: ["normal", "italic"],
+  weight: ["400", "500", "600", "700", "800"],
 });
 
 const mono = JetBrains_Mono({
@@ -28,8 +27,14 @@ export const metadata: Metadata = {
   description:
     "HaloKYC dashboard - start verifications, inspect results, and operate the manual-review queue.",
   icons: {
-    icon: "/assets/logo/halokyc-icon.png",
-    apple: "/assets/logo/halokyc-icon.png",
+    icon: {
+      url: "/assets/logo/halokyc-icon.svg",
+      type: "image/svg+xml",
+    },
+    apple: {
+      url: "/assets/logo/halokyc-icon.svg",
+      type: "image/svg+xml",
+    },
   },
 };
 

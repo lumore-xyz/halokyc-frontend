@@ -130,7 +130,7 @@ export function PricingSection({ index = 8 }: PricingSectionProps = {}) {
         )}
       >
         Pricing that grows with your{" "}
-        <span className="italic text-(--landing-cyan)">real users.</span>
+        <span className="text-(--landing-cyan)">real users.</span>
       </h2>
       <p className="max-w-2xl text-[15.5px] leading-relaxed text-[var(--landing-canvas-ink-soft)]">
         Every fake account that passes through your product costs you money
@@ -155,7 +155,7 @@ export function PricingSection({ index = 8 }: PricingSectionProps = {}) {
                 {plan.highlight ? (
                   <span
                     className={cn(
-                      "absolute -top-3 right-6 inline-flex items-center rounded-sm px-2 py-0.5",
+                      "absolute -top-3 right-6 inline-flex items-center rounded-full px-2.5 py-0.5",
                       "border border-[var(--landing-cyan)] bg-[var(--landing-canvas)] text-[var(--landing-cyan)]",
                       "font-mono text-[10px] uppercase tracking-[0.22em]",
                     )}
@@ -175,14 +175,14 @@ export function PricingSection({ index = 8 }: PricingSectionProps = {}) {
                   ) : null}
                 </div>
 
-                <p className="mt-4 font-serif text-3xl font-normal tracking-tight text-[var(--landing-canvas-ink)]">
+                <p className="mt-4 font-display text-3xl font-semibold tracking-tight text-[var(--landing-canvas-ink)]">
                   {plan.name}
                 </p>
 <p className="mt-2 text-sm text-[var(--landing-canvas-ink-soft)]">
   {plan.blurb}
 </p>
 <div className="mt-4 flex items-baseline gap-2">
-  <span className="font-serif text-3xl font-normal tracking-tight text-[var(--landing-canvas-ink)]">
+  <span className="font-display text-3xl font-semibold tracking-tight text-[var(--landing-canvas-ink)]">
     {plan.price}
   </span>
   {plan.effectiveRate ? (

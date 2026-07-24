@@ -99,16 +99,21 @@ export interface LanguageTab {
   language?: string;
 }
 
+type CodeTheme = "system" | "light" | "dark";
+
 // -- Shiki renderer --
 
 async function renderCode(
   code: string,
   language: string,
-  highlightLines?: number[]
+  highlightLines?: number[],
+  theme: CodeTheme = "system",
 ): Promise<string> {
   return codeToHtml(code, {
     lang: language as BundledLanguage,
-    themes: { light: "github-light", dark: "github-dark-default" },
+    ...(theme === "system"
+      ? { themes: { light: "github-light", dark: "github-dark-default" } }
+      : { theme: theme === "light" ? "github-light" : "github-dark-default" }),
     tabindex: false,
     transformers: [
       {
@@ -160,17 +165,18 @@ interface RendererProps {
   maxHeight: number;
   highlightLines?: number[];
   bodyClassName?: string;
+  theme?: CodeTheme;
 }
 
 function CodeRenderer({
-  code, language, showLineNumbers, scrollable, maxHeight, highlightLines, bodyClassName,
+  code, language, showLineNumbers, scrollable, maxHeight, highlightLines, bodyClassName, theme = "system",
 }: RendererProps) {
   const [html, setHtml] = useState<string | null>(null);
 
   useEffect(() => {
     injectStyles();
-    renderCode(code, language, highlightLines).then(setHtml);
-  }, [code, language, highlightLines]);
+    renderCode(code, language, highlightLines, theme).then(setHtml);
+  }, [code, language, highlightLines, theme]);
 
   return (
     <div
@@ -243,6 +249,7 @@ interface MultiFileCodeBlockProps {
   maxHeight?: number;
   bodyClassName?: string;
   className?: string;
+  theme?: CodeTheme;
 }
 
 export function MultiFileCodeBlock({
@@ -252,6 +259,7 @@ export function MultiFileCodeBlock({
   maxHeight = 400,
   bodyClassName,
   className,
+  theme = "system",
 }: MultiFileCodeBlockProps) {
   const [active, setActive] = useState(files[0]?.filename ?? "");
   const file = files.find((f) => f.filename === active) ?? files[0];
@@ -285,6 +293,7 @@ export function MultiFileCodeBlock({
           scrollable={scrollable}
           maxHeight={maxHeight}
           bodyClassName={bodyClassName}
+          theme={theme}
         />
       )}
     </div>

@@ -847,6 +847,16 @@ type BillingSubscriptionRead = {
   dodo_customer_id: string | null;
 };
 
+type BillingEntitlementsResponse = {
+  plan_key: "sandbox" | "launch" | "growth" | "scale";
+  plan_name: string;
+  monthly_credits: number;
+  rollover_cap: number;
+  limits: { workspaces: number | null; members: number | null };
+  usage: { workspaces: number; members: number };
+  features: Record<string, boolean>;
+};
+
 type AdminBillingCatalogItem = {
   catalog_item_id: string;
   key: string;
@@ -1246,6 +1256,10 @@ Auth: `halokyc_client` cookie.
 - `GET /api/v1/billing/subscription`: Returns the organization's latest local
   Dodo subscription mirror, or `null` when no subscription webhook has been
   processed. Allowed: any active organization member.
+- `GET /api/v1/billing/entitlements`: Returns
+  `BillingEntitlementsResponse`, the authoritative effective plan, limits,
+  current workspace/member usage, and feature flags. Missing or unknown plans
+  resolve conservatively to Sandbox. Allowed: any active organization member.
 - `POST /api/v1/billing/checkout/subscription`: Request
   `BillingCheckoutRequest`, Response `BillingCheckoutResponse`. Creates a
   hosted Dodo checkout session for a subscription product. Allowed:
@@ -1259,6 +1273,19 @@ Auth: `halokyc_client` cookie.
   with the official Dodo SDK before processing. Successful subscription events
   grant subscription credits through `CreditService`; successful one-time
   payments add purchased credits through the same ledger.
+
+Plan enforcement:
+
+- Sandbox permits one workspace and one active/invited organization member.
+  Workspace creation and member invites return `403` once the limit is reached.
+- Workspace review-list/detail/decision routes require the `review_queue`
+  entitlement (Launch or above).
+- Webhook delivery always remains signed and available; automatic retry
+  attempts require `webhook_retry_delivery` (Launch or above). Sandbox makes
+  one delivery attempt.
+- Entitlement failures return `403` with
+  `{ detail: { code, message, plan, entitlement, limit, current,
+  required_plan, upgrade_url } }`.
 - `GET /api/v1/me/reviews`: Returns `AdminReviewItem[]` (sessions needing review).
 - `GET /api/v1/me/reviews/{id}`: Returns `AdminReviewDetail`.
 - `POST /api/v1/me/reviews/{id}/approve`: Response `AdminDecisionResponse`.

@@ -21,17 +21,6 @@ export type VerificationStatus =
   | "rejected"
   | "manual_review";
 
-export type AgenticMode =
-  | "disabled"
-  | "shadow"
-  | "assist_review"
-  | "auto_decide";
-
-export type AgenticRecommendationFilter = Extract<
-  VerificationStatus,
-  "approved" | "rejected" | "manual_review"
->;
-
 export type VerificationUserAction = {
   action: "retake_document";
   reason: string;
@@ -119,68 +108,6 @@ export type DuplicateCheckResult = Omit<CheckResult, "result"> & {
     match_kind?: DuplicateMatchKind | "duplicate" | null;
     reason_code?: string | null;
   };
-};
-
-export type AgenticVerdict = {
-  recommended_status: VerificationStatus;
-  confidence: number;
-  reason_codes: string[];
-  human_summary: string;
-  evidence_references: string[];
-  requires_manual_review: boolean;
-  requires_user_action?: VerificationUserAction | null;
-};
-
-export type AgenticReviewEvaluation = {
-  deterministic_status: VerificationStatus;
-  agentic_recommended_status: VerificationStatus;
-  agreed_with_deterministic: boolean;
-  would_deflect_manual_review: boolean;
-  would_false_approve_against_deterministic: boolean;
-  would_false_reject_against_deterministic: boolean;
-};
-
-export type AgenticReviewProvider = {
-  provider_name: string | null;
-  model_name: string | null;
-  latency_ms: number | null;
-  prompt_tokens: number | null;
-  completion_tokens: number | null;
-  total_tokens: number | null;
-  estimated_cost_usd: number | null;
-  fallback_reason: string | null;
-  model_called: boolean;
-  output_validation_status: string | null;
-};
-
-export type AgenticReviewResult = Record<string, unknown> & {
-  verdict: AgenticVerdict;
-  policy_gate: {
-    should_call_model: boolean;
-    skip_reason: string | null;
-    reason_codes: string[];
-    terminal_overrides: string[];
-  };
-  provider: AgenticReviewProvider | null;
-  thread_id: string;
-  fallback_reason: string | null;
-  model_called: boolean;
-  output_validation_status: string | null;
-  evaluation?: AgenticReviewEvaluation;
-  reviewer_feedback: {
-    agreed_with_agent: boolean;
-    reviewer_user_id: string;
-    recorded_at: string;
-  } | null;
-};
-
-export type AgenticReviewFeedbackRequest = {
-  agreed_with_agent: boolean;
-  notes?: string;
-};
-
-export type AgenticReviewCheckResult = Omit<CheckResult, "result"> & {
-  result: AgenticReviewResult;
 };
 
 export type VerificationDetail = {
@@ -423,7 +350,6 @@ export type Workflow = {
   services: ("selfie" | "liveness" | "document" | "age")[];
   min_age?: number;
   auto_decide_allowed: boolean;
-  agentic_mode: AgenticMode;
   auto_decide_confidence_threshold?: number | null;
   created_at: string;
   updated_at: string;
@@ -434,7 +360,6 @@ export type WorkflowCreate = {
   services: ("selfie" | "liveness" | "document" | "age")[];
   min_age?: number;
   auto_decide_allowed?: boolean;
-  agentic_mode?: AgenticMode;
   auto_decide_confidence_threshold?: number | null;
 };
 
@@ -443,7 +368,6 @@ export type WorkflowUpdate = {
   services?: ("selfie" | "liveness" | "document" | "age")[];
   min_age?: number;
   auto_decide_allowed?: boolean;
-  agentic_mode?: AgenticMode;
   auto_decide_confidence_threshold?: number | null;
 };
 
@@ -678,6 +602,22 @@ export type BillingSubscriptionRead = {
   dodo_customer_id: string | null;
 };
 
+export type BillingEntitlements = {
+  plan_key: "sandbox" | "launch" | "growth" | "scale";
+  plan_name: string;
+  monthly_credits: number;
+  rollover_cap: number;
+  limits: {
+    workspaces: number | null;
+    members: number | null;
+  };
+  usage: {
+    workspaces: number;
+    members: number;
+  };
+  features: Record<string, boolean>;
+};
+
 export type PlatformRole =
   | "platform_owner"
   | "platform_business_admin"
@@ -812,38 +752,6 @@ export type AdminSupportNote = {
 export type AdminSupportNoteRequest = {
   verification_id: string;
   note: string;
-};
-
-export type AgenticMonitoringMetrics = {
-  window: {
-    since: string | null;
-    generated_at: string;
-  };
-  scope: {
-    organization_id: string | null;
-    workspace_id: string | null;
-    agentic_mode: AgenticMode | null;
-    recommended_status: VerificationStatus | null;
-  };
-  totals: {
-    agentic_reviews: number;
-    model_called: number;
-    provider_failures: number;
-    provider_failure_rate: number;
-    budget_fallbacks: number;
-    invalid_output_fallbacks: number;
-    auto_decisions: number;
-    by_mode: Record<string, number>;
-    by_recommendation: Partial<Record<VerificationStatus, number>>;
-  };
-};
-
-export type AgenticMonitoringFilters = {
-  organizationId?: string | null;
-  workspaceId?: string | null;
-  since?: string | null;
-  agenticMode?: AgenticMode | null;
-  agenticRecommendation?: AgenticRecommendationFilter | null;
 };
 
 export type AutomationMetrics = {
@@ -1688,16 +1596,6 @@ export const apiClient = {
       { method: "POST", body: JSON.stringify(decision) },
     ),
 
-  submitAgenticReviewFeedback: (
-    workspaceId: string,
-    verificationId: string,
-    feedback: { agreed_with_agent: boolean; notes?: string },
-  ) =>
-    browserRequest<AdminDecisionResponse>(
-      `/api/client/workspaces/${workspaceId}/reviews/${verificationId}/agentic-feedback`,
-      { method: "POST", body: JSON.stringify(feedback) },
-    ),
-
   rejectMyReview: (verificationId: string, reason: string) =>
     browserRequest<AdminDecisionResponse>(
       `/api/client/me/reviews/${verificationId}/reject`,
@@ -1710,8 +1608,6 @@ export const apiClient = {
       external_user_id?: string;
       since?: string;
       until?: string;
-      agentic_mode?: AgenticMode;
-      agentic_recommendation?: AgenticRecommendationFilter;
       limit?: number;
       offset?: number;
     } = {},
@@ -1723,10 +1619,6 @@ export const apiClient = {
     }
     if (filters.since) params.set("since", filters.since);
     if (filters.until) params.set("until", filters.until);
-    if (filters.agentic_mode) params.set("agentic_mode", filters.agentic_mode);
-    if (filters.agentic_recommendation) {
-      params.set("agentic_recommendation", filters.agentic_recommendation);
-    }
     if (typeof filters.limit === "number") {
       params.set("limit", String(filters.limit));
     }
@@ -1748,8 +1640,6 @@ export const apiClient = {
       external_user_id?: string;
       since?: string;
       until?: string;
-      agentic_mode?: AgenticMode;
-      agentic_recommendation?: AgenticRecommendationFilter;
       limit?: number;
       offset?: number;
     } = {},
@@ -1761,10 +1651,6 @@ export const apiClient = {
     }
     if (filters.since) params.set("since", filters.since);
     if (filters.until) params.set("until", filters.until);
-    if (filters.agentic_mode) params.set("agentic_mode", filters.agentic_mode);
-    if (filters.agentic_recommendation) {
-      params.set("agentic_recommendation", filters.agentic_recommendation);
-    }
     if (typeof filters.limit === "number") {
       params.set("limit", String(filters.limit));
     }
@@ -1817,6 +1703,9 @@ export const apiClient = {
     browserRequest<BillingSubscriptionRead | null>(
       "/api/client/billing/subscription",
     ),
+
+  getBillingEntitlements: () =>
+    browserRequest<BillingEntitlements>("/api/client/billing/entitlements"),
 
   createSubscriptionCheckout: (catalogKey: string) =>
     browserRequest<BillingCheckoutResponse>(
@@ -1977,8 +1866,6 @@ listAdminOrganizations: () =>
   listAdminVerifications: (filters: {
     organizationId?: string | null;
     workspaceId?: string | null;
-    agenticMode?: AgenticMode | null;
-    agenticRecommendation?: AgenticRecommendationFilter | null;
     limit?: number;
     offset?: number;
   } = {}) => {
@@ -1989,12 +1876,6 @@ listAdminOrganizations: () =>
     if (filters.workspaceId) {
       params.set("workspace_id", filters.workspaceId);
     }
-    if (filters.agenticMode) {
-      params.set("agentic_mode", filters.agenticMode);
-    }
-    if (filters.agenticRecommendation) {
-      params.set("agentic_recommendation", filters.agenticRecommendation);
-    }
     if (typeof filters.limit === "number") {
       params.set("limit", String(filters.limit));
     }
@@ -2004,30 +1885,6 @@ listAdminOrganizations: () =>
     const qs = params.toString();
     return browserRequest<VerificationListResponse>(
       qs ? `/api/admin/verifications?${qs}` : "/api/admin/verifications",
-    );
-  },
-  getAdminAgenticMonitoring: (filters: AgenticMonitoringFilters = {}) => {
-    const params = new URLSearchParams();
-    if (filters.organizationId) {
-      params.set("organization_id", filters.organizationId);
-    }
-    if (filters.workspaceId) {
-      params.set("workspace_id", filters.workspaceId);
-    }
-    if (filters.since) {
-      params.set("since", filters.since);
-    }
-    if (filters.agenticMode) {
-      params.set("agentic_mode", filters.agenticMode);
-    }
-    if (filters.agenticRecommendation) {
-      params.set("agentic_recommendation", filters.agenticRecommendation);
-    }
-    const qs = params.toString();
-    return browserRequest<AgenticMonitoringMetrics>(
-      qs
-        ? `/api/admin/metrics/agentic?${qs}`
-        : "/api/admin/metrics/agentic",
     );
   },
   getAdminAutomationMetrics: (filters: AutomationMetricsFilters = {}) => {

@@ -50,7 +50,7 @@ className={cn(
       )}
           >
             Add identity verification to your product{" "}
-            <span className="italic text-[var(--landing-cyan)]">before next week.</span>
+            <span className="text-[var(--landing-cyan)]">before next week.</span>
           </h2>
         </Reveal>
 
