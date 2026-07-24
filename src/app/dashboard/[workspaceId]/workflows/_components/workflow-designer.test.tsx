@@ -138,7 +138,6 @@ describe("WorkflowDesigner", () => {
             services: capturedBody.services,
             min_age: capturedBody.min_age,
             auto_decide_allowed: capturedBody.auto_decide_allowed,
-            agentic_mode: capturedBody.agentic_mode,
             created_at: "2026-06-23T10:00:00Z",
             updated_at: "2026-06-23T10:00:00Z",
           });
@@ -173,12 +172,11 @@ describe("WorkflowDesigner", () => {
       services: ["selfie", "document", "age"],
       min_age: 21,
       auto_decide_allowed: true,
-      agentic_mode: "auto_decide",
       auto_decide_confidence_threshold: null,
     });
   });
 
-  it("persists the selected agentic mode", async () => {
+  it("defaults automatic decisions to enabled", async () => {
     let capturedBody: Record<string, unknown> | null = null;
     server.use(
       http.get(
@@ -194,7 +192,6 @@ describe("WorkflowDesigner", () => {
             name: capturedBody.name,
             services: capturedBody.services,
             auto_decide_allowed: capturedBody.auto_decide_allowed,
-            agentic_mode: capturedBody.agentic_mode,
             created_at: "2026-06-23T10:00:00Z",
             updated_at: "2026-06-23T10:00:00Z",
           });
@@ -211,21 +208,18 @@ describe("WorkflowDesigner", () => {
 
     const dialog = await screen.findByRole("dialog");
     fireEvent.change(within(dialog).getByLabelText("Name"), {
-      target: { value: "Shadow KYC" },
+      target: { value: "Automatic KYC" },
     });
     fireEvent.click(within(dialog).getByRole("button", { name: "Selfie" }));
-    fireEvent.click(
-      within(dialog).getByRole("button", { name: /Shadow/i }),
-    );
     fireEvent.click(
       within(dialog).getByRole("button", { name: "Create workflow" }),
     );
 
     await waitFor(() => expect(capturedBody).not.toBeNull());
     expect(capturedBody).toMatchObject({
-      name: "Shadow KYC",
+      name: "Automatic KYC",
       services: ["selfie"],
-      agentic_mode: "shadow",
+      auto_decide_allowed: true,
     });
   });
 
@@ -245,7 +239,6 @@ describe("WorkflowDesigner", () => {
             name: capturedBody.name,
             services: capturedBody.services,
             auto_decide_allowed: capturedBody.auto_decide_allowed,
-            agentic_mode: capturedBody.agentic_mode,
             auto_decide_confidence_threshold:
               capturedBody.auto_decide_confidence_threshold,
             created_at: "2026-06-23T10:00:00Z",
@@ -267,9 +260,6 @@ describe("WorkflowDesigner", () => {
       target: { value: "High-confidence KYC" },
     });
     fireEvent.click(within(dialog).getByRole("button", { name: "Selfie" }));
-    fireEvent.click(
-      within(dialog).getByRole("button", { name: /Auto decide/i }),
-    );
     fireEvent.change(
       within(dialog).getByLabelText(/Auto-decide confidence threshold/i),
       {
@@ -284,12 +274,11 @@ describe("WorkflowDesigner", () => {
     expect(capturedBody).toMatchObject({
       name: "High-confidence KYC",
       services: ["selfie"],
-      agentic_mode: "auto_decide",
       auto_decide_confidence_threshold: 0.97,
     });
   });
 
-  it("lets a workflow block automatic agent decisions", async () => {
+  it("lets a workflow block automatic decisions", async () => {
     let capturedBody: Record<string, unknown> | null = null;
     server.use(
       http.get(
@@ -305,7 +294,6 @@ describe("WorkflowDesigner", () => {
             name: capturedBody.name,
             services: capturedBody.services,
             auto_decide_allowed: capturedBody.auto_decide_allowed,
-            agentic_mode: capturedBody.agentic_mode,
             created_at: "2026-06-23T10:00:00Z",
             updated_at: "2026-06-23T10:00:00Z",
           });
@@ -339,7 +327,6 @@ describe("WorkflowDesigner", () => {
       name: "Manual-only KYC",
       services: ["selfie"],
       auto_decide_allowed: false,
-      agentic_mode: "disabled",
     });
   });
 

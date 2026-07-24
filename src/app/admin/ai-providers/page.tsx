@@ -699,7 +699,7 @@ function ProviderRow({
               </span>
               <span className="text-muted-foreground text-xs">
                 This removes the provider route and all encrypted keys under
-                it. Agentic adjudication will use the next configured route.
+                it. AI-assisted processing will use the next configured route.
               </span>
             </div>
             <div className="flex gap-2">
