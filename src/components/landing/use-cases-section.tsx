@@ -7,14 +7,7 @@
  * copy under a short title.
  */
 
-import {
-  Heart,
-  Store,
-  Banknote,
-  Coins,
-  Users,
-  Shield,
-} from "lucide-react";
+import { Banknote, Coins, Heart, Shield, Store, Users } from "lucide-react";
 
 import { Reveal } from "@/components/landing/reveal";
 import { SectionMarker } from "@/components/landing/section-marker";
@@ -64,13 +57,13 @@ const CASES: readonly UseCase[] = [
     body: "Keep private or age-gated communities safer with human verification and an audit trail of every check.",
     accent: "paper-edge",
   },
-{
-  icon: Shield,
-  number: "06",
-  title: "Free-tier protection",
-  body: "Gate your AI product or service to genuine users. Stop malicious actors from stacking your infrastructure bill and draining your compute credits.",
-  accent: "signal",
-},
+  {
+    icon: Shield,
+    number: "06",
+    title: "Free-tier protection",
+    body: "Gate your AI product or service to genuine users. Stop malicious actors from stacking your infrastructure bill and draining your compute credits.",
+    accent: "signal",
+  },
 ];
 
 const ACCENT_LINE: Record<NonNullable<UseCase["accent"]>, string> = {
@@ -88,27 +81,27 @@ export function UseCasesSection() {
     >
       <div className="mx-auto w-full max-w-7xl px-6 py-24 sm:px-8 sm:py-32 lg:px-10">
         <Reveal className="grid max-w-4xl gap-5">
-          <SectionMarker
+          {/* <SectionMarker
             index={6}
             eyebrow="Where HaloKYC fits"
             meta="Five surfaces · one contract"
             tone="paper"
-          />
+          /> */}
           <h2
             id="use-cases-headline"
-      className={cn(
-        "font-display font-medium tracking-[-0.03em]",
-        "text-4xl leading-tight",
-        "sm:text-5xl",
-      )}
+            className={cn(
+              "font-display font-medium tracking-[-0.03em]",
+              "text-4xl leading-tight",
+              "sm:text-5xl",
+            )}
           >
             Made for products where{" "}
-            <span className="text-[var(--landing-stamp)]">fake users</span>{" "}
-            are expensive.
+            <span className="text-[var(--landing-stamp)]">fake users</span> are
+            expensive.
           </h2>
           <p className="max-w-2xl text-[15.5px] leading-relaxed text-[color-mix(in_oklch,var(--landing-ink)_78%,var(--landing-paper))]">
-            The integration does not change shape between industries. The
-            checks you turn on and the threshold you set do.
+            The integration does not change shape between industries. The checks
+            you turn on and the threshold you set do.
           </p>
         </Reveal>
 
@@ -133,14 +126,14 @@ export function UseCasesSection() {
                   <div className="flex items-start justify-between">
                     <span
                       aria-hidden
-className={cn(
-  "flex size-10 items-center justify-center rounded-md",
-  "border border-[var(--landing-paper-edge)] bg-[var(--landing-paper)] text-[var(--landing-ink-soft)]",
-)}
+                      className={cn(
+                        "flex size-10 items-center justify-center rounded-md",
+                        "border border-[var(--landing-paper-edge)] bg-[var(--landing-paper)] text-[var(--landing-ink-soft)]",
+                      )}
                     >
                       <Icon className="size-4" strokeWidth={1.5} />
                     </span>
-                    <span className="font-mono text-[10px] uppercase tracking-[0.22em] text-[color-mix(in_oklch,var(--landing-ink)_55%,transparent)]">
+                    <span className="font-mono text-[10px] tracking-[0.22em] text-[color-mix(in_oklch,var(--landing-ink)_55%,transparent)] uppercase">
                       Use case {c.number}
                     </span>
                   </div>

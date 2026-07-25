@@ -79,13 +79,13 @@ export function Hero() {
         className="relative mx-auto grid w-full max-w-7xl gap-12 px-6 pt-20 pb-20 sm:px-8 md:grid-cols-[1fr_1fr] md:items-center md:gap-x-16 md:pt-28 md:pb-28 lg:px-10"
       >
         <div className="flex flex-col gap-9">
-          <motion.div variants={fadeUp}>
+          {/* <motion.div variants={fadeUp}>
             <SectionMarker
               index={1}
               eyebrow="The Trust Layer for your app"
               meta=""
             />
-          </motion.div>
+          </motion.div> */}
 
           <motion.div variants={fadeUp} className="flex flex-col gap-6">
             <h1
@@ -102,7 +102,7 @@ export function Hero() {
                 becoming your growth tax.
               </span>
             </h1>
-            <p className="max-w-xl text-base leading-7 text-[var(--landing-canvas-ink-soft)] sm:text-lg">
+            <p className="max-w-xl text-base leading-7 text-(--landing-canvas-ink-soft) sm:text-lg">
               HaloKYC is the identity layer your team would have built — if you
               had the time. One API, practical AI checks, a review queue your
               team controls, and a signed result your backend trusts. Ship it
@@ -118,21 +118,22 @@ export function Hero() {
               href="/login"
               className={cn(
                 "group inline-flex h-12 items-center gap-2 rounded-md px-6 text-sm font-medium",
-                "bg-[var(--landing-cyan)] text-[var(--landing-canvas)]",
+                "bg-(--landing-cyan) text-(--landing-canvas)",
                 "transition-colors hover:bg-[color-mix(in_oklch,var(--landing-cyan)_88%,white)]",
-                "focus-visible:ring-2 focus-visible:ring-[var(--landing-cyan)] focus-visible:ring-offset-2 focus-visible:ring-offset-[var(--landing-canvas)] focus-visible:outline-none",
+                "focus-visible:ring-2 focus-visible:ring-(--landing-cyan) focus-visible:ring-offset-2 focus-visible:ring-offset-[var(--landing-canvas)] focus-visible:outline-none",
               )}
             >
               Start free
               <ArrowRight className="size-4 transition-transform group-hover:translate-x-0.5" />
             </Link>
             <Link
-              href="/console"
+              href="https://docs.halokyc.com/"
+              target="_blank"
               className={cn(
                 "inline-flex h-12 items-center gap-2 rounded-md px-5 text-sm font-medium",
-                "border border-[var(--landing-hair)] bg-transparent text-[var(--landing-canvas-ink)]",
-                "transition-colors hover:bg-[var(--landing-canvas-edge)]",
-                "focus-visible:ring-2 focus-visible:ring-[var(--landing-cyan)] focus-visible:ring-offset-2 focus-visible:ring-offset-[var(--landing-canvas)] focus-visible:outline-none",
+                "border border-(--landing-hair) bg-transparent text-[var(--landing-canvas-ink)]",
+                "transition-colors hover:bg-(--landing-canvas-edge)",
+                "focus-visible:ring-2 focus-visible:ring-(--landing-cyan) focus-visible:ring-offset-2 focus-visible:ring-offset-[var(--landing-canvas)] focus-visible:outline-none",
               )}
             >
               <Braces className="size-4" strokeWidth={1.75} />
@@ -183,9 +184,9 @@ export function CaseFilePoster() {
       aria-label="Verification case file preview"
       className={cn(
         "relative mx-auto w-full max-w-xl overflow-hidden",
-        "border border-[var(--landing-hair)] bg-[var(--landing-canvas-edge)]",
+        "border border-(--landing-hair) bg-(--landing-canvas-edge)",
         "shadow-[0_40px_120px_-60px_rgba(0,0,0,0.85)]",
-        "rounded-[1.25rem]",
+        "rounded-lg",
       )}
     >
       {/* File header bar */}

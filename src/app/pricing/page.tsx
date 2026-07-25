@@ -3,6 +3,7 @@ import Link from "next/link";
 import { ArrowDownToLine, ArrowRight, Coins, CreditCard } from "lucide-react";
 
 import { Reveal } from "@/components/landing/reveal";
+import { MarketingPageShell } from "@/components/landing/marketing-page";
 import { SectionMarker } from "@/components/landing/section-marker";
 import { PricingFaq } from "@/components/landing/pricing-faq";
 import { PricingSection } from "@/components/landing/pricing-section";
@@ -85,7 +86,7 @@ function PackCard({
 
 export default function PricingPage() {
   return (
-    <div>
+    <MarketingPageShell>
       {/* ---------- HERO (dark canvas) ---------- */}
       <section
         aria-labelledby="pricing-hero-headline"
@@ -330,6 +331,6 @@ export default function PricingPage() {
           </div>
         </div>
       </section>
-    </div>
+    </MarketingPageShell>
   );
 }

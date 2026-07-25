@@ -8,9 +8,9 @@
  * tonal weight.
  */
 
-import { MultiFileCodeBlock } from "@/components/ui/code-block";
 import { Reveal } from "@/components/landing/reveal";
 import { SectionMarker } from "@/components/landing/section-marker";
+import { MultiFileCodeBlock } from "@/components/ui/code-block";
 import { cn } from "@/lib/utils";
 
 const FILES = [
@@ -75,12 +75,12 @@ export function ApiSection() {
     >
       <div className="mx-auto grid w-full max-w-7xl gap-12 px-6 py-24 sm:px-8 sm:py-32 lg:grid-cols-[0.9fr_1.1fr] lg:items-start lg:px-10">
         <Reveal className="flex flex-col gap-6">
-          <SectionMarker
+          {/* <SectionMarker
             index={4}
             eyebrow="Current contract"
             meta="REST · JSON · HMAC"
             tone="paper"
-          />
+          /> */}
           <h2
             id="api-headline"
             className={cn(
@@ -90,9 +90,7 @@ export function ApiSection() {
             )}
           >
             Start with a{" "}
-            <span className="text-[var(--landing-stamp)]">
-              workflow ID.
-            </span>{" "}
+            <span className="text-[var(--landing-stamp)]">workflow ID.</span>{" "}
             Finish with a signed decision.
           </h2>
           <p className="max-w-xl text-[15.5px] leading-7 text-[color-mix(in_oklch,var(--landing-ink)_78%,var(--landing-paper))]">
@@ -119,17 +117,17 @@ export function ApiSection() {
           </ul>
         </Reveal>
 
-<Reveal delay={0.08} className="flex flex-col gap-4 min-w-0">
-  <MultiFileCodeBlock
-        files={FILES}
-        showLineNumbers
-        scrollable
-        maxHeight={380}
-        theme="light"
-        bodyClassName="bg-[#fbf8ef] text-[#173426]"
-        className="border border-[var(--landing-paper-edge)]"
-      />
-    </Reveal>
+        <Reveal delay={0.08} className="flex min-w-0 flex-col gap-4">
+          <MultiFileCodeBlock
+            files={FILES}
+            showLineNumbers
+            scrollable
+            maxHeight={380}
+            theme="light"
+            bodyClassName="bg-[#fbf8ef] text-[#173426]"
+            className="border border-[var(--landing-paper-edge)]"
+          />
+        </Reveal>
       </div>
     </section>
   );

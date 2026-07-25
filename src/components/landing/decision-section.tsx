@@ -53,12 +53,12 @@ export function DecisionSection() {
       <div className="mx-auto w-full max-w-7xl px-6 py-24 sm:px-8 sm:py-32 lg:px-10">
         <div className="grid gap-14 md:grid-cols-[1.05fr_1fr] md:gap-16">
           <Reveal className="flex flex-col gap-6">
-            <SectionMarker
+            {/* <SectionMarker
               index={2}
               eyebrow="Why not to rebuild the wheel."
               meta=""
               tone="paper"
-            />
+            /> */}
             <h2
               id="decision-headline"
               className={cn(

@@ -99,21 +99,21 @@ export function FeatureGrid() {
       <div className="mx-auto w-full max-w-7xl px-6 py-24 sm:px-8 sm:py-32 lg:px-10">
         <Reveal className="grid gap-8 lg:grid-cols-[1fr_1fr] lg:items-end lg:gap-16">
           <div className="flex flex-col gap-5">
-            <SectionMarker
+            {/* <SectionMarker
               index={3}
               eyebrow="Evidence primitives"
               meta="10 services · 1 contract"
-            />
+            /> */}
             <h2
               id="features-headline"
-      className={cn(
-        "font-display font-medium text-4xl leading-tight tracking-[-0.03em]",
-        "sm:text-5xl",
-      )}
+              className={cn(
+                "font-display text-4xl leading-tight font-medium tracking-[-0.03em]",
+                "sm:text-5xl",
+              )}
             >
               The checks are{" "}
-              <span className="text-(--landing-cyan)">modular.</span> The
-              record is continuous.
+              <span className="text-(--landing-cyan)">modular.</span> The record
+              is continuous.
             </h2>
           </div>
           <p className="max-w-xl text-[15.5px] leading-7 text-[var(--landing-canvas-ink-soft)]">

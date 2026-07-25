@@ -8,11 +8,11 @@
  * phrase on the headline. No decorative orbs.
  */
 
-import Link from "next/link";
 import { ArrowRight } from "lucide-react";
+import Link from "next/link";
 
-import { SectionMarker } from "@/components/landing/section-marker";
 import { Reveal } from "@/components/landing/reveal";
+import { SectionMarker } from "@/components/landing/section-marker";
 import { cn } from "@/lib/utils";
 
 export function FinalCta() {
@@ -23,45 +23,47 @@ export function FinalCta() {
     >
       <div
         aria-hidden
-        className="absolute inset-0 landing-grid-soft opacity-[0.14]"
+        className="landing-grid-soft absolute inset-0 opacity-[0.14]"
       />
       <div
         aria-hidden
-        className="pointer-events-none absolute left-[8%] top-[58%] h-[480px] w-[480px] rounded-full bg-[var(--landing-cyan-soft)] opacity-35 blur-3xl"
+        className="pointer-events-none absolute top-[58%] left-[8%] h-[480px] w-[480px] rounded-full bg-[var(--landing-cyan-soft)] opacity-35 blur-3xl"
       />
 
       <div className="relative mx-auto w-full max-w-6xl px-6 py-28 sm:px-8 sm:py-40 lg:px-10">
-        <Reveal className="flex flex-col gap-6">
+        {/* <Reveal className="flex flex-col gap-6">
           <SectionMarker
             index={10}
             eyebrow="Ship before fraud becomes your growth tax"
             meta="Sign-up · Dev → live in one session"
           />
-        </Reveal>
+        </Reveal> */}
 
         <Reveal delay={0.08}>
           <h2
             id="cta-headline"
-className={cn(
-        "mt-8 max-w-5xl font-display font-medium tracking-[-0.04em]",
-        "text-6xl leading-[0.95]",
-        "sm:text-7xl",
-        "lg:text-8xl",
-      )}
+            className={cn(
+              "font-display mt-8 max-w-5xl font-medium tracking-[-0.04em]",
+              "text-6xl leading-[0.95]",
+              "sm:text-7xl",
+              "lg:text-8xl",
+            )}
           >
             Add identity verification to your product{" "}
-            <span className="text-[var(--landing-cyan)]">before next week.</span>
+            <span className="text-[var(--landing-cyan)]">
+              before next week.
+            </span>
           </h2>
         </Reveal>
 
-    <Reveal delay={0.16}>
-      <p className="mt-8 max-w-2xl text-[15.5px] leading-relaxed text-[var(--landing-canvas-ink-soft)] sm:text-base">
-        Use the sandbox with your own workflow. Run your first real
-        verification with a test key. Hand the review queue to your
-        support lead. No procurement, no four-vendor stack, no
-        compliance consultant required.
-      </p>
-    </Reveal>
+        <Reveal delay={0.16}>
+          <p className="mt-8 max-w-2xl text-[15.5px] leading-relaxed text-[var(--landing-canvas-ink-soft)] sm:text-base">
+            Use the sandbox with your own workflow. Run your first real
+            verification with a test key. Hand the review queue to your support
+            lead. No procurement, no four-vendor stack, no compliance consultant
+            required.
+          </p>
+        </Reveal>
 
         <Reveal delay={0.24}>
           <div className="mt-10 flex flex-wrap items-center gap-3">
@@ -81,7 +83,8 @@ className={cn(
               />
             </Link>
             <Link
-              href="/console"
+              href="https://docs.halokyc.com/"
+              target="_blank"
               className={cn(
                 "inline-flex h-12 items-center gap-2 rounded-md px-5 text-sm font-medium",
                 "border border-[var(--landing-hair)] bg-transparent text-[var(--landing-canvas-ink)]",
@@ -103,10 +106,10 @@ className={cn(
               ["Pricing", "no quotes"],
             ].map(([k, v]) => (
               <div key={k} className="flex flex-col gap-1">
-                <dt className="font-mono text-[10px] uppercase tracking-[0.22em] text-[var(--landing-canvas-mute)]">
+                <dt className="font-mono text-[10px] tracking-[0.22em] text-[var(--landing-canvas-mute)] uppercase">
                   {k}
                 </dt>
-                <dd className="font-sans text-base font-medium tabular-nums text-[var(--landing-canvas-ink)] sm:text-lg">
+                <dd className="font-sans text-base font-medium text-[var(--landing-canvas-ink)] tabular-nums sm:text-lg">
                   {v}
                 </dd>
               </div>

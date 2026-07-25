@@ -1,11 +1,11 @@
 "use client";
 
-import * as React from "react";
 import { Plus, X } from "lucide-react";
+import * as React from "react";
 
-import { cn } from "@/lib/utils";
 import { Reveal } from "@/components/landing/reveal";
 import { SectionMarker } from "@/components/landing/section-marker";
+import { cn } from "@/lib/utils";
 
 interface AccordionItem {
   id: string;
@@ -91,7 +91,7 @@ function AccordionItem({
           "text-[15.5px] font-semibold tracking-tight text-[var(--landing-ink)]",
           "transition-colors",
           "hover:bg-[var(--landing-paper-soft)]",
-          "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--landing-cyan)] focus-visible:ring-offset-2 focus-visible:ring-offset-[var(--landing-paper)]",
+          "focus-visible:ring-2 focus-visible:ring-[var(--landing-cyan)] focus-visible:ring-offset-2 focus-visible:ring-offset-[var(--landing-paper)] focus-visible:outline-none",
         )}
       >
         <span className="flex items-center gap-3">
@@ -111,14 +111,18 @@ function AccordionItem({
             isOpen && "rotate-45",
           )}
         >
-          {isOpen ? <X className="size-3.5" strokeWidth={1.75} /> : <Plus className="size-3.5" strokeWidth={1.75} />}
+          {isOpen ? (
+            <X className="size-3.5" strokeWidth={1.75} />
+          ) : (
+            <Plus className="size-3.5" strokeWidth={1.75} />
+          )}
         </span>
       </button>
       <div
         className="overflow-hidden transition-all duration-200 ease-out"
         style={{ height: isOpen ? height : 0, opacity: isOpen ? 1 : 0 }}
       >
-        <div ref={contentRef} className="px-5 pb-4 pt-0">
+        <div ref={contentRef} className="px-5 pt-0 pb-4">
           <p className="pl-7 text-[14px] leading-relaxed text-[color-mix(in_oklch,var(--landing-ink)_72%,var(--landing-paper))]">
             {item.a}
           </p>
@@ -144,12 +148,12 @@ export function SecuritySection() {
       <div className="mx-auto w-full max-w-7xl px-6 py-24 sm:px-8 sm:py-32 lg:px-10">
         <div className="grid gap-14 lg:grid-cols-[0.9fr_1.1fr] lg:gap-20">
           <Reveal className="flex flex-col gap-6">
-            <SectionMarker
+            {/* <SectionMarker
               index={9}
               eyebrow="Data handling"
               meta="FAQ · eight answers"
               tone="paper"
-            />
+            /> */}
             <h2
               id="security-headline"
               className={cn(
@@ -166,9 +170,9 @@ export function SecuritySection() {
             </h2>
             <p className="max-w-md text-[15.5px] leading-relaxed text-[color-mix(in_oklch,var(--landing-ink)_78%,var(--landing-paper))]">
               Identity files are the most sensitive data your product touches.
-              We designed the system around what gets deleted, who can see
-              what, and why the audit trail exists — before the first line of
-              AI code was written.
+              We designed the system around what gets deleted, who can see what,
+              and why the audit trail exists — before the first line of AI code
+              was written.
             </p>
 
             <dl className="mt-2 grid grid-cols-2 gap-4 border-t border-[var(--landing-rule)] pt-5 text-sm">
@@ -179,7 +183,7 @@ export function SecuritySection() {
                 ["Signed", "HMAC-SHA256 · SHA-256"],
               ].map(([k, v]) => (
                 <div key={k} className="flex flex-col gap-0.5">
-                  <dt className="font-mono text-[10px] uppercase tracking-[0.22em] text-[color-mix(in_oklch,var(--landing-ink)_55%,transparent)]">
+                  <dt className="font-mono text-[10px] tracking-[0.22em] text-[color-mix(in_oklch,var(--landing-ink)_55%,transparent)] uppercase">
                     {k}
                   </dt>
                   <dd className="text-[13.5px] leading-relaxed text-[color-mix(in_oklch,var(--landing-ink)_78%,var(--landing-paper))]">

@@ -15,16 +15,17 @@
 
 import { LayoutDashboard, Menu, UserPlus, X } from "lucide-react";
 import Link from "next/link";
+import { usePathname } from "next/navigation";
 import { useEffect, useState } from "react";
 
 import { BrandLogo } from "@/components/brand-logo";
 import { cn } from "@/lib/utils";
 
 const NAV_LINKS = [
-  { href: "#product", label: "Product" },
-  { href: "#developers", label: "Developers" },
-  { href: "#workflow", label: "Workflow" },
-  { href: "#security", label: "Security" },
+  { href: "/product", label: "Product" },
+  { href: "/developers", label: "Credits" },
+  { href: "/workflow", label: "Workflow" },
+  { href: "/security", label: "Security" },
   { href: "/pricing", label: "Pricing" },
 ] as const;
 
@@ -33,6 +34,7 @@ type LandingNavbarProps = {
 };
 
 export function LandingNavbar({ dashboardHref }: LandingNavbarProps) {
+  const pathname = usePathname();
   const [scrolled, setScrolled] = useState(false);
   const [open, setOpen] = useState(false);
   const primaryHref = dashboardHref ?? "/login";
@@ -69,9 +71,9 @@ export function LandingNavbar({ dashboardHref }: LandingNavbarProps) {
       <header
         className={cn(
           "sticky top-0 z-50 w-full transition-colors",
-  scrolled
-    ? "border-b border-(--landing-hair) bg-[color-mix(in_oklch,var(--landing-canvas)_88%,transparent)] backdrop-blur-xl"
-    : "border-b border-transparent bg-[color-mix(in_oklch,var(--landing-canvas)_92%,transparent)]",
+          scrolled
+            ? "border-b border-(--landing-hair) bg-[color-mix(in_oklch,var(--landing-canvas)_88%,transparent)] backdrop-blur-xl"
+            : "border-b border-transparent bg-[color-mix(in_oklch,var(--landing-canvas)_92%,transparent)]",
         )}
       >
         <div className="mx-auto flex h-16 w-full max-w-7xl items-center justify-between gap-6 px-6 sm:px-8 lg:px-10">
@@ -91,7 +93,10 @@ export function LandingNavbar({ dashboardHref }: LandingNavbarProps) {
                 className={cn(
                   "rounded-md px-3 py-1.5 text-sm text-[var(--landing-canvas-ink-soft)]",
                   "transition-colors hover:bg-[var(--landing-canvas-soft)] hover:text-[var(--landing-canvas-ink)]",
+                  pathname === item.href &&
+                    "bg-[var(--landing-canvas-soft)] text-[var(--landing-canvas-ink)]",
                 )}
+                aria-current={pathname === item.href ? "page" : undefined}
               >
                 {item.label}
               </Link>
@@ -100,7 +105,8 @@ export function LandingNavbar({ dashboardHref }: LandingNavbarProps) {
 
           <div className="flex items-center gap-2">
             <Link
-              href="/console"
+              href="https://docs.halokyc.com/"
+              target="_blank"
               className={cn(
                 "hidden h-9 items-center rounded-md px-3.5 text-sm font-medium sm:inline-flex",
                 "border border-[var(--landing-hair)] bg-transparent text-[var(--landing-canvas-ink)]",
@@ -193,7 +199,10 @@ export function LandingNavbar({ dashboardHref }: LandingNavbarProps) {
                   className={cn(
                     "block rounded-md px-3 py-3 text-base text-[var(--landing-canvas-ink-soft)]",
                     "transition-colors hover:bg-[var(--landing-canvas-soft)] hover:text-[var(--landing-canvas-ink)]",
+                    pathname === item.href &&
+                      "bg-[var(--landing-canvas-soft)] text-[var(--landing-canvas-ink)]",
                   )}
+                  aria-current={pathname === item.href ? "page" : undefined}
                 >
                   {item.label}
                 </Link>

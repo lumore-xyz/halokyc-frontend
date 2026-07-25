@@ -45,17 +45,17 @@ export function ClientControlSection() {
       />
       <div className="relative mx-auto grid w-full max-w-7xl gap-14 px-6 py-24 sm:px-8 sm:py-32 lg:grid-cols-[1fr_1.05fr] lg:items-center lg:px-10">
         <Reveal className="flex flex-col gap-6">
-          <SectionMarker
+          {/* <SectionMarker
             index={7}
             eyebrow="Your rules, your decisions"
             meta="Workspace · tenant-scoped"
-          />
+          /> */}
           <h2
             id="control-headline"
             className={cn(
-"font-display font-medium tracking-[-0.03em]",
-      "text-4xl leading-tight",
-      "sm:text-5xl",
+              "font-display font-medium tracking-[-0.03em]",
+              "text-4xl leading-tight",
+              "sm:text-5xl",
             )}
           >
             Keep control of how{" "}

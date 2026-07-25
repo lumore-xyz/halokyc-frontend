@@ -16,28 +16,28 @@ const COLUMNS = [
   {
     title: "Product",
     links: [
-      { label: "Verification API", href: "/console" },
-      { label: "Developer console", href: "/console" },
-      { label: "Review controls", href: "/dashboard/reviews" },
-      { label: "Webhooks", href: "/console" },
+      { label: "Product overview", href: "/product" },
+      { label: "Workflow", href: "/workflow" },
+      { label: "Security", href: "/security" },
+      // { label: "Review controls", href: "/product" },
     ],
   },
   {
     title: "Developers",
     links: [
-      { label: "Docs", href: "/console" },
-      { label: "API reference", href: "/console" },
-      { label: "Quickstart", href: "/console" },
-      { label: "Status", href: "/status" },
+      { label: "Credits", href: "/developers" },
+      { label: "Documentation", href: "https://docs.halokyc.com/" },
+      // { label: "API reference", href: "https://docs.halokyc.com/" },
+      // { label: "Quickstart", href: "https://docs.halokyc.com/" },
+      // { label: "Status", href: "/status" },
     ],
   },
   {
     title: "Company",
     links: [
-      { label: "About", href: "/about" },
       { label: "Pricing", href: "/pricing" },
       { label: "Contact", href: "mailto:hello@halokyc.dev" },
-      { label: "Security", href: "/#security" },
+      // { label: "About", href: "/about" },
     ],
   },
   {
@@ -63,7 +63,7 @@ export function LandingFooter() {
   return (
     <footer className="relative border-t border-[var(--landing-hair)] bg-[var(--landing-canvas)] text-[var(--landing-canvas-ink-soft)]">
       <div className="overflow-hidden border-b border-[var(--landing-hair)]">
-        <div className="landing-ticker flex w-max gap-12 whitespace-nowrap py-3 font-mono text-[11px] uppercase tracking-[0.22em] text-[var(--landing-canvas-mute)]">
+        <div className="landing-ticker flex w-max gap-12 py-3 font-mono text-[11px] tracking-[0.22em] whitespace-nowrap text-[var(--landing-canvas-mute)] uppercase">
           {[...TICKER, ...TICKER].map((line, i) => (
             <span key={i} className="flex items-center gap-3">
               <span className="block size-1 rounded-full bg-[var(--landing-cyan)]" />
@@ -84,25 +84,27 @@ export function LandingFooter() {
               <BrandLogo variant="wordmark-light" className="h-9 w-36" />
             </Link>
             <p className="mt-5 max-w-xs text-[14px] leading-relaxed text-[var(--landing-canvas-ink-soft)]">
-              Low-cost identity verification for startups that need
-              trust, not enterprise complexity.
+              Low-cost identity verification for startups that need trust, not
+              enterprise complexity.
             </p>
-  <dl className="mt-8 grid grid-cols-2 gap-4 text-sm">
-    {[["Built in", "Mumbai, India"]].map(([k, v]) => (
-      <div key={k} className="flex flex-col gap-0.5">
-        <dt className="font-mono text-[10px] uppercase tracking-[0.22em] text-[var(--landing-canvas-mute)]">
-          {k}
-        </dt>
-        <dd className="text-[13px] text-[var(--landing-canvas-ink)]">{v}</dd>
-      </div>
-    ))}
-  </dl>
+            <dl className="mt-8 grid grid-cols-2 gap-4 text-sm">
+              {[["Built in", "Mumbai, India"]].map(([k, v]) => (
+                <div key={k} className="flex flex-col gap-0.5">
+                  <dt className="font-mono text-[10px] tracking-[0.22em] text-[var(--landing-canvas-mute)] uppercase">
+                    {k}
+                  </dt>
+                  <dd className="text-[13px] text-[var(--landing-canvas-ink)]">
+                    {v}
+                  </dd>
+                </div>
+              ))}
+            </dl>
           </div>
 
           <div className="grid grid-cols-2 gap-10 sm:grid-cols-4">
             {COLUMNS.map((col, i) => (
               <div key={col.title}>
-                <p className="font-mono text-[10px] uppercase tracking-[0.22em] text-[var(--landing-canvas-mute)]">
+                <p className="font-mono text-[10px] tracking-[0.22em] text-[var(--landing-canvas-mute)] uppercase">
                   {String(i + 1).padStart(2, "0")} · {col.title}
                 </p>
                 <ul className="mt-4 space-y-2.5">
@@ -126,7 +128,7 @@ export function LandingFooter() {
         </div>
 
         <div className="mt-12 flex flex-col gap-4 border-t border-[var(--landing-hair)] pt-6 sm:flex-row sm:items-center sm:justify-between">
-          <p className="font-mono text-[10px] uppercase tracking-[0.22em] text-[var(--landing-canvas-mute)]">
+          <p className="font-mono text-[10px] tracking-[0.22em] text-[var(--landing-canvas-mute)] uppercase">
             (c) 2026 HaloKYC — Built for developers who need trust
             infrastructure without enterprise drag
           </p>
