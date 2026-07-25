@@ -23,14 +23,14 @@ import { cn } from "@/lib/utils";
 
 const NAV_LINKS = [
   { href: "/product", label: "Product" },
-  { href: "/developers", label: "Credits" },
+  { href: "/credits", label: "Credits" },
   { href: "/workflow", label: "Workflow" },
   { href: "/security", label: "Security" },
   { href: "/pricing", label: "Pricing" },
 ] as const;
 
 type LandingNavbarProps = {
-  dashboardHref?: "/dashboard" | "/admin";
+  dashboardHref?: "/dashboard" | "/admin" | "/login";
 };
 
 export function LandingNavbar({ dashboardHref }: LandingNavbarProps) {
@@ -210,7 +210,9 @@ export function LandingNavbar({ dashboardHref }: LandingNavbarProps) {
             ))}
             <li>
               <Link
-                href="/console"
+                href="https://docs.halokyc.com/"
+                target="_blank"
+                rel="noopener noreferrer"
                 onClick={() => setOpen(false)}
                 className="block rounded-md px-3 py-3 text-base text-[var(--landing-canvas-ink-soft)] transition-colors hover:bg-[var(--landing-canvas-soft)] hover:text-[var(--landing-canvas-ink)]"
               >

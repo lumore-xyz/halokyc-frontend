@@ -12,7 +12,8 @@
     "shadcn": "shadcn",
     "test": "vitest",
     "test:run": "vitest run",
-    "test:coverage": "vitest run --coverage"
+    "test:coverage": "vitest run --coverage",
+    "seo:check": "node scripts/seo-crawl-check.js"
   },
   "dependencies": {
     "@base-ui/react": "^1.6.0",

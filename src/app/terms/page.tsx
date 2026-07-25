@@ -1,7 +1,31 @@
+import type { Metadata } from "next";
 import { ArrowLeft } from "lucide-react";
 import Link from "next/link";
+import { publicEnv } from "@/lib/env";
 
 import { BrandLogo } from "@/components/brand-logo";
+
+export const metadata: Metadata = {
+  title: "Terms of Service",
+  description:
+    "HaloKYC Business Terms and Conditions governing platform access, API usage, verification services, billing, credits, and legal obligations.",
+  metadataBase: new URL(publicEnv.siteUrl),
+  alternates: {
+    canonical: "/terms",
+  },
+  openGraph: {
+    title: "Terms of Service | HaloKYC",
+    description:
+      "HaloKYC Business Terms and Conditions governing platform access, API usage, verification services, billing, credits, and legal obligations.",
+    type: "website",
+    url: "/terms",
+    siteName: "HaloKYC",
+  },
+  robots: {
+    index: true,
+    follow: true,
+  },
+};
 
 export default function TermsPage() {
   return (
@@ -204,8 +228,8 @@ export default function TermsPage() {
             <h2 className="font-serif text-xl font-medium text-[var(--landing-canvas-ink)]">18. Contact</h2>
             <div className="grid gap-4 sm:grid-cols-3">
               <div className="p-4 rounded-lg border border-[var(--landing-canvas-ink-soft)] opacity-80">
-                <p className="font-medium text-[var(--landing-canvas-ink)]">Legal</p>
-                <p>legal@halokyc.com</p>
+                <p className="font-medium text-[var(--landing-canvas-ink)]">General</p>
+                <p>hello@halokyc.com</p>
               </div>
               <div className="p-4 rounded-lg border border-[var(--landing-canvas-ink-soft)] opacity-80">
                 <p className="font-medium text-[var(--landing-canvas-ink)]">Privacy</p>

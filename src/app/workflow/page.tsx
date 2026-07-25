@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import { BellRing, FileCheck2, GitBranch, ListChecks } from "lucide-react";
+import { publicEnv } from "@/lib/env";
 
 import { ApiSection } from "@/components/landing/api-section";
 import {
@@ -14,6 +15,18 @@ export const metadata: Metadata = {
   title: "Identity verification workflow | HaloKYC",
   description:
     "See how a HaloKYC verification moves from policy design and evidence capture to checks, review, and a signed webhook.",
+  metadataBase: new URL(publicEnv.siteUrl),
+  alternates: {
+    canonical: "/workflow",
+  },
+  openGraph: {
+    title: "Identity verification workflow | HaloKYC",
+    description:
+      "See how a HaloKYC verification moves from policy design and evidence capture to checks, review, and a signed webhook.",
+    type: "website",
+    url: "/workflow",
+    siteName: "HaloKYC",
+  },
 };
 
 export default function WorkflowPage() {

@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import { FileClock, Fingerprint, KeyRound, ShieldCheck } from "lucide-react";
+import { publicEnv } from "@/lib/env";
 
 import {
   MarketingCta,
@@ -13,6 +14,22 @@ export const metadata: Metadata = {
   title: "Security and data handling | HaloKYC",
   description:
     "Learn how HaloKYC handles identity evidence, tenant isolation, audit trails, document data, and signed webhooks.",
+  metadataBase: new URL(publicEnv.siteUrl),
+  alternates: {
+    canonical: "/security",
+  },
+  openGraph: {
+    title: "Security and data handling | HaloKYC",
+    description:
+      "Learn how HaloKYC handles identity evidence, tenant isolation, audit trails, document data, and signed webhooks.",
+    type: "website",
+    url: "/security",
+    siteName: "HaloKYC",
+  },
+  robots: {
+    index: true,
+    follow: true,
+  },
 };
 
 export default function SecurityPage() {

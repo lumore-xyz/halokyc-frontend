@@ -1,5 +1,7 @@
 import type { Metadata } from "next";
 import { Blocks, ClipboardCheck, ScanFace, Webhook } from "lucide-react";
+import { publicEnv } from "@/lib/env";
+import { softwareApplicationSchema } from "@/lib/structured-data";
 
 import { ClientControlSection } from "@/components/landing/client-control-section";
 import { FeatureGrid } from "@/components/landing/feature-grid";
@@ -14,6 +16,21 @@ export const metadata: Metadata = {
   title: "Identity verification product | HaloKYC",
   description:
     "Compose identity checks, capture evidence, review uncertain cases, and deliver signed decisions from one HaloKYC workflow.",
+  metadataBase: new URL(publicEnv.siteUrl),
+  alternates: {
+    canonical: "/product",
+  },
+  openGraph: {
+    title: "Identity verification product | HaloKYC",
+    description:
+      "Compose identity checks, capture evidence, review uncertain cases, and deliver signed decisions from one HaloKYC workflow.",
+    type: "website",
+    url: "/product",
+    siteName: "HaloKYC",
+  },
+  other: {
+    "script:ld+json": JSON.stringify(softwareApplicationSchema()),
+  },
 };
 
 export default function ProductPage() {

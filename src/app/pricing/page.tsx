@@ -1,6 +1,9 @@
+import type { Metadata } from "next";
 import Link from "next/link";
 
 import { ArrowDownToLine, ArrowRight, Coins, CreditCard } from "lucide-react";
+import { publicEnv } from "@/lib/env";
+import { faqPageSchema } from "@/lib/structured-data";
 
 import { Reveal } from "@/components/landing/reveal";
 import { MarketingPageShell } from "@/components/landing/marketing-page";
@@ -8,6 +11,70 @@ import { SectionMarker } from "@/components/landing/section-marker";
 import { PricingFaq } from "@/components/landing/pricing-faq";
 import { PricingSection } from "@/components/landing/pricing-section";
 import { cn } from "@/lib/utils";
+
+const PRICING_FAQS = [
+  {
+    question: "What is a credit?",
+    answer:
+      "One credit equals one completed verification. Whether you run a single face-match check or a full liveness + OCR + duplicate workflow, it costs the same — one credit. This keeps pricing predictable and removes any incentive to strip checks to save money.",
+  },
+  {
+    question: "Can purchased credits expire?",
+    answer:
+      "No. Credits you buy as a one-off pack stay in your wallet until you use them. They are not subject to the subscription rollover cap and do not expire at any calendar boundary.",
+  },
+  {
+    question: "How does rollover work?",
+    answer:
+      "Subscription credits carry over month to month, up to 10x the monthly plan grant. Launch — 1,500/month — can accumulate up to 15,000. Growth caps at 60,000. Scale caps at 200,000. Credits beyond the cap are not granted.",
+  },
+  {
+    question: "What happens when I run out of credits?",
+    answer:
+      "Sessions that cannot reserve credits queue in an awaiting_credits state. As soon as new credits land in your wallet — monthly grant, purchased pack, or admin credit — sessions drain in FIFO order. Your users never see a credit error.",
+  },
+  {
+    question: "Which credits get consumed first?",
+    answer:
+      "Reservations always consume free first, then subscription, then purchased. Free credits reset to 1,000 each month. Subscription credits accrue from your plan. Purchased credits are a true top-up for when both others are dry.",
+  },
+  {
+    question: "What is the minimum credit purchase?",
+    answer:
+      "$25, which buys 500 credits at $0.050 each. Payment processing has a fixed cost component, so smaller transactions are uneconomical. Every pack above the minimum reduces the per-credit cost.",
+  },
+  {
+    question: "Can I switch plans?",
+    answer:
+      "Yes. Plan changes apply at the next billing cycle. Upgrades are immediate — you get the higher entitlement right away. Downgrades apply to the following cycle so your existing credits are not stranded mid-month.",
+  },
+  {
+    question: "Are there per-check or overage fees?",
+    answer:
+      "No. There are no per-type charges, no hidden overage tiers, and no annual commitments required. The price listed per plan is the price you pay each month.",
+  },
+];
+
+export const metadata: Metadata = {
+  title: "Verification pricing | HaloKYC",
+  description:
+    "Simple, usage-based pricing for identity verification. Start free with 1,000 credits, scale with monthly plans or one-time top-ups. No per-check fees, no annual lock-in.",
+  metadataBase: new URL(publicEnv.siteUrl),
+  alternates: {
+    canonical: "/pricing",
+  },
+  openGraph: {
+    title: "Verification pricing | HaloKYC",
+    description:
+      "Simple, usage-based pricing for identity verification. Start free with 1,000 credits, scale with monthly plans or one-time top-ups.",
+    type: "website",
+    url: "/pricing",
+    siteName: "HaloKYC",
+  },
+  other: {
+    "script:ld+json": JSON.stringify(faqPageSchema(PRICING_FAQS)),
+  },
+};
 
 /* ------------------------------------------------------------------ */
 /*  Sub-components                                                     */

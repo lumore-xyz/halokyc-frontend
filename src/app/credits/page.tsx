@@ -5,6 +5,7 @@ import {
   RefreshCcw,
   WalletCards,
 } from "lucide-react";
+import { publicEnv } from "@/lib/env";
 
 import {
   MarketingCta,
@@ -18,6 +19,18 @@ export const metadata: Metadata = {
   title: "Verification credits | HaloKYC",
   description:
     "Understand how HaloKYC credits work, including completed-verification pricing, rollover, top-ups, and credit reservations.",
+  metadataBase: new URL(publicEnv.siteUrl),
+  alternates: {
+    canonical: "/credits",
+  },
+  openGraph: {
+    title: "Verification credits | HaloKYC",
+    description:
+      "Understand how HaloKYC credits work, including completed-verification pricing, rollover, top-ups, and credit reservations.",
+    type: "website",
+    url: "/credits",
+    siteName: "HaloKYC",
+  },
 };
 
 export default function CreditsPage() {

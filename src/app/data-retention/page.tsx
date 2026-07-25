@@ -1,7 +1,31 @@
+import type { Metadata } from "next";
 import { ArrowLeft } from "lucide-react";
 import Link from "next/link";
+import { publicEnv } from "@/lib/env";
 
 import { BrandLogo } from "@/components/brand-logo";
+
+export const metadata: Metadata = {
+  title: "Data Retention Policy",
+  description:
+    "HaloKYC data retention periods for verification artifacts, face embeddings, and audit logs. Includes deletion process and legal hold exceptions.",
+  metadataBase: new URL(publicEnv.siteUrl),
+  alternates: {
+    canonical: "/data-retention",
+  },
+  openGraph: {
+    title: "Data Retention Policy | HaloKYC",
+    description:
+      "HaloKYC data retention periods for verification artifacts, face embeddings, and audit logs. Includes deletion process and legal hold exceptions.",
+    type: "website",
+    url: "/data-retention",
+    siteName: "HaloKYC",
+  },
+  robots: {
+    index: true,
+    follow: true,
+  },
+};
 
 export default function RetentionPage() {
   return (
@@ -67,6 +91,24 @@ export default function RetentionPage() {
               Notwithstanding the above, we may retain data longer if required by a valid legal order, 
               court subpoena, or to prevent fraud and security threats.
             </p>
+          </section>
+
+          <section className="space-y-4 pt-8 border-t border-[var(--landing-hair)]">
+            <h2 className="font-serif text-xl font-medium text-[var(--landing-canvas-ink)]">5. Contact</h2>
+            <div className="grid gap-4 sm:grid-cols-3">
+              <div className="p-4 rounded-lg border border-[var(--landing-canvas-ink-soft)] opacity-80">
+                <p className="font-medium text-[var(--landing-canvas-ink)]">Privacy</p>
+                <p>privacy@halokyc.com</p>
+              </div>
+              <div className="p-4 rounded-lg border border-[var(--landing-canvas-ink-soft)] opacity-80">
+                <p className="font-medium text-[var(--landing-canvas-ink)]">Security</p>
+                <p>security@halokyc.com</p>
+              </div>
+              <div className="p-4 rounded-lg border border-[var(--landing-canvas-ink-soft)] opacity-80">
+                <p className="font-medium text-[var(--landing-canvas-ink)]">General</p>
+                <p>hello@halokyc.com</p>
+              </div>
+            </div>
           </section>
         </div>
       </main>

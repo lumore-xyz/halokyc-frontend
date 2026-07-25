@@ -1,7 +1,31 @@
+import type { Metadata } from "next";
 import { ArrowLeft } from "lucide-react";
 import Link from "next/link";
+import { publicEnv } from "@/lib/env";
 
 import { BrandLogo } from "@/components/brand-logo";
+
+export const metadata: Metadata = {
+  title: "Privacy Policy",
+  description:
+    "How HaloKYC collects, uses, stores, and protects personal data. Covers controller/processor roles, retention, user rights, and contact information.",
+  metadataBase: new URL(publicEnv.siteUrl),
+  alternates: {
+    canonical: "/privacy",
+  },
+  openGraph: {
+    title: "Privacy Policy | HaloKYC",
+    description:
+      "How HaloKYC collects, uses, stores, and protects personal data. Covers controller/processor roles, retention, user rights, and contact information.",
+    type: "website",
+    url: "/privacy",
+    siteName: "HaloKYC",
+  },
+  robots: {
+    index: true,
+    follow: true,
+  },
+};
 
 export default function PrivacyPage() {
   return (

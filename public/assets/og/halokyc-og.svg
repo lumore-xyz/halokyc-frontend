@@ -1,0 +1,47 @@
+<svg width="1200" height="630" viewBox="0 0 1200 630" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <linearGradient id="bg" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#0f172a"/>
+      <stop offset="100%" style="stop-color:#1e293b"/>
+    </linearGradient>
+    <linearGradient id="accent" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" style="stop-color:#06b6d4"/>
+      <stop offset="100%" style="stop-color:#3b82f6"/>
+    </linearGradient>
+  </defs>
+  <rect width="1200" height="630" fill="url(#bg)"/>
+  
+  <!-- Decorative elements -->
+  <circle cx="1050" cy="150" r="200" fill="url(#accent)" opacity="0.1"/>
+  <circle cx="150" cy="480" r="150" fill="url(#accent)" opacity="0.08"/>
+  
+  <!-- Logo area -->
+  <g transform="translate(600, 200)" text-anchor="middle">
+    <text x="0" y="-10" font-family="system-ui, sans-serif" font-size="48" font-weight="700" fill="white" letter-spacing="-1">
+      HaloKYC
+    </text>
+    <text x="0" y="40" font-family="system-ui, sans-serif" font-size="20" fill="#06b6d4" font-weight="500">
+      Identity Verification API
+    </text>
+  </g>
+  
+  <!-- Tagline -->
+  <g transform="translate(600, 320)" text-anchor="middle">
+    <text x="0" y="0" font-family="system-ui, sans-serif" font-size="28" fill="#e2e8f0" font-weight="400">
+      Stop fake users before they cost you
+    </text>
+  </g>
+  
+  <!-- Features row -->
+  <g transform="translate(600, 420)" text-anchor="middle">
+    <text x="-300" y="0" font-family="system-ui, sans-serif" font-size="16" fill="#94a3b8">Selfie + Document</text>
+    <text x="0" y="0" font-family="system-ui, sans-serif" font-size="16" fill="#94a3b8">Liveness & Face Match</text>
+    <text x="300" y="0" font-family="system-ui, sans-serif" font-size="16" fill="#94a3b8">Risk Scoring & Review</text>
+  </g>
+  
+  <!-- Bottom bar -->
+  <rect x="100" y="550" width="1000" height="2" fill="#334155"/>
+  <text x="600" y="590" font-family="system-ui, sans-serif" font-size="14" fill="#64748b" text-anchor="middle">
+    halokyc.com  •  One API. Practical identity checks. Your team keeps the final decision.
+  </text>
+</svg>

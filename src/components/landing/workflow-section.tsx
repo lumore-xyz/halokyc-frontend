@@ -16,11 +16,12 @@ import {
   Webhook,
 } from "lucide-react";
 
+import Link from "next/link";
 import { Reveal } from "@/components/landing/reveal";
 import { SectionMarker } from "@/components/landing/section-marker";
 import { cn } from "@/lib/utils";
 
-type Step = readonly [string, string, string, typeof Route];
+type Step = readonly [string, string, string, typeof Route, string];
 
 const STEPS: readonly Step[] = [
   [
@@ -28,36 +29,42 @@ const STEPS: readonly Step[] = [
     "Design policy",
     "Client chooses selfie, liveness, document, age, and thresholds in a workflow.",
     Route,
+    "/product",
   ],
   [
     "02",
     "Start session",
     "Backend sends external_user_id, workflow_id, and optional callback_url.",
     FileKey2,
+    "/workflow",
   ],
   [
     "03",
     "Capture evidence",
     "User completes only the screens required by that workflow.",
     Camera,
+    "/security",
   ],
   [
     "04",
     "Run checks",
     "Worker runs OCR, face match, liveness, duplicate, and age as needed.",
     Gauge,
+    "/credits",
   ],
   [
     "05",
     "Resolve decision",
     "Approved, rejected, or manual_review with a readable risk reason.",
     ClipboardCheck,
+    "/security",
   ],
   [
     "06",
     "Notify app",
     "Final result is sent through a signed webhook and remains available by API.",
     Webhook,
+    "/workflow",
   ],
 ];
 
@@ -99,7 +106,7 @@ export function WorkflowSection() {
         </Reveal>
 
         <ol className="relative mt-16 grid gap-0 border border-[var(--landing-hair)] md:grid-cols-2 lg:grid-cols-3">
-          {STEPS.map(([n, title, body, Icon], index) => (
+          {STEPS.map(([n, title, body, Icon, href], index) => (
             <Reveal
               key={n}
               as="li"
@@ -115,14 +122,17 @@ export function WorkflowSection() {
                   <span className="font-mono text-[11px] tracking-[0.22em] text-[var(--landing-cyan)] uppercase">
                     Step {n}
                   </span>
-                  <span
+                  <Link
+                    href={href}
                     className={cn(
                       "flex size-10 items-center justify-center rounded-md",
                       "border border-[var(--landing-cyan-edge)] bg-[var(--landing-cyan-soft)] text-[var(--landing-cyan)]",
+                      "transition-colors hover:bg-[var(--landing-cyan)] hover:text-[var(--landing-canvas)]",
                     )}
+                    aria-label={`Read more about ${title}`}
                   >
                     <Icon className="size-4" strokeWidth={1.5} />
-                  </span>
+                  </Link>
                 </div>
                 <h3 className="font-sans text-xl font-semibold tracking-tight">
                   {title}
