@@ -41,6 +41,18 @@ Organization-level credit wallet with bucketed credits, reservation/settlement l
 - `GET /api/admin/billing/catalog` — admin catalog management
 - `GET/PUT /api/admin/credit-ledger` — full append-only ledger
 
+### Customer billing portal
+
+- `GET /api/v1/billing/customer-portal` reports safe portal availability to a
+  verified organization owner/admin.
+- `POST /api/v1/billing/customer-portal` creates a short-lived Dodo portal
+  session using the server-owned organization customer identity.
+- Dodo generates and emails invoices and hosts billing history/PDF downloads.
+  HaloKYC does not duplicate financial receipts through SMTP.
+- `organizations.dodo_customer_id` is the canonical server-only portal
+  identity. Conflicts block portal access but do not discard a valid paid
+  credit/subscription entitlement.
+
 ## Frontend pages
 - `/dashboard/billing` — plan display, credit balance, checkout actions (subscription + credit pack)
 - `/admin/billing` — admin catalog, credit adjustment, ledger

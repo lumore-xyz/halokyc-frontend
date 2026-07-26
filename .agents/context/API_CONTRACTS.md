@@ -838,13 +838,24 @@ type BillingCheckoutResponse = {
   checkout_url: string;
 };
 
+type BillingPortalStatusResponse = {
+  available: boolean;
+  unavailable_reason:
+    | "no_successful_payment"
+    | "billing_identity_conflict"
+    | null;
+};
+
+type BillingPortalSessionResponse = {
+  portal_url: string;
+};
+
 type BillingSubscriptionRead = {
   subscription_id: string;
   plan_key: string;
   status: string;
   monthly_credits: number;
   current_period_end: string | null;
-  dodo_customer_id: string | null;
 };
 
 type BillingEntitlementsResponse = {
@@ -1260,6 +1271,15 @@ Auth: `halokyc_client` cookie.
   `BillingEntitlementsResponse`, the authoritative effective plan, limits,
   current workspace/member usage, and feature flags. Missing or unknown plans
   resolve conservatively to Sandbox. Allowed: any active organization member.
+- `GET /api/v1/billing/customer-portal`: Returns
+  `BillingPortalStatusResponse`. Allowed: verified organization owner/admin.
+  The response never exposes Dodo customer identity or purchase details and is
+  `no-store`.
+- `POST /api/v1/billing/customer-portal`: Returns a newly created
+  `BillingPortalSessionResponse` using the server-owned organization customer
+  identity and canonical billing return URL. The request has no body. Allowed:
+  verified organization owner/admin. The portal URL is an ephemeral bearer
+  link and is never logged or persisted by HaloKYC.
 - `POST /api/v1/billing/checkout/subscription`: Request
   `BillingCheckoutRequest`, Response `BillingCheckoutResponse`. Creates a
   hosted Dodo checkout session for a subscription product. Allowed:
@@ -1273,6 +1293,13 @@ Auth: `halokyc_client` cookie.
   with the official Dodo SDK before processing. Successful subscription events
   grant subscription credits through `CreditService`; successful one-time
   payments add purchased credits through the same ledger.
+
+Portal errors use
+`billing_customer_unavailable` (409), `billing_identity_conflict` (409),
+`billing_portal_rate_limited` (429 plus `Retry-After`),
+`billing_provider_unavailable` (502), or `billing_not_configured` (503).
+Dodo remains the invoice/PDF/email system of record; HaloKYC does not generate
+or store a duplicate financial receipt.
 
 Plan enforcement:
 
@@ -1408,6 +1435,8 @@ Thin handlers that set httpOnly cookies and proxy to backend.
 - `GET /api/client/billing/subscription` $\rightarrow$ `GET /api/v1/billing/subscription`
 - `POST /api/client/billing/checkout/subscription` $\rightarrow$ `POST /api/v1/billing/checkout/subscription`
 - `POST /api/client/billing/checkout/credits` $\rightarrow$ `POST /api/v1/billing/checkout/credits`
+- `GET /api/client/billing/customer-portal` $\rightarrow$ `GET /api/v1/billing/customer-portal`
+- `POST /api/client/billing/customer-portal` $\rightarrow$ `POST /api/v1/billing/customer-portal`
 - `POST /api/client/workspaces/{workspace_id}/subjects/{external_user_id}/reset-verification` $\rightarrow$ `POST /api/v1/workspaces/{workspace_id}/subjects/{external_user_id}/reset-verification`
 - `DELETE /api/client/workspaces/{workspace_id}/subjects/{external_user_id}` $\rightarrow$ `DELETE /api/v1/workspaces/{workspace_id}/subjects/{external_user_id}`
 - `PUT /api/client/workspaces/{workspace_id}/subjects/{external_user_id}/ban` $\rightarrow$ `PUT /api/v1/workspaces/{workspace_id}/subjects/{external_user_id}/ban`
@@ -1613,7 +1642,53 @@ directly to `POST /api/v1/auth/google` and follows the same unified-login
 handshake (store in `sessionStorage["unified_auth"]`, navigate to
 `/select-account` or `/login/google/complete`).
 
+## Transactional Email Account Actions
+
+### `GET /api/v1/auth/me`
+
+Authenticated client request. Returns
+`{ user_id: string, email: string, email_verified: boolean }`.
+
+### `POST /api/v1/auth/verify-email`
+
+Body: `{ token: string }`. Processes a single-use email-verification token and
+returns the generic account-action response. Invalid/already-used requests do
+not expose unrelated account existence.
+
+### `POST /api/v1/auth/resend-verification`
+
+Body: `{ email: string }`. Always returns the same generic response for unknown,
+Google-linked, and already-verified accounts. Rate limiting may return `429`.
+
+### `POST /api/v1/auth/invitations/inspect`
+
+Body: `{ token: string }`. Returns only safe presentation context:
+`invite_type`, nullable `organization_name`, `inviter_name`, `role`,
+`expires_at`, `requires_password`, and `login_path`. Invalid, expired, revoked,
+and consumed tokens return `400` with detail code
+`invite_invalid_or_expired`.
+
+### `POST /api/v1/auth/invitations/accept`
+
+Body: `{ token: string, password?: string }`. Password is required only when the
+inspect response says `requires_password=true`. Returns
+`{ invite_type, status: "accepted", login_path }`; failed acceptance returns
+detail code `invite_accept_failed`.
+
+### Invitation management BFF routes
+
+- Customer: `POST
+  /api/client/organizations/{organization_id}/members/{member_id}/resend-invite`
+  and `.../revoke-invite`.
+- Platform: `POST
+  /api/admin/platform-admins/{platform_admin_id}/resend-invite` and
+  `.../revoke-invite`.
+
+These BFF routes forward the existing httpOnly client/admin credential and
+never accept the public invite bearer token.
+
 ## What's Not Here
+
 - Webhook config UIs (captured per-session in MVP).
 - Audit-log browsing pages (visible only on detail pages).
 - Public file downloads.

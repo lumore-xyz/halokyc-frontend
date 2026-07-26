@@ -257,6 +257,30 @@ export function useUpdateAdminPlatformAdmin(platformAdminId: string) {
   });
 }
 
+export function useResendAdminPlatformInvite(platformAdminId: string) {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: () => apiClient.resendAdminPlatformInvite(platformAdminId),
+    onSuccess: () => {
+      void queryClient.invalidateQueries({
+        queryKey: ["admin-platform-admins"],
+      });
+    },
+  });
+}
+
+export function useRevokeAdminPlatformInvite(platformAdminId: string) {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: () => apiClient.revokeAdminPlatformInvite(platformAdminId),
+    onSuccess: () => {
+      void queryClient.invalidateQueries({
+        queryKey: ["admin-platform-admins"],
+      });
+    },
+  });
+}
+
 export function useAdminAuditLogs(
   filters: { limit?: number; offset?: number } = {},
 ) {

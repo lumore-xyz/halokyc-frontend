@@ -95,6 +95,15 @@ describe("client auth route handlers", () => {
     cookieStore.get.mockReturnValue({
       value: tokenWithExp(exp, "22222222-2222-2222-2222-222222222222"),
     });
+    server.use(
+      http.get(`${base}/api/v1/auth/me`, () =>
+        HttpResponse.json({
+          user_id: "22222222-2222-2222-2222-222222222222",
+          email: "user@example.com",
+          email_verified: false,
+        }),
+      ),
+    );
 
     const response = await GET();
 
@@ -105,6 +114,8 @@ describe("client auth route handlers", () => {
       organizationMemberId: "44444444-4444-4444-4444-444444444444",
       organizationRole: "client_owner",
       expiresAt: new Date(exp * 1000).toISOString(),
+      email: "user@example.com",
+      emailVerified: false,
     });
   });
 });

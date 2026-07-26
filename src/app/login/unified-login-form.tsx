@@ -1,30 +1,29 @@
 "use client";
 
-import { Suspense, useCallback, useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
+import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
-import { ArrowLeft } from "lucide-react";
 
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { Button } from "@/components/ui/button";
-import { Field, FieldError, FieldGroup, FieldLabel } from "@/components/ui/field";
+import {
+  Field,
+  FieldError,
+  FieldGroup,
+  FieldLabel,
+} from "@/components/ui/field";
 import { Input } from "@/components/ui/input";
 import { Spinner } from "@/components/ui/spinner";
 import { apiClient, type UnifiedLoginResponse } from "@/lib/api-client";
+import { rememberClientReturnTo } from "@/lib/safe-return-to";
 import { GoogleSignInButton } from "./google-signin-button";
 
 export function UnifiedLoginForm() {
-  const router = useRouter();
   const search = useSearchParams();
-  const [googleError, setGoogleError] = useState<string | null>(null);
-  const initialized = useRef(false);
+  const googleError = decodeQueryError(search.get("error"));
 
   useEffect(() => {
-    if (initialized.current) return;
-    const error = search.get("error");
-    if (error) {
-      setGoogleError(decodeURIComponent(error));
-    }
-    initialized.current = true;
+    rememberClientReturnTo(search.get("returnTo"));
   }, [search]);
 
   return (
@@ -48,6 +47,15 @@ export function UnifiedLoginForm() {
       ) : null}
     </div>
   );
+}
+
+function decodeQueryError(value: string | null): string | null {
+  if (!value) return null;
+  try {
+    return decodeURIComponent(value);
+  } catch {
+    return value;
+  }
 }
 
 function EmailPasswordForm() {
@@ -78,7 +86,9 @@ function EmailPasswordForm() {
         router.push("/select-account");
       } catch (err: unknown) {
         setError(
-          err instanceof Error ? err.message : "Sign in failed. Please check your credentials.",
+          err instanceof Error
+            ? err.message
+            : "Sign in failed. Please check your credentials.",
         );
       } finally {
         setIsPending(false);
@@ -91,7 +101,10 @@ function EmailPasswordForm() {
     <form onSubmit={submit} noValidate className="space-y-6">
       <FieldGroup className="space-y-4">
         <Field data-invalid={emailInvalid || undefined}>
-          <FieldLabel htmlFor="login-email" className="text-xs uppercase tracking-wider text-[var(--landing-canvas-ink-soft)]">
+          <FieldLabel
+            htmlFor="login-email"
+            className="text-xs tracking-wider text-[var(--landing-canvas-ink-soft)] uppercase"
+          >
             Email
           </FieldLabel>
           <Input
@@ -102,12 +115,19 @@ function EmailPasswordForm() {
             value={email}
             onChange={(event) => setEmail(event.target.value)}
             aria-invalid={emailInvalid}
-            className="h-11 bg-white/[0.03] backdrop-blur-md border-white/[0.1] focus-visible:ring-1 focus-visible:ring-[var(--landing-cyan)] focus-visible:border-[var(--landing-cyan)] transition-all"
+            className="h-11 border-white/[0.1] bg-white/[0.03] backdrop-blur-md transition-all focus-visible:border-[var(--landing-cyan)] focus-visible:ring-1 focus-visible:ring-[var(--landing-cyan)]"
           />
-          {emailInvalid ? <FieldError className="text-xs font-mono">Enter your email.</FieldError> : null}
+          {emailInvalid ? (
+            <FieldError className="font-mono text-xs">
+              Enter your email.
+            </FieldError>
+          ) : null}
         </Field>
         <Field data-invalid={passwordInvalid || undefined}>
-          <FieldLabel htmlFor="login-password" className="text-xs uppercase tracking-wider text-[var(--landing-canvas-ink-soft)]">
+          <FieldLabel
+            htmlFor="login-password"
+            className="text-xs tracking-wider text-[var(--landing-canvas-ink-soft)] uppercase"
+          >
             Password
           </FieldLabel>
           <Input
@@ -118,14 +138,21 @@ function EmailPasswordForm() {
             value={password}
             onChange={(event) => setPassword(event.target.value)}
             aria-invalid={passwordInvalid}
-            className="h-11 bg-white/[0.03] backdrop-blur-md border-white/[0.1] focus-visible:ring-1 focus-visible:ring-[var(--landing-cyan)] focus-visible:border-[var(--landing-cyan)] transition-all"
+            className="h-11 border-white/[0.1] bg-white/[0.03] backdrop-blur-md transition-all focus-visible:border-[var(--landing-cyan)] focus-visible:ring-1 focus-visible:ring-[var(--landing-cyan)]"
           />
-          {passwordInvalid ? <FieldError className="text-xs font-mono">Enter your password.</FieldError> : null}
+          {passwordInvalid ? (
+            <FieldError className="font-mono text-xs">
+              Enter your password.
+            </FieldError>
+          ) : null}
         </Field>
       </FieldGroup>
 
       {error ? (
-        <Alert variant="destructive" className="border-[var(--landing-hair)] bg-destructive/10">
+        <Alert
+          variant="destructive"
+          className="bg-destructive/10 border-[var(--landing-hair)]"
+        >
           <AlertTitle className="text-sm">Sign in failed</AlertTitle>
           <AlertDescription className="text-xs">{error}</AlertDescription>
         </Alert>
@@ -133,12 +160,24 @@ function EmailPasswordForm() {
 
       <Button
         type="submit"
-        className="h-11 w-full bg-[var(--landing-cyan)] text-[var(--landing-canvas)] hover:bg-[color-mix(in_oklch,var(--landing-cyan)_88%,white)] transition-all"
+        className="h-11 w-full bg-[var(--landing-cyan)] text-[var(--landing-canvas)] transition-all hover:bg-[color-mix(in_oklch,var(--landing-cyan)_88%,white)]"
         disabled={isPending}
       >
-        {isPending ? <Spinner data-icon="inline-start" /> : <LogInIcon data-icon="inline-start" />}
+        {isPending ? (
+          <Spinner data-icon="inline-start" />
+        ) : (
+          <LogInIcon data-icon="inline-start" />
+        )}
         {isPending ? "Signing in…" : "Sign in"}
       </Button>
+      <div className="text-center">
+        <Link
+          href="/resend-verification"
+          className="text-xs text-[var(--landing-canvas-ink-soft)] underline-offset-4 hover:text-[var(--landing-canvas-ink)] hover:underline"
+        >
+          Need a new verification email?
+        </Link>
+      </div>
     </form>
   );
 }

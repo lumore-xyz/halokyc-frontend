@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useMemo, useState, useSyncExternalStore } from "react";
 import {
   ActivityIcon,
   CoinsIcon,
@@ -13,6 +13,7 @@ import { toast } from "sonner";
 
 import { EmptyState } from "@/components/empty-state";
 import { Metric } from "@/components/dashboard/metric";
+import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import {
@@ -31,11 +32,16 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import type { CreditLedgerEntryType } from "@/lib/api-client";
+import {
+  ApiError,
+  apiClient,
+  type CreditLedgerEntryType,
+} from "@/lib/api-client";
 import { formatDate } from "@/lib/format";
 import {
   useBillingCatalog,
   useBillingEntitlements,
+  useBillingPortalStatus,
   useBillingSubscription,
   useCreateCreditPackCheckout,
   useCreateSubscriptionCheckout,
@@ -67,6 +73,22 @@ const ENTRY_TYPE_DESCRIPTION: Record<CreditLedgerEntryType, string> = {
   adjustment: "Manual adjustment from HaloKYC support or your admin.",
 };
 
+const DODO_RETURN_QUERY_KEYS = [
+  "payment_id",
+  "subscription_id",
+  "checkout_id",
+  "status",
+] as const;
+
+function subscribeToLocation() {
+  return () => undefined;
+}
+
+function hasDodoReturnQuery() {
+  const query = new URLSearchParams(window.location.search);
+  return DODO_RETURN_QUERY_KEYS.some((key) => query.has(key));
+}
+
 function formatUsd(cents: number) {
   return new Intl.NumberFormat("en-US", {
     style: "currency",
@@ -81,17 +103,64 @@ function formatDelta(value: number) {
   return `${sign}${Math.abs(value).toLocaleString()}`;
 }
 
+function billingPortalErrorMessage(error: unknown): string {
+  const code = apiErrorCode(error);
+  if (code === "email_verification_required") {
+    return "Verify your email before managing billing.";
+  }
+  if (code === "billing_customer_unavailable") {
+    return "Billing history is available after Dodo confirms your first successful payment.";
+  }
+  if (code === "billing_identity_conflict") {
+    return "Billing access requires support review. Your credits are unaffected.";
+  }
+  if (code === "billing_portal_rate_limited") {
+    return "Too many portal requests. Wait a few minutes and try again.";
+  }
+  if (
+    code === "billing_provider_unavailable" ||
+    code === "billing_not_configured"
+  ) {
+    return "The billing portal is temporarily unavailable. Try again later.";
+  }
+  if (error instanceof ApiError && error.status === 403) {
+    return "You do not have permission to manage billing.";
+  }
+  return "Could not open the billing portal. Try again.";
+}
+
+function apiErrorCode(error: unknown): string | null {
+  if (
+    !(error instanceof ApiError) ||
+    !error.body ||
+    typeof error.body !== "object"
+  ) {
+    return null;
+  }
+  const detail = (error.body as { detail?: unknown }).detail;
+  if (!detail || typeof detail !== "object") return null;
+  const code = (detail as { code?: unknown }).code;
+  return typeof code === "string" ? code : null;
+}
+
 export function BillingPanel() {
   const session = useClientSession();
   const workspaces = useWorkspaces();
   const [workspaceFilter, setWorkspaceFilter] = useState<string>("all");
   const [checkoutKey, setCheckoutKey] = useState<string | null>(null);
+  const [portalPending, setPortalPending] = useState(false);
+  const returnedFromDodo = useSyncExternalStore(
+    subscribeToLocation,
+    hasDodoReturnQuery,
+    () => false,
+  );
 
   const filter = workspaceFilter === "all" ? null : workspaceFilter;
   const ledger = useMyCreditLedger({ workspaceId: filter });
   const catalog = useBillingCatalog();
   const subscription = useBillingSubscription();
   const entitlements = useBillingEntitlements();
+  const portalStatus = useBillingPortalStatus();
   const subscriptionCheckout = useCreateSubscriptionCheckout();
   const creditPackCheckout = useCreateCreditPackCheckout();
   const balance = ledger.data?.balance;
@@ -107,6 +176,15 @@ export function BillingPanel() {
   }, [workspaces.data]);
 
   const isLoading = ledger.isLoading || workspaces.isLoading;
+
+  function refreshBillingState() {
+    void Promise.all([
+      ledger.refetch(),
+      subscription.refetch(),
+      entitlements.refetch(),
+      portalStatus.refetch(),
+    ]);
+  }
 
   async function startCheckout(
     kind: "subscription" | "credit_pack",
@@ -127,6 +205,19 @@ export function BillingPanel() {
     }
   }
 
+  async function openBillingPortal() {
+    if (portalPending || !portalStatus.data?.available) return;
+    setPortalPending(true);
+    try {
+      const result = await apiClient.createBillingPortalSession();
+      window.location.assign(result.portal_url);
+    } catch (error) {
+      toast.error(billingPortalErrorMessage(error));
+      setPortalPending(false);
+      void portalStatus.refetch();
+    }
+  }
+
   return (
     <>
       <header className="flex flex-col gap-2">
@@ -143,6 +234,21 @@ export function BillingPanel() {
           release the reservation instead of charging.
         </p>
       </header>
+
+      {returnedFromDodo ? (
+        <Alert>
+          <AlertTitle>Billing update processing</AlertTitle>
+          <AlertDescription className="space-y-3">
+            <p>
+              Dodo has returned you to HaloKYC. Your subscription and credits
+              update only after the verified payment webhook arrives.
+            </p>
+            <Button type="button" variant="outline" onClick={refreshBillingState}>
+              Refresh billing status
+            </Button>
+          </AlertDescription>
+        </Alert>
+      ) : null}
 
       {ledger.isLoading ? (
         <Card>
@@ -195,11 +301,11 @@ export function BillingPanel() {
           <CardHeader>
             <CardTitle>Current plan</CardTitle>
             <CardDescription>
-              Credits from subscriptions land in HaloKYC&apos;s ledger after Dodo
-              confirms the subscription event.
+              Credits from subscriptions land in HaloKYC&apos;s ledger after
+              Dodo confirms the subscription event.
             </CardDescription>
           </CardHeader>
-          <CardContent className="flex min-h-32 flex-col justify-center gap-2">
+          <CardContent className="flex min-h-32 flex-col justify-center gap-3">
             {subscription.isLoading ? (
               <Spinner />
             ) : subscription.data ? (
@@ -225,6 +331,49 @@ export function BillingPanel() {
                 No active subscription is mirrored yet.
               </p>
             )}
+            <div className="mt-2 border-t border-[var(--dashboard-rule)] pt-3">
+              <Button
+                type="button"
+                variant="outline"
+                className="w-full"
+                disabled={
+                  portalPending ||
+                  portalStatus.isLoading ||
+                  !portalStatus.data?.available
+                }
+                onClick={openBillingPortal}
+              >
+                {portalPending || portalStatus.isLoading ? (
+                  <Spinner data-icon="inline-start" />
+                ) : (
+                  <ScrollTextIcon data-icon="inline-start" />
+                )}
+                {portalPending ? "Opening Dodo…" : "Manage billing & invoices"}
+              </Button>
+              {portalStatus.data?.unavailable_reason ===
+              "no_successful_payment" ? (
+                <p className="text-muted-foreground mt-2 text-xs">
+                  Billing history becomes available after Dodo confirms your
+                  first successful purchase.
+                </p>
+              ) : null}
+              {portalStatus.data?.unavailable_reason ===
+              "billing_identity_conflict" ? (
+                <p className="text-destructive mt-2 text-xs" role="alert">
+                  Billing access requires support review. No payment or credit
+                  entitlement is affected.
+                </p>
+              ) : null}
+              {portalStatus.isError ? (
+                <p className="text-destructive mt-2 text-xs" role="alert">
+                  {billingPortalErrorMessage(portalStatus.error)}
+                </p>
+              ) : null}
+              <p className="text-muted-foreground mt-2 text-xs">
+                Dodo emails invoices after successful purchases and renewals.
+                Past invoices can be downloaded from its secure portal.
+              </p>
+            </div>
           </CardContent>
         </Card>
 
@@ -358,7 +507,7 @@ export function BillingPanel() {
               <Spinner />
             </div>
           ) : reservedSessions.length === 0 ? (
-            <p className="text-sm text-muted-foreground">
+            <p className="text-muted-foreground text-sm">
               No credits are reserved right now.
             </p>
           ) : (
@@ -397,10 +546,10 @@ export function BillingPanel() {
                     <TableCell className="text-right tabular-nums">
                       {item.reserved_credits.toLocaleString()}
                     </TableCell>
-                    <TableCell className="text-xs text-muted-foreground">
+                    <TableCell className="text-muted-foreground text-xs">
                       {formatDate(item.reserved_at)}
                     </TableCell>
-                    <TableCell className="text-xs text-muted-foreground">
+                    <TableCell className="text-muted-foreground text-xs">
                       {formatDate(item.timeout_at)}
                     </TableCell>
                   </TableRow>
@@ -482,7 +631,7 @@ export function BillingPanel() {
                     entry.reserved_purchased_delta;
                   return (
                     <TableRow key={entry.ledger_entry_id}>
-                      <TableCell className="text-xs text-muted-foreground">
+                      <TableCell className="text-muted-foreground text-xs">
                         {formatDate(entry.created_at)}
                       </TableCell>
                       <TableCell>
@@ -578,12 +727,12 @@ function WorkspaceFilter({
   const currentLabel =
     value === "all"
       ? "All workspaces"
-      : options.find((option) => option.workspace_id === value)?.name ??
-        "Unknown workspace";
+      : (options.find((option) => option.workspace_id === value)?.name ??
+        "Unknown workspace");
 
   return (
     <div className="flex flex-col gap-2 sm:max-w-xs sm:items-end">
-      <span className="text-muted-foreground text-xs uppercase tracking-wide">
+      <span className="text-muted-foreground text-xs tracking-wide uppercase">
         Filter
       </span>
       <div className="relative w-full">
@@ -606,7 +755,7 @@ function WorkspaceFilter({
           <ul
             role="listbox"
             aria-label="Workspace filter"
-            className="absolute right-0 z-10 mt-1 max-h-64 w-full overflow-auto rounded-lg border border-[var(--dashboard-rule)] bg-background p-1 shadow-lg"
+            className="bg-background absolute right-0 z-10 mt-1 max-h-64 w-full overflow-auto rounded-lg border border-[var(--dashboard-rule)] p-1 shadow-lg"
           >
             <WorkspaceFilterOption
               label="All workspaces"
@@ -666,7 +815,7 @@ function WorkspaceFilterOption({
           <span className="text-muted-foreground text-xs">{hint}</span>
         </span>
         {selected ? (
-          <span className="text-xs font-medium uppercase tracking-wide">
+          <span className="text-xs font-medium tracking-wide uppercase">
             Selected
           </span>
         ) : null}

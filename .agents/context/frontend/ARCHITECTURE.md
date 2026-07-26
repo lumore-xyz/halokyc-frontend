@@ -503,3 +503,41 @@ Platform admin routes will become role-filtered under the existing
 `/admin` shell. Database-backed platform sessions expose `userId` and
 `platformRole`; sidebar entries and route guards derive from that role
 while backend 403s remain the source of truth.
+
+## Transactional Email Account Actions
+
+The architectural decisions for this slice are recorded in
+`DECISIONS_EMAIL_ACTIONS.md`.
+
+Public email links land on `/verify-email`, `/resend-verification`,
+`/accept-invite`, or `/admin/accept-invite`. These routes are noindexed and use
+the shared `AccountActionShell`; invitation routes additionally share
+`InviteAcceptance`.
+
+Bearer tokens are captured once from the query string, immediately removed with
+`history.replaceState`, retained only in component memory, and posted directly
+to the backend in request bodies. They are never copied into cookies, browser
+storage, React Query keys, or authenticated BFF URLs.
+
+Authenticated resend/revoke operations continue through the existing client or
+admin BFF so browser code never reads the httpOnly session token. The client
+session endpoint enriches JWT claims with `/api/v1/auth/me` so `AppShell` can
+render the email-verification banner after a refresh.
+
+Signed-out dashboard deep links carry a validated relative `returnTo` value to
+login. The value is accepted only for `/dashboard` paths, stored temporarily in
+session storage, consumed after client account selection, and otherwise
+discarded in favor of the normal dashboard destination.
+
+## Dodo Customer Portal
+
+`/dashboard/billing` queries portal availability through the authenticated
+client BFF. Creating a portal session accepts no browser-owned customer id,
+organization id, email, or return URL. The page calls `apiClient` directly with
+component-local pending state, then navigates the current tab immediately so
+the returned bearer URL never enters React Query or browser storage.
+
+Dodo remains the invoice, PDF, payment-method, and subscription-management
+surface. HaloKYC renders credit-ledger entries separately and does not treat a
+checkout return query as proof of payment; webhook-backed subscription and
+ledger reads remain authoritative.

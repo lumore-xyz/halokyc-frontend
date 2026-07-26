@@ -9,6 +9,10 @@ import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Spinner } from "@/components/ui/spinner";
 import { apiClient, type UnifiedLoginResponse } from "@/lib/api-client";
+import {
+  clearClientReturnTo,
+  consumeClientReturnTo,
+} from "@/lib/safe-return-to";
 
 type AuthState =
   | { status: "loading" }
@@ -52,16 +56,17 @@ export default function SelectAccountPage() {
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify({ token: res.access_token }),
           });
-  if (!response.ok) {
-  toast.error("Failed to set admin session. Please try again.");
-  return;
-}
+          if (!response.ok) {
+            toast.error("Failed to set admin session. Please try again.");
+            return;
+          }
           window.sessionStorage.removeItem("unified_auth");
+          clearClientReturnTo();
           router.push("/admin");
         })
-  .catch(() => {
-  toast.error("Failed to sign in as admin. Please try again.");
-});
+        .catch(() => {
+          toast.error("Failed to sign in as admin. Please try again.");
+        });
       return;
     }
     if (!hasAdmin && organizations.length === 1) {
@@ -75,68 +80,69 @@ export default function SelectAccountPage() {
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify({ token: res.access_token }),
           });
-  if (!response.ok) {
-  toast.error("Failed to set client session. Please try again.");
-  return;
-}
+          if (!response.ok) {
+            toast.error("Failed to set client session. Please try again.");
+            return;
+          }
           window.sessionStorage.removeItem("unified_auth");
-          router.push("/dashboard");
+          router.push(consumeClientReturnTo());
         })
-  .catch(() => {
-  toast.error("Failed to sign in. Please try again.");
-});
+        .catch(() => {
+          toast.error("Failed to sign in. Please try again.");
+        });
     }
   }, [auth, router]);
 
-async function handleSelectAdmin() {
-  if (auth.status !== "ready") return;
-  if (firedRef.current) return;
-  firedRef.current = true;
-  setLoading(true);
-  try {
-    const res = await apiClient.selectAdmin(auth.data.temp_token);
-    const response = await fetch("/api/admin/login/session", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ token: res.access_token }),
-    });
-    if (!response.ok) {
-      toast.error("Failed to set admin session. Please try again.");
-      return;
+  async function handleSelectAdmin() {
+    if (auth.status !== "ready") return;
+    if (firedRef.current) return;
+    firedRef.current = true;
+    setLoading(true);
+    try {
+      const res = await apiClient.selectAdmin(auth.data.temp_token);
+      const response = await fetch("/api/admin/login/session", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ token: res.access_token }),
+      });
+      if (!response.ok) {
+        toast.error("Failed to set admin session. Please try again.");
+        return;
+      }
+      window.sessionStorage.removeItem("unified_auth");
+      clearClientReturnTo();
+      router.push("/admin");
+    } catch {
+      toast.error("Failed to sign in as admin. Please try again.");
+    } finally {
+      setLoading(false);
     }
-    window.sessionStorage.removeItem("unified_auth");
-    router.push("/admin");
-  } catch {
-    toast.error("Failed to sign in as admin. Please try again.");
-  } finally {
-    setLoading(false);
   }
-}
 
-async function handleSelectClient(orgId: string) {
-  if (auth.status !== "ready") return;
-  if (firedRef.current) return;
-  firedRef.current = true;
-  setLoading(true);
-  try {
-    const res = await apiClient.selectClient(auth.data.temp_token, orgId);
-    const response = await fetch("/api/client/login/session", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ token: res.access_token }),
-    });
-    if (!response.ok) {
-      toast.error("Failed to set client session. Please try again.");
-      return;
+  async function handleSelectClient(orgId: string) {
+    if (auth.status !== "ready") return;
+    if (firedRef.current) return;
+    firedRef.current = true;
+    setLoading(true);
+    try {
+      const res = await apiClient.selectClient(auth.data.temp_token, orgId);
+      const response = await fetch("/api/client/login/session", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ token: res.access_token }),
+      });
+      if (!response.ok) {
+        toast.error("Failed to set client session. Please try again.");
+        return;
+      }
+      window.sessionStorage.removeItem("unified_auth");
+      router.push(consumeClientReturnTo());
+    } catch {
+      toast.error("Failed to sign in. Please try again.");
+    } finally {
+      setLoading(false);
     }
-    window.sessionStorage.removeItem("unified_auth");
-    router.push("/dashboard");
-  } catch {
-    toast.error("Failed to sign in. Please try again.");
-  } finally {
-    setLoading(false);
   }
-}
 
   if (auth.status !== "ready") {
     if (auth.status === "missing" && typeof window !== "undefined") {

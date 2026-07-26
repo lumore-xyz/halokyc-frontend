@@ -8,11 +8,7 @@ import { AppShell } from "@/components/dashboard/app-shell";
 import { PlatformRouteGuard } from "@/components/dashboard/platform-route-guard";
 import { EmptyState } from "@/components/empty-state";
 import { ApiError, type PlatformRole } from "@/lib/api-client";
-import {
-  Alert,
-  AlertDescription,
-  AlertTitle,
-} from "@/components/ui/alert";
+import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import {
@@ -52,6 +48,8 @@ import { formatDate } from "@/lib/format";
 import {
   useAdminPlatformAdmins,
   useInviteAdminPlatformAdmin,
+  useResendAdminPlatformInvite,
+  useRevokeAdminPlatformInvite,
   useUpdateAdminPlatformAdmin,
 } from "@/lib/hooks/use-admin-console";
 
@@ -73,7 +71,10 @@ export default function AdminPlatformAdminsPage() {
   return (
     <AppShell audience="admin">
       <main className="mx-auto flex w-full max-w-6xl flex-1 flex-col gap-8 px-6 py-12">
-        <PlatformRouteGuard allowedRoles={["platform_owner"]} fallbackHref="/admin">
+        <PlatformRouteGuard
+          allowedRoles={["platform_owner"]}
+          fallbackHref="/admin"
+        >
           <PlatformAdminsHub />
         </PlatformRouteGuard>
       </main>
@@ -86,32 +87,28 @@ function PlatformAdminsHub() {
   const invite = useInviteAdminPlatformAdmin();
 
   const [inviteEmail, setInviteEmail] = useState("");
-  const [invitePassword, setInvitePassword] = useState("");
   const [inviteFullName, setInviteFullName] = useState("");
-  const [inviteRole, setInviteRole] = useState<PlatformRole>("platform_business_admin");
+  const [inviteRole, setInviteRole] = useState<PlatformRole>(
+    "platform_business_admin",
+  );
   const [inviteSubmitted, setInviteSubmitted] = useState(false);
 
   const emailError =
     inviteSubmitted && !/.+@.+\..+/.test(inviteEmail.trim())
       ? "Enter a valid email."
       : null;
-  const passwordError =
-    inviteSubmitted && invitePassword.length < 8
-      ? "Password must be at least 8 characters."
-      : null;
-
-  const owners = query.data?.filter(
-    (admin) => admin.role === "platform_owner" && admin.status === "active",
-  ).length ?? 0;
+  const owners =
+    query.data?.filter(
+      (admin) => admin.role === "platform_owner" && admin.status === "active",
+    ).length ?? 0;
 
   function submitInvite(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
     setInviteSubmitted(true);
-    if (emailError || passwordError) return;
+    if (emailError) return;
     invite.mutate(
       {
         email: inviteEmail.trim(),
-        password: invitePassword,
         full_name: inviteFullName.trim() || null,
         role: inviteRole,
       },
@@ -119,7 +116,6 @@ function PlatformAdminsHub() {
         onSuccess: () => {
           toast.success("Platform admin invited");
           setInviteEmail("");
-          setInvitePassword("");
           setInviteFullName("");
           setInviteSubmitted(false);
         },
@@ -147,8 +143,8 @@ function PlatformAdminsHub() {
           <CardHeader>
             <CardTitle>Invite platform admin</CardTitle>
             <CardDescription>
-              Send an email + password; the new admin signs in with the
-              standard admin login at <code>/admin/login</code>.
+              HaloKYC emails a secure seven-day acceptance link. The invited
+              admin creates a password only when their account needs one.
             </CardDescription>
           </CardHeader>
           <CardContent>
@@ -168,27 +164,6 @@ function PlatformAdminsHub() {
                     placeholder="first.last@halokyc.com"
                   />
                   {emailError ? <FieldError>{emailError}</FieldError> : null}
-                </Field>
-              </FieldGroup>
-              <FieldGroup>
-                <Field data-invalid={Boolean(passwordError) || undefined}>
-                  <FieldLabel htmlFor="invite-password">Temporary password</FieldLabel>
-                  <Input
-                    id="invite-password"
-                    type="password"
-                    autoComplete="new-password"
-                    value={invitePassword}
-                    onChange={(event) => setInvitePassword(event.target.value)}
-                    minLength={8}
-                    maxLength={255}
-                  />
-                  <FieldDescription>
-                    8+ characters. Share with the new admin over a
-                    secure channel; the platform does not store it.
-                  </FieldDescription>
-                  {passwordError ? (
-                    <FieldError>{passwordError}</FieldError>
-                  ) : null}
                 </Field>
               </FieldGroup>
               <FieldGroup>
@@ -220,12 +195,12 @@ function PlatformAdminsHub() {
                     ))}
                   </select>
                   <FieldDescription>
-                    Owners can invite others. Business admins cannot
-                    promote to owner.
+                    Owners can invite others. Business admins cannot promote to
+                    owner.
                   </FieldDescription>
                 </Field>
               </FieldGroup>
-              <div className="sm:col-span-2 flex justify-end">
+              <div className="flex justify-end sm:col-span-2">
                 <Button type="submit" disabled={invite.isPending}>
                   {invite.isPending ? "Inviting…" : "Send invite"}
                 </Button>
@@ -238,8 +213,8 @@ function PlatformAdminsHub() {
           <CardHeader>
             <CardTitle>Active owners</CardTitle>
             <CardDescription>
-              There must be at least one active platform owner at all
-              times — the role-change UI blocks demoting the last one.
+              There must be at least one active platform owner at all times —
+              the role-change UI blocks demoting the last one.
             </CardDescription>
           </CardHeader>
           <CardContent>
@@ -321,6 +296,8 @@ function PlatformAdminRow({
   const [fullName, setFullName] = useState(admin.full_name ?? "");
 
   const hook = useUpdateAdminPlatformAdmin(admin.platform_admin_id);
+  const resend = useResendAdminPlatformInvite(admin.platform_admin_id);
+  const revoke = useRevokeAdminPlatformInvite(admin.platform_admin_id);
   const isOwner = admin.role === "platform_owner";
 
   function save() {
@@ -359,7 +336,13 @@ function PlatformAdminRow({
       </TableCell>
       <TableCell>
         <Badge
-          variant={admin.status === "active" ? "secondary" : "destructive"}
+          variant={
+            admin.status === "active"
+              ? "secondary"
+              : admin.status === "invited"
+                ? "outline"
+                : "destructive"
+          }
         >
           {admin.status}
         </Badge>
@@ -368,37 +351,74 @@ function PlatformAdminRow({
         {formatDate(admin.created_at)}
       </TableCell>
       <TableCell className="text-right">
-        <Button
-          variant="ghost"
-          size="sm"
-          onClick={() => setEditOpen(true)}
-          disabled={isOwner && !canModifyOwner}
-        >
-          Edit
-        </Button>
+        {admin.status === "invited" ? (
+          <div className="flex justify-end gap-2">
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={() =>
+                resend.mutate(undefined, {
+                  onSuccess: () => toast.success("Invitation resent"),
+                  onError: () => toast.error("Could not resend invitation"),
+                })
+              }
+              disabled={resend.isPending || revoke.isPending}
+            >
+              Resend
+            </Button>
+            <Button
+              variant="destructive"
+              size="sm"
+              onClick={() => {
+                if (
+                  window.confirm(
+                    `Revoke the invitation for ${admin.email}? The link will stop working.`,
+                  )
+                ) {
+                  revoke.mutate(undefined, {
+                    onSuccess: () => toast.success("Invitation revoked"),
+                    onError: () => toast.error("Could not revoke invitation"),
+                  });
+                }
+              }}
+              disabled={resend.isPending || revoke.isPending}
+            >
+              Revoke
+            </Button>
+          </div>
+        ) : (
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={() => setEditOpen(true)}
+            disabled={isOwner && !canModifyOwner}
+          >
+            Edit
+          </Button>
+        )}
       </TableCell>
 
       <Dialog open={editOpen} onOpenChange={setEditOpen}>
         <DialogContent>
           <DialogHeader>
             <DialogTitle>Edit platform admin</DialogTitle>
-            <DialogDescription>
-              {admin.email}
-            </DialogDescription>
+            <DialogDescription>{admin.email}</DialogDescription>
           </DialogHeader>
           {isOwner && !canModifyOwner ? (
             <Alert variant="destructive">
               <AlertTitle>This is the last active platform owner.</AlertTitle>
               <AlertDescription>
-                Promote another admin to owner before demoting or
-                disabling this account.
+                Promote another admin to owner before demoting or disabling this
+                account.
               </AlertDescription>
             </Alert>
           ) : (
             <div className="flex flex-col gap-3">
               <FieldGroup>
                 <Field>
-                  <FieldLabel htmlFor={`admin-full-name-${admin.platform_admin_id}`}>
+                  <FieldLabel
+                    htmlFor={`admin-full-name-${admin.platform_admin_id}`}
+                  >
                     Full name
                   </FieldLabel>
                   <Input
@@ -431,7 +451,9 @@ function PlatformAdminRow({
               </FieldGroup>
               <FieldGroup>
                 <Field>
-                  <FieldLabel htmlFor={`admin-status-${admin.platform_admin_id}`}>
+                  <FieldLabel
+                    htmlFor={`admin-status-${admin.platform_admin_id}`}
+                  >
                     Status
                   </FieldLabel>
                   <select
@@ -439,12 +461,13 @@ function PlatformAdminRow({
                     className="border-input bg-background text-foreground focus-visible:ring-ring/50 h-10 rounded-md border px-3 text-sm outline-none focus-visible:ring-[3px]"
                     value={status}
                     onChange={(event) =>
-                      setStatus(event.target.value as "active" | "disabled" | "invited")
+                      setStatus(
+                        event.target.value as "active" | "disabled" | "invited",
+                      )
                     }
                   >
                     <option value="active">Active</option>
                     <option value="disabled">Disabled</option>
-                    <option value="invited">Invited</option>
                   </select>
                 </Field>
               </FieldGroup>

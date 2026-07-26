@@ -17,6 +17,8 @@ const ORGANIZATION_SCOPED_PATHS = new Set([
   "/dashboard/settings",
 ]);
 
+const PUBLIC_ADMIN_PATHS = new Set(["/admin/login", "/admin/accept-invite"]);
+
 export function proxy(request: NextRequest) {
   const { pathname } = request.nextUrl;
   const clientSession = clientSessionFromToken(
@@ -44,15 +46,24 @@ export function proxy(request: NextRequest) {
 
   if (pathname.startsWith("/dashboard") && !clientSession.authenticated) {
     const fallback = adminSession.authenticated ? "/admin" : "/login";
-    return NextResponse.redirect(new URL(fallback, request.url));
+    const destination = new URL(fallback, request.url);
+    if (fallback === "/login") {
+      destination.searchParams.set(
+        "returnTo",
+        `${pathname}${request.nextUrl.search}`,
+      );
+    }
+    return NextResponse.redirect(destination);
   }
 
   if (
     pathname.startsWith("/admin") &&
-    pathname !== "/admin/login" &&
+    !PUBLIC_ADMIN_PATHS.has(pathname) &&
     !adminSession.authenticated
   ) {
-    const fallback = clientSession.authenticated ? "/dashboard" : "/admin/login";
+    const fallback = clientSession.authenticated
+      ? "/dashboard"
+      : "/admin/login";
     return NextResponse.redirect(new URL(fallback, request.url));
   }
 

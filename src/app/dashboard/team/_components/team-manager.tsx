@@ -5,16 +5,9 @@ import NextLink from "next/link";
 import { MoreHorizontalIcon, PlusIcon, UserPlusIcon } from "lucide-react";
 import { toast } from "sonner";
 import { format } from "date-fns";
-import {
-  useMutation,
-  useQueryClient,
-} from "@tanstack/react-query";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
 
-import {
-  Alert,
-  AlertDescription,
-  AlertTitle,
-} from "@/components/ui/alert";
+import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import {
@@ -71,7 +64,10 @@ import {
 } from "@/lib/api-client";
 import { useClientSession } from "@/lib/hooks/use-client-session";
 import { useBillingEntitlements } from "@/lib/hooks/use-billing";
-import { useOrganization, useOrganizationMembers } from "@/lib/hooks/use-organization";
+import {
+  useOrganization,
+  useOrganizationMembers,
+} from "@/lib/hooks/use-organization";
 
 const ROLE_LABEL: Record<ClientRole, string> = {
   client_owner: "Owner",
@@ -239,7 +235,7 @@ function OrganizationSummaryCard({
 function SummaryField({ label, value }: { label: string; value: string }) {
   return (
     <div className="flex flex-col gap-1">
-      <span className="text-muted-foreground text-xs uppercase tracking-wide">
+      <span className="text-muted-foreground text-xs tracking-wide uppercase">
         {label}
       </span>
       <span className="text-sm font-medium">{value}</span>
@@ -285,6 +281,34 @@ function MemberRow({
       );
     },
   });
+  const resendInvite = useMutation({
+    mutationFn: () => {
+      if (!organizationId) throw new Error("Not signed in");
+      return apiClient.resendOrganizationInvite(
+        organizationId,
+        member.organization_member_id,
+      );
+    },
+    onSuccess: () => {
+      toast.success(`Invitation resent to ${member.email}.`);
+      onUpdate();
+    },
+    onError: () => toast.error("Could not resend invitation."),
+  });
+  const revokeInvite = useMutation({
+    mutationFn: () => {
+      if (!organizationId) throw new Error("Not signed in");
+      return apiClient.revokeOrganizationInvite(
+        organizationId,
+        member.organization_member_id,
+      );
+    },
+    onSuccess: () => {
+      toast.success(`Invitation revoked for ${member.email}.`);
+      onUpdate();
+    },
+    onError: () => toast.error("Could not revoke invitation."),
+  });
 
   const isLastOwner =
     member.role === "client_owner" &&
@@ -311,7 +335,13 @@ function MemberRow({
       </TableCell>
       <TableCell>
         <Badge
-          variant={member.status === "active" ? "default" : "destructive"}
+          variant={
+            member.status === "active"
+              ? "default"
+              : member.status === "invited"
+                ? "secondary"
+                : "destructive"
+          }
         >
           {STATUS_LABEL[member.status]}
         </Badge>
@@ -328,47 +358,82 @@ function MemberRow({
                 variant="ghost"
                 size="icon"
                 aria-label={`Manage ${member.email}`}
-                disabled={isSelf || update.isPending}
+                disabled={
+                  isSelf ||
+                  update.isPending ||
+                  resendInvite.isPending ||
+                  revokeInvite.isPending
+                }
               />
             }
           >
             <MoreHorizontalIcon className="size-4" />
           </DropdownMenuTrigger>
           <DropdownMenuContent align="end" className="w-56">
-            <DropdownMenuGroup>
-              <DropdownMenuLabel>Change role</DropdownMenuLabel>
-              {(Object.keys(ROLE_LABEL) as ClientRole[]).map((role) => (
-                <DropdownMenuItem
-                  key={role}
-                  disabled={role === member.role || (isLastOwner && role !== "client_owner")}
-                  onClick={() =>
-                    update.mutate({
-                      role,
-                      full_name: member.full_name,
-                      status: member.status,
-                    })
-                  }
-                >
-                  {ROLE_LABEL[role]}
+            {member.status === "invited" ? (
+              <DropdownMenuGroup>
+                <DropdownMenuItem onClick={() => resendInvite.mutate()}>
+                  Resend invite
                 </DropdownMenuItem>
-              ))}
-            </DropdownMenuGroup>
-            <DropdownMenuSeparator />
-            <DropdownMenuGroup>
-              <DropdownMenuLabel>Status</DropdownMenuLabel>
-              <DropdownMenuItem
-                disabled={isLastOwner}
-                onClick={() =>
-                  update.mutate({
-                    status: member.status === "active" ? "disabled" : "active",
-                    full_name: member.full_name,
-                    role: member.role,
-                  })
-                }
-              >
-                {member.status === "active" ? "Disable account" : "Re-enable account"}
-              </DropdownMenuItem>
-            </DropdownMenuGroup>
+                <DropdownMenuItem
+                  variant="destructive"
+                  onClick={() => {
+                    if (
+                      window.confirm(
+                        `Revoke the invitation for ${member.email}? The link will stop working and the plan seat will be released.`,
+                      )
+                    ) {
+                      revokeInvite.mutate();
+                    }
+                  }}
+                >
+                  Revoke invite
+                </DropdownMenuItem>
+              </DropdownMenuGroup>
+            ) : (
+              <>
+                <DropdownMenuGroup>
+                  <DropdownMenuLabel>Change role</DropdownMenuLabel>
+                  {(Object.keys(ROLE_LABEL) as ClientRole[]).map((role) => (
+                    <DropdownMenuItem
+                      key={role}
+                      disabled={
+                        role === member.role ||
+                        (isLastOwner && role !== "client_owner")
+                      }
+                      onClick={() =>
+                        update.mutate({
+                          role,
+                          full_name: member.full_name,
+                          status: member.status,
+                        })
+                      }
+                    >
+                      {ROLE_LABEL[role]}
+                    </DropdownMenuItem>
+                  ))}
+                </DropdownMenuGroup>
+                <DropdownMenuSeparator />
+                <DropdownMenuGroup>
+                  <DropdownMenuLabel>Status</DropdownMenuLabel>
+                  <DropdownMenuItem
+                    disabled={isLastOwner}
+                    onClick={() =>
+                      update.mutate({
+                        status:
+                          member.status === "active" ? "disabled" : "active",
+                        full_name: member.full_name,
+                        role: member.role,
+                      })
+                    }
+                  >
+                    {member.status === "active"
+                      ? "Disable account"
+                      : "Re-enable account"}
+                  </DropdownMenuItem>
+                </DropdownMenuGroup>
+              </>
+            )}
           </DropdownMenuContent>
         </DropdownMenu>
       </TableCell>
@@ -388,13 +453,10 @@ function InviteSheet({
   const organizationId = session.data?.organizationId ?? null;
   const emailId = useId();
   const nameId = useId();
-  const passwordId = useId();
   const [email, setEmail] = useState("");
   const [name, setName] = useState("");
-  const [password, setPassword] = useState("");
   const [role, setRole] = useState<ClientRole>("client_developer");
   const [emailError, setEmailError] = useState<string | null>(null);
-  const [passwordError, setPasswordError] = useState<string | null>(null);
 
   const invite = useMutation<
     OrganizationMember,
@@ -408,13 +470,11 @@ function InviteSheet({
       return apiClient.inviteOrganizationMember(organizationId, payload);
     },
     onSuccess: (data) => {
-      toast.success(`${data.email} invited.`);
+      toast.success(`Invitation sent to ${data.email}.`);
       onClose();
       setEmail("");
       setName("");
-      setPassword("");
       setEmailError(null);
-      setPasswordError(null);
       void queryClient.invalidateQueries({
         queryKey: ["organization-members", organizationId],
       });
@@ -429,16 +489,10 @@ function InviteSheet({
       setEmailError("Enter a valid email address.");
       return;
     }
-    if (password.length < 8) {
-      setPasswordError("Use at least 8 characters.");
-      return;
-    }
     setEmailError(null);
-    setPasswordError(null);
     invite.mutate({
       email: normalizedEmail,
       full_name: name.trim() || null,
-      password,
       role,
     });
   }
@@ -448,9 +502,7 @@ function InviteSheet({
     onClose();
     setEmail("");
     setName("");
-    setPassword("");
     setEmailError(null);
-    setPasswordError(null);
     invite.reset();
   }
 
@@ -471,8 +523,8 @@ function InviteSheet({
           <SheetHeader className="border-b p-4">
             <SheetTitle id="team-invite-title">Invite teammate</SheetTitle>
             <SheetDescription>
-              HaloKYC creates a new user account and adds the member to your
-              organization with the role you select.
+              HaloKYC emails a secure seven-day acceptance link. The recipient
+              chooses a password only when their account needs one.
             </SheetDescription>
           </SheetHeader>
           <div className="flex-1 overflow-y-auto p-4">
@@ -507,31 +559,6 @@ function InviteSheet({
                   maxLength={255}
                 />
               </Field>
-              <Field data-invalid={passwordError ? true : undefined}>
-                <FieldLabel htmlFor={passwordId}>Initial password</FieldLabel>
-                <Input
-                  id={passwordId}
-                  type="text"
-                  value={password}
-                  onChange={(event) => {
-                    setPassword(event.target.value);
-                    if (passwordError) setPasswordError(null);
-                    if (invite.error) invite.reset();
-                  }}
-                  autoComplete="new-password"
-                  disabled={invite.isPending}
-                  minLength={8}
-                />
-                <FieldDescription>
-                  Share this once with the new teammate. They can change it
-                  after signing in.
-                </FieldDescription>
-                {passwordError ? (
-                  <FieldError id={`${passwordId}-error`}>
-                    {passwordError}
-                  </FieldError>
-                ) : null}
-              </Field>
               <Field>
                 <FieldLabel>Role</FieldLabel>
                 <div
@@ -547,7 +574,7 @@ function InviteSheet({
                       aria-checked={role === key}
                       onClick={() => setRole(key)}
                       disabled={invite.isPending}
-                      className="inline-flex items-center gap-1.5 rounded-full border px-3 py-1.5 text-xs font-medium transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 data-[active=true]:border-primary data-[active=true]:bg-primary data-[active=true]:text-primary-foreground"
+                      className="focus-visible:ring-ring data-[active=true]:border-primary data-[active=true]:bg-primary data-[active=true]:text-primary-foreground inline-flex items-center gap-1.5 rounded-full border px-3 py-1.5 text-xs font-medium transition-colors focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:outline-none"
                       data-active={role === key}
                     >
                       {ROLE_LABEL[key]}

@@ -25,6 +25,13 @@ export function useBillingEntitlements() {
   });
 }
 
+export function useBillingPortalStatus() {
+  return useQuery({
+    queryKey: ["billing-customer-portal"],
+    queryFn: () => apiClient.getBillingPortalStatus(),
+  });
+}
+
 export function useCreateSubscriptionCheckout() {
   return useMutation({
     mutationFn: (catalogKey: string) =>

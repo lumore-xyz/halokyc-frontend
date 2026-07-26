@@ -173,6 +173,8 @@ export type AdminSession = {
 export type ClientSession = {
   authenticated: boolean;
   userId?: string;
+  email?: string;
+  emailVerified?: boolean;
   organizationId?: string;
   organizationMemberId?: string;
   organizationRole?: ClientRole;
@@ -216,7 +218,6 @@ export type OrganizationMember = {
 
 export type OrganizationMemberInviteRequest = {
   email: string;
-  password: string;
   full_name?: string | null;
   role: ClientRole;
 };
@@ -593,13 +594,24 @@ export type BillingCheckoutResponse = {
   checkout_url: string;
 };
 
+export type BillingPortalStatus = {
+  available: boolean;
+  unavailable_reason:
+    | "no_successful_payment"
+    | "billing_identity_conflict"
+    | null;
+};
+
+export type BillingPortalSessionResponse = {
+  portal_url: string;
+};
+
 export type BillingSubscriptionRead = {
   subscription_id: string;
   plan_key: string;
   status: string;
   monthly_credits: number;
   current_period_end: string | null;
-  dodo_customer_id: string | null;
 };
 
 export type BillingEntitlements = {
@@ -637,9 +649,30 @@ export type PlatformAdminUser = {
 
 export type PlatformAdminInviteRequest = {
   email: string;
-  password: string;
   full_name?: string | null;
   role: PlatformRole;
+};
+
+export type InvitationType = "organization_member" | "platform_admin";
+
+export type InvitationInspectResponse = {
+  invite_type: InvitationType;
+  organization_name: string | null;
+  inviter_name: string;
+  role: string | null;
+  expires_at: string;
+  requires_password: boolean;
+  login_path: "/login" | "/admin/login";
+};
+
+export type InvitationAcceptResponse = {
+  invite_type: InvitationType;
+  status: "accepted";
+  login_path: "/login" | "/admin/login";
+};
+
+export type AccountActionResponse = {
+  message: string;
 };
 
 export type PlatformAdminUpdateRequest = {
@@ -1171,6 +1204,27 @@ export type AiModelProviderKeyTestResult = {
 export const apiClient = {
   health: () => request<HealthStatus>("/api/v1/health"),
 
+  verifyEmail: (token: string) =>
+    request<AccountActionResponse>("/api/v1/auth/verify-email", {
+      method: "POST",
+      body: JSON.stringify({ token }),
+    }),
+  resendEmailVerification: (email: string) =>
+    request<AccountActionResponse>("/api/v1/auth/resend-verification", {
+      method: "POST",
+      body: JSON.stringify({ email }),
+    }),
+  inspectInvitation: (token: string) =>
+    request<InvitationInspectResponse>("/api/v1/auth/invitations/inspect", {
+      method: "POST",
+      body: JSON.stringify({ token }),
+    }),
+  acceptInvitation: (payload: { token: string; password?: string }) =>
+    request<InvitationAcceptResponse>("/api/v1/auth/invitations/accept", {
+      method: "POST",
+      body: JSON.stringify(payload),
+    }),
+
   unifiedLogin: (payload: { email: string; password: string }) =>
     browserRequest<UnifiedLoginResponse>("/api/auth/login", {
       method: "POST",
@@ -1184,7 +1238,7 @@ export const apiClient = {
     }),
 
   selectClient: (tempToken: string, organizationId: string) => {
-  return browserRequest<TokenResponse>("/api/auth/select-client", {
+    return browserRequest<TokenResponse>("/api/auth/select-client", {
       method: "POST",
       body: JSON.stringify({ organization_id: organizationId }),
       headers: { Authorization: `Bearer ${tempToken}` },
@@ -1195,7 +1249,10 @@ export const apiClient = {
       method: "POST",
       body: JSON.stringify(payload),
     }),
-  googleCompleteSignup: (tempToken: string, payload: { company_name: string }) =>
+  googleCompleteSignup: (
+    tempToken: string,
+    payload: { company_name: string },
+  ) =>
     request<UnifiedLoginResponse>("/api/v1/auth/google/complete-signup", {
       method: "POST",
       headers: { Authorization: `Bearer ${tempToken}` },
@@ -1241,9 +1298,7 @@ export const apiClient = {
   },
 
   getVerification: (verificationId: string) =>
-    request<VerificationDetail>(
-      `/api/v1/verifications/${verificationId}`,
-    ),
+    request<VerificationDetail>(`/api/v1/verifications/${verificationId}`),
 
   captureConsent: (
     verificationId: string,
@@ -1398,6 +1453,16 @@ export const apiClient = {
         method: "PATCH",
         body: JSON.stringify(payload),
       },
+    ),
+  resendOrganizationInvite: (organizationId: string, memberId: string) =>
+    browserRequest<OrganizationMember>(
+      `/api/client/organizations/${organizationId}/members/${memberId}/resend-invite`,
+      { method: "POST" },
+    ),
+  revokeOrganizationInvite: (organizationId: string, memberId: string) =>
+    browserRequest<OrganizationMember>(
+      `/api/client/organizations/${organizationId}/members/${memberId}/revoke-invite`,
+      { method: "POST" },
     ),
   listWorkspaceWebhooks: (workspaceId: string) =>
     browserRequest<WebhookEndpoint[]>(
@@ -1675,11 +1740,13 @@ export const apiClient = {
       `/api/client/workspaces/${workspaceId}/verifications/summary`,
     ),
 
-  getMyCreditLedger: (filters: {
-    workspaceId?: string | null;
-    limit?: number;
-    offset?: number;
-  } = {}) => {
+  getMyCreditLedger: (
+    filters: {
+      workspaceId?: string | null;
+      limit?: number;
+      offset?: number;
+    } = {},
+  ) => {
     const params = new URLSearchParams();
     if (filters.workspaceId) {
       params.set("workspace_id", filters.workspaceId);
@@ -1706,6 +1773,15 @@ export const apiClient = {
 
   getBillingEntitlements: () =>
     browserRequest<BillingEntitlements>("/api/client/billing/entitlements"),
+
+  getBillingPortalStatus: () =>
+    browserRequest<BillingPortalStatus>("/api/client/billing/customer-portal"),
+
+  createBillingPortalSession: () =>
+    browserRequest<BillingPortalSessionResponse>(
+      "/api/client/billing/customer-portal",
+      { method: "POST" },
+    ),
 
   createSubscriptionCheckout: (catalogKey: string) =>
     browserRequest<BillingCheckoutResponse>(
@@ -1783,69 +1859,63 @@ export const apiClient = {
       { method: "PATCH", body: JSON.stringify(payload) },
     ),
 
-// --- AI providers (platform admin surface) -------------------------------
-listAdminAiProviders: () =>
-  browserRequest<AiModelProvider[]>("/api/admin/ai-providers"),
-createAdminAiProvider: (payload: AiModelProviderCreate) =>
-  browserRequest<AiModelProvider>("/api/admin/ai-providers", {
-    method: "POST",
-    body: JSON.stringify(payload),
-  }),
-updateAdminAiProvider: (
-  providerId: string,
-  payload: AiModelProviderUpdate,
-) =>
-  browserRequest<AiModelProvider>(
-    `/api/admin/ai-providers/${providerId}`,
-    {
-      method: "PATCH",
-      body: JSON.stringify(payload),
-    },
-  ),
-deleteAdminAiProvider: (providerId: string) =>
-  browserRequest<void>(`/api/admin/ai-providers/${providerId}`, {
-    method: "DELETE",
-  }),
-createAdminAiProviderKey: (
-  providerId: string,
-  payload: AiModelProviderKeyCreate,
-) =>
-  browserRequest<AiModelProviderKey>(
-    `/api/admin/ai-providers/${providerId}/keys`,
-    {
+  // --- AI providers (platform admin surface) -------------------------------
+  listAdminAiProviders: () =>
+    browserRequest<AiModelProvider[]>("/api/admin/ai-providers"),
+  createAdminAiProvider: (payload: AiModelProviderCreate) =>
+    browserRequest<AiModelProvider>("/api/admin/ai-providers", {
       method: "POST",
       body: JSON.stringify(payload),
-    },
-  ),
-updateAdminAiProviderKey: (
-  providerId: string,
-  keyId: string,
-  payload: AiModelProviderKeyUpdate,
-) =>
-  browserRequest<AiModelProviderKey>(
-    `/api/admin/ai-providers/${providerId}/keys/${keyId}`,
-    {
+    }),
+  updateAdminAiProvider: (providerId: string, payload: AiModelProviderUpdate) =>
+    browserRequest<AiModelProvider>(`/api/admin/ai-providers/${providerId}`, {
       method: "PATCH",
       body: JSON.stringify(payload),
-    },
-  ),
-deleteAdminAiProviderKey: (providerId: string, keyId: string) =>
-  browserRequest<void>(
-    `/api/admin/ai-providers/${providerId}/keys/${keyId}`,
-    {
+    }),
+  deleteAdminAiProvider: (providerId: string) =>
+    browserRequest<void>(`/api/admin/ai-providers/${providerId}`, {
       method: "DELETE",
-    },
-  ),
-testAdminAiProviderKey: (providerId: string, keyId: string) =>
-  browserRequest<AiModelProviderKeyTestResult>(
-    `/api/admin/ai-providers/${providerId}/keys/${keyId}`,
-    {
-      method: "POST",
-    },
-  ),
+    }),
+  createAdminAiProviderKey: (
+    providerId: string,
+    payload: AiModelProviderKeyCreate,
+  ) =>
+    browserRequest<AiModelProviderKey>(
+      `/api/admin/ai-providers/${providerId}/keys`,
+      {
+        method: "POST",
+        body: JSON.stringify(payload),
+      },
+    ),
+  updateAdminAiProviderKey: (
+    providerId: string,
+    keyId: string,
+    payload: AiModelProviderKeyUpdate,
+  ) =>
+    browserRequest<AiModelProviderKey>(
+      `/api/admin/ai-providers/${providerId}/keys/${keyId}`,
+      {
+        method: "PATCH",
+        body: JSON.stringify(payload),
+      },
+    ),
+  deleteAdminAiProviderKey: (providerId: string, keyId: string) =>
+    browserRequest<void>(
+      `/api/admin/ai-providers/${providerId}/keys/${keyId}`,
+      {
+        method: "DELETE",
+      },
+    ),
+  testAdminAiProviderKey: (providerId: string, keyId: string) =>
+    browserRequest<AiModelProviderKeyTestResult>(
+      `/api/admin/ai-providers/${providerId}/keys/${keyId}`,
+      {
+        method: "POST",
+      },
+    ),
 
-// --- Platform admin surface --------------------------------------------
-listAdminOrganizations: () =>
+  // --- Platform admin surface --------------------------------------------
+  listAdminOrganizations: () =>
     browserRequest<AdminOrganizationRead[]>("/api/admin/organizations"),
   getAdminOrganization: (organizationId: string) =>
     browserRequest<AdminOrganizationRead>(
@@ -1863,12 +1933,14 @@ listAdminOrganizations: () =>
     browserRequest<Workspace[]>("/api/admin/workspaces"),
   getAdminWorkspace: (workspaceId: string) =>
     browserRequest<Workspace>(`/api/admin/workspaces/${workspaceId}`),
-  listAdminVerifications: (filters: {
-    organizationId?: string | null;
-    workspaceId?: string | null;
-    limit?: number;
-    offset?: number;
-  } = {}) => {
+  listAdminVerifications: (
+    filters: {
+      organizationId?: string | null;
+      workspaceId?: string | null;
+      limit?: number;
+      offset?: number;
+    } = {},
+  ) => {
     const params = new URLSearchParams();
     if (filters.organizationId) {
       params.set("organization_id", filters.organizationId);
@@ -1915,12 +1987,14 @@ listAdminOrganizations: () =>
     browserRequest<VerificationSessionDetail>(
       `/api/admin/verifications/${verificationId}`,
     ),
-  getAdminBillingCredits: (filters: {
-    organizationId?: string | null;
-    workspaceId?: string | null;
-    limit?: number;
-    offset?: number;
-  } = {}) => {
+  getAdminBillingCredits: (
+    filters: {
+      organizationId?: string | null;
+      workspaceId?: string | null;
+      limit?: number;
+      offset?: number;
+    } = {},
+  ) => {
     const params = new URLSearchParams();
     if (filters.organizationId) {
       params.set("organization_id", filters.organizationId);
@@ -1936,9 +2010,7 @@ listAdminOrganizations: () =>
     }
     const qs = params.toString();
     return browserRequest<CreditLedgerResponse>(
-      qs
-        ? `/api/admin/billing/credits?${qs}`
-        : "/api/admin/billing/credits",
+      qs ? `/api/admin/billing/credits?${qs}` : "/api/admin/billing/credits",
     );
   },
   adjustAdminBillingCredits: (payload: AdminCreditAdjustmentRequest) =>
@@ -1961,10 +2033,12 @@ listAdminOrganizations: () =>
         body: JSON.stringify(payload),
       },
     ),
-  listAdminSupportWebhookLogs: (filters: {
-    limit?: number;
-    offset?: number;
-  } = {}) => {
+  listAdminSupportWebhookLogs: (
+    filters: {
+      limit?: number;
+      offset?: number;
+    } = {},
+  ) => {
     const params = new URLSearchParams();
     if (typeof filters.limit === "number") {
       params.set("limit", String(filters.limit));
@@ -1988,10 +2062,12 @@ listAdminOrganizations: () =>
       method: "POST",
       body: JSON.stringify(payload),
     }),
-  listAdminSupportNotes: (filters: {
-    verificationId?: string | null;
-    limit?: number;
-  } = {}) => {
+  listAdminSupportNotes: (
+    filters: {
+      verificationId?: string | null;
+      limit?: number;
+    } = {},
+  ) => {
     const params = new URLSearchParams();
     if (filters.verificationId) {
       params.set("verification_id", filters.verificationId);
@@ -2012,10 +2088,10 @@ listAdminOrganizations: () =>
   listAdminPlatformAdmins: () =>
     browserRequest<PlatformAdminUser[]>("/api/admin/platform-admins"),
   inviteAdminPlatformAdmin: (payload: PlatformAdminInviteRequest) =>
-    browserRequest<PlatformAdminUser>(
-      "/api/admin/platform-admins/invite",
-      { method: "POST", body: JSON.stringify(payload) },
-    ),
+    browserRequest<PlatformAdminUser>("/api/admin/platform-admins/invite", {
+      method: "POST",
+      body: JSON.stringify(payload),
+    }),
   updateAdminPlatformAdmin: (
     platformAdminId: string,
     payload: PlatformAdminUpdateRequest,
@@ -2023,6 +2099,16 @@ listAdminOrganizations: () =>
     browserRequest<PlatformAdminUser>(
       `/api/admin/platform-admins/${platformAdminId}`,
       { method: "PATCH", body: JSON.stringify(payload) },
+    ),
+  resendAdminPlatformInvite: (platformAdminId: string) =>
+    browserRequest<PlatformAdminUser>(
+      `/api/admin/platform-admins/${platformAdminId}/resend-invite`,
+      { method: "POST" },
+    ),
+  revokeAdminPlatformInvite: (platformAdminId: string) =>
+    browserRequest<PlatformAdminUser>(
+      `/api/admin/platform-admins/${platformAdminId}/revoke-invite`,
+      { method: "POST" },
     ),
   listAdminAuditLogs: (filters: { limit?: number; offset?: number } = {}) => {
     const params = new URLSearchParams();
@@ -2034,9 +2120,7 @@ listAdminOrganizations: () =>
     }
     const qs = params.toString();
     return browserRequest<AdminAuditLogItem[]>(
-      qs
-        ? `/api/admin/audit-logs?${qs}`
-        : "/api/admin/audit-logs",
+      qs ? `/api/admin/audit-logs?${qs}` : "/api/admin/audit-logs",
     );
   },
   getAdminSystemSettings: () =>

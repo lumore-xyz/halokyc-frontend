@@ -67,7 +67,10 @@ export async function backendClientFetch(path: string, init: RequestInit = {}) {
   if (response.status === 204) {
     return new NextResponse(null, { status: 204 });
   }
-  return NextResponse.json(await response.json());
+  const responseHeaders = new Headers();
+  const cacheControl = response.headers.get("cache-control");
+  if (cacheControl) responseHeaders.set("Cache-Control", cacheControl);
+  return NextResponse.json(await response.json(), { headers: responseHeaders });
 }
 
 export async function backendClientRawFetch(
@@ -144,13 +147,25 @@ export async function getClientProfile() {
 
 async function mirrorBackendError(response: Response) {
   let error = response.statusText || "Request failed";
+  let detail: unknown = undefined;
   try {
     const body = (await response.json()) as BackendErrorBody;
+    detail = body.detail;
     if (typeof body.detail === "string") error = body.detail;
   } catch {
     // keep status text fallback
   }
-  return NextResponse.json({ ok: false, error }, { status: response.status });
+  const headers = new Headers({ "Cache-Control": "no-store" });
+  const retryAfter = response.headers.get("retry-after");
+  if (retryAfter) headers.set("Retry-After", retryAfter);
+  return NextResponse.json(
+    {
+      ok: false,
+      error,
+      ...(detail !== undefined ? { detail } : {}),
+    },
+    { status: response.status, headers },
+  );
 }
 
 export type { ClientSessionPayload } from "@/lib/auth-session";

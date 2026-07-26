@@ -16,6 +16,31 @@
 
 ## [Unreleased]
 
+### Added
+
+- Added a verified owner/admin `Manage billing & invoices` action backed by a
+  short-lived Dodo customer-portal session.
+- Added typed portal availability, no-purchase/conflict states, structured
+  provider/rate-limit errors, and authenticated BFF coverage.
+- Public email verification, verification resend, customer invite acceptance,
+  and platform-admin invite acceptance routes with noindex/referrer protection.
+- Refresh-safe client email-verification state and a persistent dashboard
+  verification banner.
+- Pending customer and platform-admin invitation resend/revoke controls.
+- Validated one-time dashboard `returnTo` restoration for signed-out email deep
+  links.
+
+### Changed
+
+- Dodo customer ids are no longer exposed in client subscription data.
+- Billing copy distinguishes HaloKYC credit-ledger activity from Dodo-generated
+  invoice emails and PDF receipts.
+- Password signups now enter the verification-sent journey.
+- Customer and platform-admin inviters no longer create or share recipient
+  passwords; invitees choose credentials only when the backend requires them.
+- Transactional bearer tokens are scrubbed from browser URLs and submitted only
+  in request bodies.
+
 ### Fixed
 
 - Repaired the production build after agentic adjudication removal by fixing
