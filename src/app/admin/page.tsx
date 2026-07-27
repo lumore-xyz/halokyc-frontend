@@ -8,7 +8,6 @@ import {
   FilterIcon,
   InboxIcon,
   KeyRoundIcon,
-  PlusIcon,
   RefreshCwIcon,
   ScanSearchIcon,
   ShieldCheckIcon,
@@ -307,12 +306,6 @@ function AdminOverview() {
           <Button render={<Link href="/admin/sales" />} nativeButton={false} variant="outline">
             <ShoppingCartIcon data-icon="inline-start" aria-hidden /> Sales
           </Button>
-          <Button render={<Link href="/admin/reviews" />} nativeButton={false} variant="outline">
-            <InboxIcon data-icon="inline-start" aria-hidden /> Review queue
-          </Button>
-          <Button render={<Link href="/admin/ledger" />} nativeButton={false} variant="outline">
-            <ActivityIcon data-icon="inline-start" aria-hidden /> Platform ledger
-          </Button>
           <Button render={<Link href="/admin/platform-admins" />} nativeButton={false} variant="outline">
             <UsersIcon data-icon="inline-start" aria-hidden /> Platform admins
           </Button>
@@ -333,9 +326,6 @@ function AdminOverview() {
             variant="ghost"
           >
             <RefreshCwIcon data-icon="inline-start" aria-hidden /> Refresh all
-          </Button>
-          <Button render={<Link href="/admin/clients" />} nativeButton={false} variant="ghost">
-            <PlusIcon data-icon="inline-start" aria-hidden /> Legacy client onboarding
           </Button>
         </CardContent>
       </Card>

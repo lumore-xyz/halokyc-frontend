@@ -10,7 +10,6 @@ import {
   WorkflowIcon,
 } from "lucide-react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { format } from "date-fns";
 import { toast } from "sonner";
 
 import { AppShell } from "@/components/dashboard/app-shell";
@@ -49,6 +48,7 @@ import {
   type WorkflowUpdate,
 } from "@/lib/api-client";
 import { useClientSession } from "@/lib/hooks/use-client-session";
+import { formatDate } from "@/lib/format";
 import { cn } from "@/lib/utils";
 
 const ALL_SERVICES = ["selfie", "liveness", "document", "age"] as const;
@@ -375,7 +375,7 @@ export function WorkflowDesigner({
             value={
               workflowsQuery.isLoading || workflows.length === 0
                 ? "—"
-                : format(new Date(workflows[0].created_at), "MMM d")
+                : formatDate(workflows[0].created_at)
             }
             icon={CheckIcon}
             description={
@@ -470,7 +470,7 @@ export function WorkflowDesigner({
                           <span>
                             Created{" "}
                             <span className="font-mono text-foreground">
-                              {format(new Date(workflow.created_at), "PPP")}
+                              {formatDate(workflow.created_at)}
                             </span>
                           </span>
                         </div>

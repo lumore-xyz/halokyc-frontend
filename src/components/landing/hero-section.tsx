@@ -1,5 +1,3 @@
-"use client";
-
 /**
  * Hero - the page opener.
  *
@@ -16,11 +14,9 @@ import {
   FileCheck2,
   ShieldCheck,
 } from "lucide-react";
-import { motion, useReducedMotion } from "motion/react";
 import Link from "next/link";
 
 import { HumanVerificationMosaic } from "@/components/landing/human-verification-mosaic";
-import { SectionMarker } from "@/components/landing/section-marker";
 import { cn } from "@/lib/utils";
 
 const DOSSIER_ROWS: ReadonlyArray<readonly [string, string]> = [
@@ -37,19 +33,7 @@ const CHECKS: ReadonlyArray<readonly [string, string]> = [
   ["duplicate", "clear"],
 ];
 
-const fadeUp = {
-  hidden: { opacity: 0, y: 24 },
-  visible: { opacity: 1, y: 0 },
-};
-
-const stagger = {
-  hidden: {},
-  visible: { transition: { staggerChildren: 0.09, delayChildren: 0.06 } },
-};
-
 export function Hero() {
-  const reduce = useReducedMotion();
-
   return (
     <section
       id="product"
@@ -72,22 +56,11 @@ export function Hero() {
         className="landing-halo pointer-events-none absolute top-[34%] right-[-18%] h-215 w-215 rounded-full bg-(--landing-cyan-soft) opacity-30 blur-3xl"
       />
 
-      <motion.div
-        initial="hidden"
-        animate="visible"
-        variants={stagger}
+      <div
         className="relative mx-auto grid w-full max-w-7xl gap-12 px-6 pt-20 pb-20 sm:px-8 md:grid-cols-[1fr_1fr] md:items-center md:gap-x-16 md:pt-28 md:pb-28 lg:px-10"
       >
         <div className="flex flex-col gap-9">
-          {/* <motion.div variants={fadeUp}>
-            <SectionMarker
-              index={1}
-              eyebrow="The Trust Layer for your app"
-              meta=""
-            />
-          </motion.div> */}
-
-          <motion.div variants={fadeUp} className="flex flex-col gap-6">
+          <div className="flex flex-col gap-6">
             <h1
               id="hero-headline"
               className={cn(
@@ -108,12 +81,9 @@ export function Hero() {
               team controls, and a signed result your backend trusts. Ship it
               this week.
             </p>
-          </motion.div>
+          </div>
 
-          <motion.div
-            variants={fadeUp}
-            className="flex flex-wrap items-center gap-3"
-          >
+          <div className="flex flex-wrap items-center gap-3">
             <Link
               href="/login"
               className={cn(
@@ -139,12 +109,9 @@ export function Hero() {
               <Braces className="size-4" strokeWidth={1.75} />
               See how it works
             </Link>
-          </motion.div>
+          </div>
 
-          <motion.dl
-            variants={fadeUp}
-            className="grid max-w-xl grid-cols-3 gap-x-6 border-y border-[var(--landing-hair)] py-5"
-          >
+          <dl className="grid max-w-xl grid-cols-3 gap-x-6 border-y border-[var(--landing-hair)] py-5">
             {[
               ["Same day", "to first verification"],
               ["Zero vendors", "to wire and maintain"],
@@ -159,21 +126,14 @@ export function Hero() {
                 </dd>
               </div>
             ))}
-          </motion.dl>
+          </dl>
         </div>
 
         {/* Signature poster: a "case file" typeset on dark canvas. */}
-        <motion.div
-          initial={
-            reduce ? { opacity: 0 } : { opacity: 0, y: 22, scale: 0.985 }
-          }
-          animate={{ opacity: 1, y: 0, scale: 1 }}
-          transition={{ duration: 0.7, ease: [0.22, 1, 0.36, 1], delay: 0.18 }}
-          className="relative"
-        >
+        <div className="relative">
           <HumanVerificationMosaic />
-        </motion.div>
-      </motion.div>
+        </div>
+      </div>
     </section>
   );
 }

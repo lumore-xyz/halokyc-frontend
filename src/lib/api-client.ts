@@ -311,31 +311,6 @@ export type Phase =
   | "production"
   | "suspended";
 
-export type ClientListItem = {
-  client_id: string;
-  name: string;
-  is_active: boolean;
-  phase: Phase;
-  created_at: string;
-};
-
-export type ClientDetail = ClientListItem & {
-  api_key_count: number;
-  recent_verification_count: number;
-  phase_changed_at: string | null;
-};
-
-export type ClientCreateResponse = {
-  client_id: string;
-  name: string;
-  created_at: string;
-};
-
-export type ClientUpdate = {
-  name?: string;
-  is_active?: boolean;
-};
-
 export type ClientProfileResponse = {
   email: string;
   company_name: string;
@@ -1112,95 +1087,6 @@ export type TokenResponse = {
   expires_in: number;
 };
 
-export type AiModelProviderType =
-  | "google_gemma"
-  | "nvidia"
-  | "ollama_cloud"
-  | "openai_compatible";
-
-export type AiModelProviderKey = {
-  key_id: string;
-  label: string;
-  key_last4: string;
-  enabled: boolean;
-  daily_limit: number | null;
-  daily_used: number;
-  monthly_limit: number | null;
-  monthly_used: number;
-  cooldown_until: string | null;
-  last_error_code: string | null;
-  last_used_at: string | null;
-  created_at: string;
-  updated_at: string;
-};
-
-export type AiModelProvider = {
-  provider_id: string;
-  provider_type: AiModelProviderType;
-  display_name: string;
-  base_url: string | null;
-  model_name: string | null;
-  purpose: string;
-  enabled: boolean;
-  priority: number;
-  timeout_seconds: number | null;
-  max_tokens: number | null;
-  keys: AiModelProviderKey[];
-  created_at: string;
-  updated_at: string;
-};
-
-export type AiModelProviderCreate = {
-  provider_type: AiModelProviderType;
-  display_name: string;
-  base_url?: string | null;
-  model_name?: string | null;
-  enabled?: boolean;
-  priority?: number;
-  timeout_seconds?: number | null;
-  max_tokens?: number | null;
-};
-
-export type AiModelProviderUpdate = Partial<
-  Pick<
-    AiModelProviderCreate,
-    | "display_name"
-    | "base_url"
-    | "model_name"
-    | "enabled"
-    | "priority"
-    | "timeout_seconds"
-    | "max_tokens"
-  >
->;
-
-export type AiModelProviderKeyCreate = {
-  label: string;
-  api_key: string;
-  enabled?: boolean;
-  daily_limit?: number | null;
-  monthly_limit?: number | null;
-};
-
-export type AiModelProviderKeyUpdate = {
-  label?: string;
-  enabled?: boolean;
-  daily_limit?: number | null;
-  monthly_limit?: number | null;
-  clear_cooldown?: boolean;
-};
-
-export type AiModelProviderKeyTestResult = {
-  provider_id: string;
-  key_id: string;
-  ok: boolean;
-  provider_type: AiModelProviderType;
-  model_name: string | null;
-  latency_ms: number | null;
-  response_preview: string | null;
-  error_code: string | null;
-};
-
 export const apiClient = {
   health: () => request<HealthStatus>("/api/v1/health"),
 
@@ -1339,12 +1225,6 @@ export const apiClient = {
 
   getAdminSession: () => browserRequest<AdminSession>("/api/admin/session"),
 
-  listAdminReviews: () =>
-    browserRequest<AdminReviewItem[]>("/api/admin/reviews"),
-
-  getAdminReview: (verificationId: string) =>
-    browserRequest<AdminReviewDetail>(`/api/admin/reviews/${verificationId}`),
-
   approveAdminReview: (verificationId: string) =>
     browserRequest<AdminDecisionResponse>(
       `/api/admin/reviews/${verificationId}/approve`,
@@ -1356,51 +1236,6 @@ export const apiClient = {
       `/api/admin/reviews/${verificationId}/reject`,
       { method: "POST", body: JSON.stringify({ reason }) },
     ),
-
-  listAdminClients: () =>
-    browserRequest<ClientListItem[]>("/api/admin/clients"),
-
-  createAdminClient: (payload: { name: string }) =>
-    browserRequest<ClientCreateResponse>("/api/admin/clients", {
-      method: "POST",
-      body: JSON.stringify(payload),
-    }),
-
-  getAdminClient: (clientId: string) =>
-    browserRequest<ClientDetail>(`/api/admin/clients/${clientId}`),
-
-  updateAdminClient: (clientId: string, payload: ClientUpdate) =>
-    browserRequest<ClientDetail>(`/api/admin/clients/${clientId}`, {
-      method: "PATCH",
-      body: JSON.stringify(payload),
-    }),
-
-  updateAdminClientPhase: (clientId: string, phase: Phase) =>
-    browserRequest<ClientDetail>(`/api/admin/clients/${clientId}/phase`, {
-      method: "POST",
-      body: JSON.stringify({ phase }),
-    }),
-
-  listAdminClientApiKeys: (clientId: string) =>
-    browserRequest<ApiKeyListItem[]>(`/api/admin/clients/${clientId}/api-keys`),
-
-  createAdminClientApiKey: (clientId: string) =>
-    browserRequest<ApiKeyCreateResponse>(
-      `/api/admin/clients/${clientId}/api-keys`,
-      {
-        method: "POST",
-      },
-    ),
-
-  getAdminCreditLedger: (filters: { organizationId?: string } = {}) => {
-    const params = new URLSearchParams();
-    if (filters.organizationId)
-      params.set("organization_id", filters.organizationId);
-    const qs = params.toString();
-    return browserRequest<CreditLedgerResponse>(
-      qs ? `/api/admin/ledger?${qs}` : "/api/admin/ledger",
-    );
-  },
 
   clientLogin: (payload: { email: string; password: string }) =>
     browserRequest<{ ok: true }>("/api/client/login", {
@@ -1857,61 +1692,6 @@ export const apiClient = {
     browserRequest<SubjectLifecycleResponse>(
       `/api/client/workspaces/${workspaceId}/subjects/${encodeURIComponent(externalUserId)}/ban`,
       { method: "PATCH", body: JSON.stringify(payload) },
-    ),
-
-  // --- AI providers (platform admin surface) -------------------------------
-  listAdminAiProviders: () =>
-    browserRequest<AiModelProvider[]>("/api/admin/ai-providers"),
-  createAdminAiProvider: (payload: AiModelProviderCreate) =>
-    browserRequest<AiModelProvider>("/api/admin/ai-providers", {
-      method: "POST",
-      body: JSON.stringify(payload),
-    }),
-  updateAdminAiProvider: (providerId: string, payload: AiModelProviderUpdate) =>
-    browserRequest<AiModelProvider>(`/api/admin/ai-providers/${providerId}`, {
-      method: "PATCH",
-      body: JSON.stringify(payload),
-    }),
-  deleteAdminAiProvider: (providerId: string) =>
-    browserRequest<void>(`/api/admin/ai-providers/${providerId}`, {
-      method: "DELETE",
-    }),
-  createAdminAiProviderKey: (
-    providerId: string,
-    payload: AiModelProviderKeyCreate,
-  ) =>
-    browserRequest<AiModelProviderKey>(
-      `/api/admin/ai-providers/${providerId}/keys`,
-      {
-        method: "POST",
-        body: JSON.stringify(payload),
-      },
-    ),
-  updateAdminAiProviderKey: (
-    providerId: string,
-    keyId: string,
-    payload: AiModelProviderKeyUpdate,
-  ) =>
-    browserRequest<AiModelProviderKey>(
-      `/api/admin/ai-providers/${providerId}/keys/${keyId}`,
-      {
-        method: "PATCH",
-        body: JSON.stringify(payload),
-      },
-    ),
-  deleteAdminAiProviderKey: (providerId: string, keyId: string) =>
-    browserRequest<void>(
-      `/api/admin/ai-providers/${providerId}/keys/${keyId}`,
-      {
-        method: "DELETE",
-      },
-    ),
-  testAdminAiProviderKey: (providerId: string, keyId: string) =>
-    browserRequest<AiModelProviderKeyTestResult>(
-      `/api/admin/ai-providers/${providerId}/keys/${keyId}`,
-      {
-        method: "POST",
-      },
     ),
 
   // --- Platform admin surface --------------------------------------------

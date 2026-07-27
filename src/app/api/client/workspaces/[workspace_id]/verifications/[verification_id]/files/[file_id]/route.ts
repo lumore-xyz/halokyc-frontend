@@ -8,10 +8,9 @@ type Params = {
 
 export async function GET(
   _request: Request,
-  context: RouteContext<"/api/client/workspaces/[workspace_id]/verifications/[verification_id]/files/[file_id]">,
+  context: { params: Promise<Params> },
 ) {
-  const { workspace_id, verification_id, file_id } =
-    (await context.params) as Params;
+  const { workspace_id, verification_id, file_id } = await context.params;
   return backendClientRawFetch(
     `/api/v1/workspaces/${workspace_id}/verifications/${verification_id}/files/${file_id}`,
   );

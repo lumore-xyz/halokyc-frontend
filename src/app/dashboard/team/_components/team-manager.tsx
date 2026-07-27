@@ -4,7 +4,6 @@ import { type FormEvent, useId, useState } from "react";
 import NextLink from "next/link";
 import { MoreHorizontalIcon, PlusIcon, UserPlusIcon } from "lucide-react";
 import { toast } from "sonner";
-import { format } from "date-fns";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
@@ -68,6 +67,7 @@ import {
   useOrganization,
   useOrganizationMembers,
 } from "@/lib/hooks/use-organization";
+import { formatDate } from "@/lib/format";
 
 const ROLE_LABEL: Record<ClientRole, string> = {
   client_owner: "Owner",
@@ -347,7 +347,7 @@ function MemberRow({
         </Badge>
       </TableCell>
       <TableCell className="text-muted-foreground text-xs">
-        {format(new Date(member.created_at), "PP")}
+        {formatDate(member.created_at)}
       </TableCell>
       <TableCell className="text-right">
         <DropdownMenu>

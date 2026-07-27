@@ -16,7 +16,7 @@ describe("safeClientReturnTo", () => {
   it.each([
     "https://attacker.example/dashboard",
     "//attacker.example/dashboard",
-    "/admin/reviews/review-id",
+    "/admin/verifications/review-id",
     "/dashboard-impersonation",
     "dashboard/review-id",
   ])("rejects unsafe destination %s", (value) => {

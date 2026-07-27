@@ -3,13 +3,11 @@ import {
   ActivityIcon,
   BarChart3Icon,
   BoxesIcon,
-  BrainCircuitIcon,
   Building2Icon,
   ChartLineIcon,
   CircleDollarSignIcon,
   ClockIcon,
   GaugeIcon,
-  InboxIcon,
   KeyRoundIcon,
   ListChecksIcon,
   ListTodoIcon,
@@ -252,12 +250,6 @@ export const APP_NAV_GROUPS: AppNavGroup[] = [
         platformRoles: ["platform_owner", "platform_business_admin"],
       },
       {
-        title: "AI providers",
-        url: "/admin/ai-providers",
-        icon: BrainCircuitIcon,
-        platformRoles: ["platform_owner"],
-      },
-      {
         title: "Platform admins",
         url: "/admin/platform-admins",
         icon: UsersIcon,
@@ -287,15 +279,6 @@ export const APP_NAV_GROUPS: AppNavGroup[] = [
         icon: SettingsIcon,
         platformRoles: ["platform_owner"],
       },
-    ],
-  },
-  {
-    label: "Admin",
-    audience: "admin",
-    items: [
-      { title: "Clients", url: "/admin/clients", icon: Building2Icon },
-      { title: "Ledger", url: "/admin/ledger", icon: ScrollTextIcon },
-      { title: "Review queue", url: "/admin/reviews", icon: InboxIcon },
     ],
   },
 ];

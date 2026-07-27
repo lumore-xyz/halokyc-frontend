@@ -22,7 +22,7 @@ import { useVerification } from "@/lib/hooks/use-verification";
 
 import { ConsentCard, type ConsentRecord } from "./consent-card";
 import { useConsentRecord } from "../_hooks/use-consent-record";
-import { useIsMobile } from "../_hooks/use-is-mobile";
+import { useIsMobile } from "@/hooks/use-mobile";
 import { DesktopHandoffModal } from "./desktop-handoff-modal";
 import { VerifyErrorStep } from "./verify-error-step";
 import { VerifyProgress } from "./verify-progress";

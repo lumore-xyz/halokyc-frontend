@@ -8,13 +8,9 @@
  * the bottom-right that reads 'REVIEW'.
  */
 
-"use client";
-
 import { Check, KeyRound, SlidersHorizontal, X } from "lucide-react";
-import { motion, useReducedMotion } from "motion/react";
 
 import { Reveal } from "@/components/landing/reveal";
-import { SectionMarker } from "@/components/landing/section-marker";
 import { cn } from "@/lib/utils";
 
 const CONTROLS: ReadonlyArray<readonly [string, string]> = [
@@ -32,8 +28,6 @@ const EVIDENCE: ReadonlyArray<readonly [string, string]> = [
 ];
 
 export function ClientControlSection() {
-  const reduce = useReducedMotion();
-
   return (
     <section
       aria-labelledby="control-headline"
@@ -99,11 +93,7 @@ export function ClientControlSection() {
         </Reveal>
 
         <Reveal delay={0.1}>
-          <motion.article
-            initial={reduce ? { opacity: 0 } : { opacity: 0, y: 12 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true, margin: "-80px" }}
-            transition={{ duration: 0.7, ease: [0.22, 1, 0.36, 1] }}
+          <article
             className={cn(
               "relative mx-auto w-full max-w-md",
               "border border-[var(--landing-paper-edge)] bg-[var(--landing-paper)]",
@@ -217,7 +207,7 @@ export function ClientControlSection() {
                 review
               </span>
             </footer>
-          </motion.article>
+          </article>
         </Reveal>
       </div>
     </section>

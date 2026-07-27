@@ -1,7 +1,6 @@
 "use client";
 
 import { type FormEvent, useId, useState } from "react";
-import { format } from "date-fns";
 import NextLink from "next/link";
 import {
   ArrowRightIcon,
@@ -75,6 +74,7 @@ import {
 import { useClientSession } from "@/lib/hooks/use-client-session";
 import { useBillingEntitlements } from "@/lib/hooks/use-billing";
 import { useWorkspaces } from "@/lib/hooks/use-workspaces";
+import { formatDate } from "@/lib/format";
 
 const STATUS_LABEL: Record<Workspace["status"], string> = {
   active: "Active",
@@ -235,7 +235,7 @@ function WorkspaceRow({
         </Badge>
       </TableCell>
       <TableCell className="text-muted-foreground text-xs">
-        {format(new Date(workspace.created_at), "PP")}
+        {formatDate(workspace.created_at)}
       </TableCell>
       <TableCell className="text-right">
         <DropdownMenu>

@@ -10,7 +10,6 @@
  * instrument.
  */
 
-import { motion, useReducedMotion } from "motion/react";
 import { KeyRound, RadioTower, UserRoundCheck } from "lucide-react";
 
 import { cn } from "@/lib/utils";
@@ -48,27 +47,17 @@ const LOOPS: readonly Loop[] = [
 ];
 
 export function TrustedPipeline() {
-  const reduce = useReducedMotion();
-
   return (
     <section
       aria-label="HaloKYC operating loop"
       className="relative border-y border-[var(--landing-hair)] bg-[var(--landing-canvas-edge)] text-[var(--landing-canvas-ink)]"
     >
       <div className="mx-auto grid w-full max-w-7xl gap-px px-6 py-2 sm:px-8 md:grid-cols-3 lg:px-10">
-        {LOOPS.map((loop, index) => {
+        {LOOPS.map((loop) => {
           const Icon = loop.icon;
           return (
-            <motion.article
+            <article
               key={loop.label}
-              initial={reduce ? { opacity: 0 } : { opacity: 0, y: 8 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              viewport={{ once: true, margin: "-80px" }}
-              transition={{
-                duration: 0.5,
-                delay: reduce ? 0 : index * 0.06,
-                ease: [0.22, 1, 0.36, 1],
-              }}
               className={cn(
                 "grid grid-cols-[56px_1fr] items-start gap-5 border-t border-[var(--landing-hair)] py-7 first:border-t-0",
                 "md:border-t-0 md:border-l md:px-7 md:first:border-l-0 md:first:pl-0",
@@ -97,7 +86,7 @@ export function TrustedPipeline() {
                   {loop.body}
                 </p>
               </div>
-            </motion.article>
+            </article>
           );
         })}
       </div>

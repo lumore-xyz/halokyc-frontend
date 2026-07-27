@@ -1,7 +1,6 @@
 "use client";
 
 import { useQuery } from "@tanstack/react-query";
-import { format } from "date-fns";
 import {
   ActivityIcon,
   ChevronLeftIcon,
@@ -489,7 +488,7 @@ function SessionRow({
         {scoreLabel(item.risk_score)}
       </TableCell>
       <TableCell className="text-muted-foreground text-sm">
-        {format(new Date(item.created_at), "PPp")}
+        {formatDate(item.created_at)}
       </TableCell>
       <TableCell>
         {canViewSubject ? (

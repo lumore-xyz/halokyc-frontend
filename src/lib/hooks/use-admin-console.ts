@@ -11,13 +11,6 @@ import {
   type AdminSalesNoteRequest,
   type AdminSupportNoteRequest,
   type AdminSystemSettings,
-  type AiModelProvider,
-  type AiModelProviderCreate,
-  type AiModelProviderKey,
-  type AiModelProviderKeyCreate,
-  type AiModelProviderKeyUpdate,
-  type AiModelProviderType,
-  type AiModelProviderUpdate,
   type PlatformAdminInviteRequest,
   type PlatformAdminUpdateRequest,
 } from "@/lib/api-client";
@@ -25,27 +18,6 @@ import {
 export type {
   AdminBillingCatalogItem,
   AdminBillingCatalogItemUpdate,
-  AiModelProvider,
-  AiModelProviderCreate,
-  AiModelProviderKey,
-  AiModelProviderKeyCreate,
-  AiModelProviderKeyUpdate,
-  AiModelProviderType,
-  AiModelProviderUpdate,
-};
-
-export type AiProviderKeyCreateInput = AiModelProviderKeyCreate & {
-  provider_id: string;
-};
-
-export type AiProviderKeyUpdateInput = AiModelProviderKeyUpdate & {
-  provider_id: string;
-  key_id: string;
-};
-
-export type AiProviderKeyDeleteInput = {
-  provider_id: string;
-  key_id: string;
 };
 
 export function useAdminOrganizations() {
@@ -306,94 +278,6 @@ export function useUpdateAdminSystemSettings() {
       void queryClient.invalidateQueries({
         queryKey: ["admin-system-settings"],
       });
-    },
-  });
-}
-
-export function useAdminAiProviders() {
-  return useQuery({
-    queryKey: ["admin-ai-providers"],
-    queryFn: apiClient.listAdminAiProviders,
-  });
-}
-
-export function useCreateAdminAiProvider() {
-  const queryClient = useQueryClient();
-  return useMutation({
-    mutationFn: (payload: AiModelProviderCreate) =>
-      apiClient.createAdminAiProvider(payload),
-    onSuccess: () => {
-      void queryClient.invalidateQueries({ queryKey: ["admin-ai-providers"] });
-    },
-  });
-}
-
-export function useUpdateAdminAiProvider(providerId: string) {
-  const queryClient = useQueryClient();
-  return useMutation({
-    mutationFn: (payload: AiModelProviderUpdate) =>
-      apiClient.updateAdminAiProvider(providerId, payload),
-    onSuccess: () => {
-      void queryClient.invalidateQueries({ queryKey: ["admin-ai-providers"] });
-    },
-  });
-}
-
-export function useDeleteAdminAiProvider() {
-  const queryClient = useQueryClient();
-  return useMutation({
-    mutationFn: (providerId: string) =>
-      apiClient.deleteAdminAiProvider(providerId),
-    onSuccess: () => {
-      void queryClient.invalidateQueries({ queryKey: ["admin-ai-providers"] });
-    },
-  });
-}
-
-export function useCreateAdminAiProviderKey() {
-  const queryClient = useQueryClient();
-  return useMutation({
-    mutationFn: ({ provider_id, ...payload }: AiProviderKeyCreateInput) =>
-      apiClient.createAdminAiProviderKey(provider_id, payload),
-    onSuccess: () => {
-      void queryClient.invalidateQueries({ queryKey: ["admin-ai-providers"] });
-    },
-  });
-}
-
-export function useDeleteAdminAiProviderKey() {
-  const queryClient = useQueryClient();
-  return useMutation({
-    mutationFn: ({ provider_id, key_id }: AiProviderKeyDeleteInput) =>
-      apiClient.deleteAdminAiProviderKey(provider_id, key_id),
-    onSuccess: () => {
-      void queryClient.invalidateQueries({ queryKey: ["admin-ai-providers"] });
-    },
-  });
-}
-
-export function useTestAdminAiProviderKey() {
-  const queryClient = useQueryClient();
-  return useMutation({
-    mutationFn: ({ provider_id, key_id }: AiProviderKeyDeleteInput) =>
-      apiClient.testAdminAiProviderKey(provider_id, key_id),
-    onSuccess: () => {
-      void queryClient.invalidateQueries({ queryKey: ["admin-ai-providers"] });
-    },
-  });
-}
-
-export function useUpdateAdminAiProviderKey() {
-  const queryClient = useQueryClient();
-  return useMutation({
-    mutationFn: ({
-      provider_id,
-      key_id,
-      ...payload
-    }: AiProviderKeyUpdateInput) =>
-      apiClient.updateAdminAiProviderKey(provider_id, key_id, payload),
-    onSuccess: () => {
-      void queryClient.invalidateQueries({ queryKey: ["admin-ai-providers"] });
     },
   });
 }

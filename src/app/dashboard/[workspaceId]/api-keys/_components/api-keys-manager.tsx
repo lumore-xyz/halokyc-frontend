@@ -11,7 +11,6 @@ import {
 } from "lucide-react";
 import { toast } from "sonner";
 import { useMutation, useQuery } from "@tanstack/react-query";
-import { format } from "date-fns";
 
 import { AppShell } from "@/components/dashboard/app-shell";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
@@ -57,6 +56,7 @@ import {
   type ApiKeyCreate,
   type ApiKeyCreateResponse,
 } from "@/lib/api-client";
+import { formatDate } from "@/lib/format";
 
 export function ApiKeysManager({
   workspaceId,
@@ -284,11 +284,11 @@ export function ApiKeysManager({
                         </Badge>
                       </TableCell>
                       <TableCell className="text-sm">
-                        {format(new Date(key.created_at), "PPP")}
+                        {formatDate(key.created_at)}
                       </TableCell>
                       <TableCell className="text-sm">
                         {key.last_used_at
-                          ? format(new Date(key.last_used_at), "PPP")
+                          ? formatDate(key.last_used_at)
                           : "Never"}
                       </TableCell>
                       <TableCell>

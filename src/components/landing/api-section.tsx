@@ -9,7 +9,6 @@
  */
 
 import { Reveal } from "@/components/landing/reveal";
-import { SectionMarker } from "@/components/landing/section-marker";
 import { MultiFileCodeBlock } from "@/components/ui/code-block";
 import { cn } from "@/lib/utils";
 
@@ -123,7 +122,6 @@ export function ApiSection() {
             showLineNumbers
             scrollable
             maxHeight={380}
-            theme="light"
             bodyClassName="bg-[#fbf8ef] text-[#173426]"
             className="border border-[var(--landing-paper-edge)]"
           />

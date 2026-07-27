@@ -8,7 +8,6 @@ import {
   ChevronRightIcon,
   RefreshCwIcon,
 } from "lucide-react";
-import { format } from "date-fns";
 
 import { Metric } from "@/components/dashboard/metric";
 import { StatusPill } from "@/components/status-pill";
@@ -36,7 +35,7 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { apiClient, type VerificationListItem } from "@/lib/api-client";
-import { scoreLabel } from "@/lib/format";
+import { formatDate, scoreLabel } from "@/lib/format";
 import { useClientSession } from "@/lib/hooks/use-client-session";
 
 const PAGE_SIZE = 25;
@@ -199,7 +198,7 @@ function LogRow({
         {scoreLabel(item.risk_score)}
       </TableCell>
       <TableCell className="text-muted-foreground text-sm">
-        {format(new Date(item.created_at), "PPp")}
+        {formatDate(item.created_at)}
       </TableCell>
     </TableRow>
   );

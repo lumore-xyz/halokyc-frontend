@@ -18,10 +18,3 @@ export function useMyCreditLedger(filters: UseMyCreditLedgerFilters = {}) {
       apiClient.getMyCreditLedger({ workspaceId, limit, offset }),
   });
 }
-
-export function useAdminCreditLedger(organizationId?: string) {
-  return useQuery({
-    queryKey: ["admin-credit-ledger", organizationId ?? "all"],
-    queryFn: () => apiClient.getAdminCreditLedger({ organizationId }),
-  });
-}
