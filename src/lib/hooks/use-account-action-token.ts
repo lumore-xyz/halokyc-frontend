@@ -1,18 +1,17 @@
 "use client";
 
-import { useEffect, useSyncExternalStore } from "react";
-
-const subscribeToNothing = () => () => {};
+import { useEffect, useRef, useState } from "react";
 
 export function useAccountActionToken(): string | null | undefined {
-  const token = useSyncExternalStore(
-    subscribeToNothing,
-    () => new URLSearchParams(window.location.search).get("token"),
-    () => undefined,
-  );
+  const initialized = useRef(false);
+  const [token, setToken] = useState<string | null>();
 
   useEffect(() => {
+    if (initialized.current) return;
+    initialized.current = true;
+
     const url = new URL(window.location.href);
+    setToken(url.searchParams.get("token"));
     if (!url.searchParams.has("token")) return;
     url.searchParams.delete("token");
     window.history.replaceState(window.history.state, "", url);

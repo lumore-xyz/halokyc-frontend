@@ -51,7 +51,7 @@ export default function SelectAccountPage() {
       apiClient
         .selectAdmin(data.temp_token)
         .then(async (res) => {
-          const response = await fetch("/api/admin/login/session", {
+          const response = await fetch("/api/admin/session", {
             method: "POST",
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify({ token: res.access_token }),
@@ -75,7 +75,7 @@ export default function SelectAccountPage() {
       apiClient
         .selectClient(data.temp_token, orgId)
         .then(async (res) => {
-          const response = await fetch("/api/client/login/session", {
+          const response = await fetch("/api/client/session", {
             method: "POST",
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify({ token: res.access_token }),
@@ -100,7 +100,7 @@ export default function SelectAccountPage() {
     setLoading(true);
     try {
       const res = await apiClient.selectAdmin(auth.data.temp_token);
-      const response = await fetch("/api/admin/login/session", {
+      const response = await fetch("/api/admin/session", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ token: res.access_token }),
@@ -126,7 +126,7 @@ export default function SelectAccountPage() {
     setLoading(true);
     try {
       const res = await apiClient.selectClient(auth.data.temp_token, orgId);
-      const response = await fetch("/api/client/login/session", {
+      const response = await fetch("/api/client/session", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ token: res.access_token }),

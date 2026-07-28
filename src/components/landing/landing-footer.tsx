@@ -122,30 +122,10 @@ export function LandingFooter() {
                 </ul>
               </div>
             ))}
-</div>
-      </div>
-
-      <div className="mt-10 rounded-xl border border-[var(--landing-hair)] bg-[var(--landing-paper)] p-6">
-        <p className="font-mono text-[10px] tracking-[0.22em] text-[var(--landing-canvas-mute)] uppercase mb-4">
-          Contact
-        </p>
-        <div className="grid gap-4 sm:grid-cols-3">
-          <div>
-            <p className="font-medium text-[var(--landing-canvas-ink)]">Privacy & Data Rights</p>
-            <p className="mt-1 text-sm text-[var(--landing-canvas-ink-soft)]"><a href="mailto:privacy@halokyc.com" className="underline hover:text-[var(--landing-cyan)]">privacy@halokyc.com</a></p>
-          </div>
-          <div>
-            <p className="font-medium text-[var(--landing-canvas-ink)]">Security</p>
-            <p className="mt-1 text-sm text-[var(--landing-canvas-ink-soft)]"><a href="mailto:security@halokyc.com" className="underline hover:text-[var(--landing-cyan)]">security@halokyc.com</a></p>
-          </div>
-          <div>
-            <p className="font-medium text-[var(--landing-canvas-ink)]">General & Business</p>
-            <p className="mt-1 text-sm text-[var(--landing-canvas-ink-soft)]"><a href="mailto:hello@halokyc.com" className="underline hover:text-[var(--landing-cyan)]">hello@halokyc.com</a></p>
           </div>
         </div>
-      </div>
 
-      <div className="mt-12 flex flex-col gap-4 border-t border-[var(--landing-hair)] pt-6 sm:flex-row sm:items-center sm:justify-between">
+        <div className="mt-12 flex flex-col gap-4 border-t border-[var(--landing-hair)] pt-6 sm:flex-row sm:items-center sm:justify-between">
           <p className="font-mono text-[10px] tracking-[0.22em] text-[var(--landing-canvas-mute)] uppercase">
             (c) 2026 HaloKYC — Built for developers who need trust
             infrastructure without enterprise drag

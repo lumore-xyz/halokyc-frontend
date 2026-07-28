@@ -1403,7 +1403,8 @@ Thin handlers that set httpOnly cookies and proxy to backend.
 ### Admin BFF
 - `POST /api/admin/login` $\rightarrow$ `POST /api/v1/auth/admin/token`
 - `DELETE /api/admin/login` $\rightarrow$ `DELETE /api/admin/login`
-- `GET /api/admin/session` $\rightarrow$ `GET /api/admin/session`
+- `GET /api/admin/session` $\rightarrow$ current admin cookie session
+- `POST /api/admin/session` $\rightarrow$ set the selected admin JWT cookie
 
 ### Client BFF
 - `POST /api/auth/login` $\rightarrow$ `POST /api/v1/auth/login`
@@ -1412,7 +1413,8 @@ Thin handlers that set httpOnly cookies and proxy to backend.
 - `POST /api/client/login` $\rightarrow$ `POST /api/v1/auth/client/token`
 - `DELETE /api/client/login` $\rightarrow$ `DELETE /api/client/login`
 
-- `GET /api/client/session` $\rightarrow$ `GET /api/client/session`
+- `GET /api/client/session` $\rightarrow$ current client cookie session
+- `POST /api/client/session` $\rightarrow$ set the selected client JWT cookie
 - `GET /api/client/me` $\rightarrow$ `GET /api/v1/organizations/{organization_id}` + `GET /api/v1/organizations/{organization_id}/members`
 - `PATCH /api/client/me` $\rightarrow$ `PATCH /api/v1/organizations/{organization_id}`
 - `GET /api/client/me/api-keys` $\rightarrow$ `GET /api/v1/me/api-keys`

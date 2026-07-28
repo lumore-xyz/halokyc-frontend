@@ -43,6 +43,13 @@
 
 ### Fixed
 
+- Account-action links now retain their one-time token in component memory
+  after scrubbing it from the address bar, including during React Strict Mode
+  effect replay. Verification and invitation pages no longer incorrectly show
+  “token missing” for complete email links.
+- Unified account selection now posts selected client/admin sessions to the
+  registered `/api/client/session` and `/api/admin/session` handlers instead of
+  dead nested `/login/session` URLs that returned 404.
 - Repaired the production build after agentic adjudication removal by fixing
   the analytics page JSX tree and removing stale agentic imports, filters,
   workflow modes, recommendation panels, monitoring widgets, and the obsolete

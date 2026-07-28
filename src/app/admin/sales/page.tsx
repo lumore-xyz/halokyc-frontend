@@ -52,7 +52,7 @@ import {
 import { toast } from "sonner";
 import { cn } from "@/lib/utils";
 
-const PLAN_OPTIONS = ["starter", "growth", "scale", "enterprise", "unknown"] as const;
+const PLAN_OPTIONS = ["sandbox", "launch", "growth", "scale", "unknown"] as const;
 type SalesPlan = (typeof PLAN_OPTIONS)[number];
 
 export default function AdminSalesPage() {

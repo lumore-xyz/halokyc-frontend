@@ -1,5 +1,23 @@
-import { clientSessionFromToken, getClientToken } from "@/lib/client-proxy";
+import {
+  clientSessionFromToken,
+  getClientToken,
+  setClientSession,
+} from "@/lib/client-proxy";
 import { backendUrl } from "@/lib/env";
+
+export async function POST(request: Request) {
+  const body = (await request.json().catch(() => null)) as {
+    token?: string;
+    expiresIn?: number;
+  } | null;
+  if (typeof body?.token !== "string") {
+    return Response.json(
+      { ok: false, error: "Token is required" },
+      { status: 400 },
+    );
+  }
+  return setClientSession(body.token, body.expiresIn ?? 3600);
+}
 
 export async function GET() {
   const token = await getClientToken();

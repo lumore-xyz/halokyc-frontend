@@ -1,5 +1,12 @@
+import {
+  ArrowLeft,
+  Building2,
+  FileText,
+  MapPin,
+  Shield,
+  Users,
+} from "lucide-react";
 import type { Metadata } from "next";
-import { ArrowLeft, Building2, FileText, MapPin, Shield, Users } from "lucide-react";
 import Link from "next/link";
 
 import { BrandLogo } from "@/components/brand-logo";
@@ -42,13 +49,16 @@ export default function AboutPage() {
 
       <main className="mx-auto max-w-4xl px-6 py-24 sm:px-8 lg:py-32">
         <header className="mb-16 text-center">
-          <BrandLogo variant="wordmark-light" className="mx-auto mb-6 h-10 w-44" />
+          <BrandLogo
+            variant="wordmark-light"
+            className="mx-auto mb-6 h-10 w-44"
+          />
           <h1 className="font-serif text-4xl font-normal tracking-tight sm:text-5xl">
             About HaloKYC
           </h1>
-          <p className="mt-4 text-[var(--landing-canvas-ink-soft)] max-w-2xl mx-auto">
-            We build identity verification infrastructure that developers trust and users
-            barely notice.
+          <p className="mx-auto mt-4 max-w-2xl text-[var(--landing-canvas-ink-soft)]">
+            We build identity verification infrastructure that developers trust
+            and users barely notice.
           </p>
         </header>
 
@@ -59,16 +69,18 @@ export default function AboutPage() {
             </h2>
             <div className="prose prose-invert max-w-none text-[var(--landing-canvas-ink-soft)]">
               <p>
-                Identity verification has become a bottleneck for modern products. The
-                choices used to be: integrate a complex enterprise vendor with
-                months-long procurement, or build it yourself and take on compliance,
-                fraud, and operational risk you didn&apos;t sign up for.
+                Identity verification has become a bottleneck for modern
+                products. The choices used to be: integrate a complex enterprise
+                vendor with months-long procurement, or build it yourself and
+                take on compliance, fraud, and operational risk you didn&apos;t
+                sign up for.
               </p>
               <p>
-                HaloKYC was created to give developers a third option: a practical,
-                developer-first API that handles the hard parts of verification&mdash;document
-                OCR, liveness detection, face matching, duplicate detection, risk
-                scoring&mdash;while keeping your team in control of the final decision.
+                HaloKYC was created to give developers a third option: a
+                practical, developer-first API that handles the hard parts of
+                verification&mdash;document OCR, liveness detection, face
+                matching, duplicate detection, risk scoring&mdash;while keeping
+                your team in control of the final decision.
               </p>
             </div>
           </section>
@@ -79,7 +91,7 @@ export default function AboutPage() {
             </h2>
             <ul className="grid gap-6 sm:grid-cols-2">
               <li className="rounded-xl border border-[var(--landing-hair)] bg-[var(--landing-paper)] p-6">
-                <div className="flex items-center gap-3 mb-3">
+                <div className="mb-3 flex items-center gap-3">
                   <div className="rounded-lg bg-[var(--landing-cyan)]/10 p-2 text-[var(--landing-cyan)]">
                     <Shield className="size-5" aria-hidden />
                   </div>
@@ -88,13 +100,13 @@ export default function AboutPage() {
                   </h3>
                 </div>
                 <p className="text-sm leading-relaxed text-[var(--landing-canvas-ink-soft)]">
-                  One API, clear documentation, sandbox environment, and no sales calls
-                  required to start testing. You should be able to ship verification in
-                  an afternoon, not a quarter.
+                  One API, clear documentation, sandbox environment, and no
+                  sales calls required to start testing. You should be able to
+                  ship verification in an afternoon, not a quarter.
                 </p>
               </li>
               <li className="rounded-xl border border-[var(--landing-hair)] bg-[var(--landing-paper)] p-6">
-                <div className="flex items-center gap-3 mb-3">
+                <div className="mb-3 flex items-center gap-3">
                   <div className="rounded-lg bg-[var(--landing-cyan)]/10 p-2 text-[var(--landing-cyan)]">
                     <FileText className="size-5" aria-hidden />
                   </div>
@@ -103,12 +115,13 @@ export default function AboutPage() {
                   </h3>
                 </div>
                 <p className="text-sm leading-relaxed text-[var(--landing-canvas-ink-soft)]">
-                  Our AI handles the repetitive checks. Your team makes the judgment calls.
-                  Every decision is auditable, attributable, and reversible.
+                  Our AI handles the repetitive checks. Your team makes the
+                  judgment calls. Every decision is auditable, attributable, and
+                  reversible.
                 </p>
               </li>
               <li className="rounded-xl border border-[var(--landing-hair)] bg-[var(--landing-paper)] p-6">
-                <div className="flex items-center gap-3 mb-3">
+                <div className="mb-3 flex items-center gap-3">
                   <div className="rounded-lg bg-[var(--landing-cyan)]/10 p-2 text-[var(--landing-cyan)]">
                     <Building2 className="size-5" aria-hidden />
                   </div>
@@ -117,12 +130,13 @@ export default function AboutPage() {
                   </h3>
                 </div>
                 <p className="text-sm leading-relaxed text-[var(--landing-canvas-ink-soft)]">
-                  One credit = one completed verification. No per-check fees, no annual
-                  contracts, no surprise invoices. Start free, scale on demand.
+                  One credit = one completed verification. No per-check fees, no
+                  annual contracts, no surprise invoices. Start free, scale on
+                  demand.
                 </p>
               </li>
               <li className="rounded-xl border border-[var(--landing-hair)] bg-[var(--landing-paper)] p-6">
-                <div className="flex items-center gap-3 mb-3">
+                <div className="mb-3 flex items-center gap-3">
                   <div className="rounded-lg bg-[var(--landing-cyan)]/10 p-2 text-[var(--landing-cyan)]">
                     <Users className="size-5" aria-hidden />
                   </div>
@@ -131,15 +145,15 @@ export default function AboutPage() {
                   </h3>
                 </div>
                 <p className="text-sm leading-relaxed text-[var(--landing-canvas-ink-soft)]">
-                  Biometric data never leaves your workspace boundary. We process
-                  evidence in-memory, store only what&apos;s necessary, and delete
-                  automatically on schedule.
+                  Biometric data never leaves your workspace boundary. We
+                  process evidence in-memory, store only what&apos;s necessary,
+                  and delete automatically on schedule.
                 </p>
               </li>
             </ul>
           </section>
 
-          <section className="space-y-6 pt-8 border-t border-[var(--landing-hair)]">
+          <section className="space-y-6 border-t border-[var(--landing-hair)] pt-8">
             <h2 className="font-serif text-2xl font-medium text-[var(--landing-canvas-ink)]">
               Company details
             </h2>
@@ -148,7 +162,9 @@ export default function AboutPage() {
                 <dt className="font-mono text-[10px] tracking-[0.22em] text-[var(--landing-canvas-mute)] uppercase">
                   Legal entity
                 </dt>
-                <dd className="text-[var(--landing-canvas-ink)]">HaloKYC Technologies Pvt. Ltd.</dd>
+                <dd className="text-[var(--landing-canvas-ink)]">
+                  Rebel Ecosystem Pvt. Ltd.
+                </dd>
               </div>
               <div className="space-y-1">
                 <dt className="font-mono text-[10px] tracking-[0.22em] text-[var(--landing-canvas-mute)] uppercase">
@@ -168,36 +184,50 @@ export default function AboutPage() {
                 <dt className="font-mono text-[10px] tracking-[0.22em] text-[var(--landing-canvas-mute)] uppercase">
                   Team size
                 </dt>
-                <dd className="text-[var(--landing-canvas-ink)]">8 (and growing)</dd>
+                <dd className="text-[var(--landing-canvas-ink)]">
+                  1 (and growing)
+                </dd>
               </div>
             </dl>
           </section>
 
-          <section className="space-y-6 pt-8 border-t border-[var(--landing-hair)]">
+          <section className="space-y-6 border-t border-[var(--landing-hair)] pt-8">
             <h2 className="font-serif text-2xl font-medium text-[var(--landing-canvas-ink)]">
               Contact
             </h2>
             <div className="grid gap-4 sm:grid-cols-3">
               <a
-                href="mailto:hello@halokyc.com"
-                className="p-4 rounded-lg border border-[var(--landing-canvas-ink-soft)] opacity-80 hover:opacity-100 transition-opacity"
+                href="mailto:contact@halokyc.com"
+                className="rounded-lg border border-[var(--landing-canvas-ink-soft)] p-4 opacity-80 transition-opacity hover:opacity-100"
               >
-                <p className="font-medium text-[var(--landing-canvas-ink)]">General & Business</p>
-                <p className="mt-1 text-sm text-[var(--landing-canvas-ink-soft)]">hello@halokyc.com</p>
+                <p className="font-medium text-[var(--landing-canvas-ink)]">
+                  General & Business
+                </p>
+                <p className="mt-1 text-sm text-[var(--landing-canvas-ink-soft)]">
+                  contact@halokyc.com
+                </p>
               </a>
               <a
                 href="mailto:privacy@halokyc.com"
-                className="p-4 rounded-lg border border-[var(--landing-canvas-ink-soft)] opacity-80 hover:opacity-100 transition-opacity"
+                className="rounded-lg border border-[var(--landing-canvas-ink-soft)] p-4 opacity-80 transition-opacity hover:opacity-100"
               >
-                <p className="font-medium text-[var(--landing-canvas-ink)]">Privacy & Data Rights</p>
-                <p className="mt-1 text-sm text-[var(--landing-canvas-ink-soft)]">privacy@halokyc.com</p>
+                <p className="font-medium text-[var(--landing-canvas-ink)]">
+                  Privacy & Data Rights
+                </p>
+                <p className="mt-1 text-sm text-[var(--landing-canvas-ink-soft)]">
+                  privacy@halokyc.com
+                </p>
               </a>
               <a
                 href="mailto:security@halokyc.com"
-                className="p-4 rounded-lg border border-[var(--landing-canvas-ink-soft)] opacity-80 hover:opacity-100 transition-opacity"
+                className="rounded-lg border border-[var(--landing-canvas-ink-soft)] p-4 opacity-80 transition-opacity hover:opacity-100"
               >
-                <p className="font-medium text-[var(--landing-canvas-ink)]">Security</p>
-                <p className="mt-1 text-sm text-[var(--landing-canvas-ink-soft)]">security@halokyc.com</p>
+                <p className="font-medium text-[var(--landing-canvas-ink)]">
+                  Security
+                </p>
+                <p className="mt-1 text-sm text-[var(--landing-canvas-ink-soft)]">
+                  security@halokyc.com
+                </p>
               </a>
             </div>
           </section>
