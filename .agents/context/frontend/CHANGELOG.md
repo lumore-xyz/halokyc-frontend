@@ -35,6 +35,8 @@
 - Redesigned the `/verify` selfie capture screen to match the approved light
   reference: centered guidance, oval live-camera frame, preparation tips,
   circular shutter, and HaloKYC security footer.
+- Applied the same light capture pattern to front and back document capture,
+  with a rectangular live-camera frame and document-specific guidance.
 - Dodo customer ids are no longer exposed in client subscription data.
 - Billing copy distinguishes HaloKYC credit-ledger activity from Dodo-generated
   invoice emails and PDF receipts.

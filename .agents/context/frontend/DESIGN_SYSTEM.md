@@ -976,6 +976,14 @@ tips, and a circular shutter control. The check itself runs server-side
 via the `HeuristicLivenessProvider` (ADR-012); the frame is honest UX,
 not a fake promise. Do not animate the oval.
 
+### Document frame
+
+Document capture follows the same light, single-task layout as selfie
+capture. It uses an emerald rectangular camera frame, concise capture
+guidance, three preparation tips, the circular shutter control, and the
+shared security footer. Front, back, optional skip, retake, and continue
+states keep the same layout instead of switching to a dark camera overlay.
+
 ### Privacy footer
 
 Every verify screen renders `Secured by HaloKYC` with the icon-color

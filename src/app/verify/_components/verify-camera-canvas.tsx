@@ -185,8 +185,8 @@ export function VerifyCameraCanvas({
         ]
       : [
           "All four corners visible",
-          "Keep text sharp and readable",
-          "Avoid glare or shadows",
+          "Text clearly readable",
+          "No glare or shadows",
         ]);
 
   if (frameType === "oval") {
@@ -213,9 +213,13 @@ export function VerifyCameraCanvas({
   }
 
   return (
-    <div className="relative flex min-h-0 flex-1 overflow-hidden bg-slate-950 text-white">
+    <div className="relative flex min-h-0 flex-1 overflow-hidden bg-white text-slate-900">
       {file ? (
-        <PreviewImage file={file} alt="Captured preview" />
+        <PreviewImage
+          file={file}
+          alt="Captured preview"
+          className="absolute top-[220px] left-1/2 aspect-[1.58] w-[82%] max-w-[360px] -translate-x-1/2 rounded-2xl object-cover"
+        />
       ) : (
         <video
           ref={videoRef}
@@ -224,89 +228,83 @@ export function VerifyCameraCanvas({
           muted
           playsInline
           className={cn(
-            "absolute inset-0 size-full object-cover",
+            "absolute top-[220px] left-1/2 aspect-[1.58] w-[82%] max-w-[360px] -translate-x-1/2 rounded-2xl object-cover",
             !isActive && "opacity-0",
           )}
         />
       )}
 
       {!file && !isActive ? (
-        <div className="absolute inset-0 bg-[radial-gradient(circle_at_50%_35%,rgba(37,99,235,0.22),transparent_36%),linear-gradient(160deg,rgba(15,23,42,0.95),rgba(17,24,39,0.86))]" />
+        <div className="absolute top-[220px] left-1/2 flex aspect-[1.58] w-[82%] max-w-[360px] -translate-x-1/2 flex-col items-center justify-center gap-3 rounded-2xl bg-emerald-50 text-center text-slate-400">
+          <FileImageIcon
+            className="size-12 text-emerald-300"
+            strokeWidth={1.25}
+          />
+          <span className="text-xs font-medium">
+            {cameraStatus === "requesting"
+              ? "Opening camera..."
+              : "Camera preview"}
+          </span>
+        </div>
       ) : null}
-      <div className="absolute inset-0 bg-black/38" />
-      <div className="absolute inset-x-0 top-0 h-40 bg-gradient-to-b from-black/60 to-transparent" />
-      <div className="absolute inset-x-0 bottom-0 h-56 bg-gradient-to-t from-black/65 to-transparent" />
 
       <div className="pointer-events-none absolute inset-0">
-        <DocumentFrame
-          instruction={
-            instructionPill ?? "Position the document inside the frame"
-          }
-          visible={isActive || Boolean(file)}
-        />
+        <DocumentFrame visible />
       </div>
 
       <div className="relative z-30 flex min-h-0 flex-1 flex-col px-5 py-5">
-        <div className="grid grid-cols-[40px_1fr_40px] items-center gap-2">
+        <div className="grid grid-cols-[40px_1fr_40px] items-start gap-2">
           <button
             type="button"
             onClick={onBack}
             disabled={!showBack || !onBack}
             aria-label="Go back"
             className={cn(
-              "flex size-10 items-center justify-center rounded-full text-white/90 transition hover:bg-white/15 focus-visible:ring-2 focus-visible:ring-white/80 focus-visible:outline-none disabled:pointer-events-none disabled:opacity-0",
+              "flex size-10 items-center justify-center rounded-full transition hover:bg-black/5 focus-visible:ring-2 focus-visible:ring-[var(--ring)] focus-visible:outline-none disabled:pointer-events-none disabled:opacity-0",
             )}
           >
-            <ArrowLeftIcon className="size-5" strokeWidth={1.75} />
+            <ArrowLeftIcon className="size-6" strokeWidth={1.75} />
           </button>
-          <h2 className="truncate text-center text-sm font-semibold text-white/95">
-            {title}
-          </h2>
-          <div aria-hidden className="size-10" />
+          <div className="pt-1 text-center">
+            <h2 className="font-display text-base font-semibold tracking-[-0.02em]">
+              Document capture
+            </h2>
+            <p className="mt-1 text-xs text-slate-500">Step 2 of 2</p>
+          </div>
+          <ShieldCheckIcon
+            className="m-2 size-6 text-emerald-500"
+            strokeWidth={1.75}
+            aria-label="Secure verification"
+          />
         </div>
 
-        {frameType === "rectangle" ? (
-          <div className="mt-8 flex flex-col items-center gap-4 text-center">
-            <span className="rounded-full bg-black/35 px-4 py-2 text-sm font-semibold shadow-sm backdrop-blur-md">
-              Government ID
-            </span>
-            <GuidanceList items={activeGuidance} />
-          </div>
-        ) : null}
-
-        {!file && !isActive ? (
-          <div className="mx-auto mt-auto mb-auto flex max-w-xs flex-col items-center gap-4 text-center">
-            <CameraIcon className="size-10 text-white/80" strokeWidth={1.5} />
-            <div className="flex flex-col gap-2">
-              <p className="text-lg font-semibold">
-                {facing === "user" ? "Open your camera" : "Ready to capture"}
-              </p>
-              <p className="text-sm leading-6 text-white/72">
-                {facing === "user"
-                  ? "Hold the phone steady and face the camera."
-                  : "Lay the document flat. The camera opens automatically."}
-              </p>
-            </div>
-          </div>
-        ) : null}
+        <div className="mt-5 flex flex-col items-center text-center">
+          <span className="flex size-12 items-center justify-center rounded-full bg-emerald-50 text-emerald-500">
+            <FileImageIcon className="size-6" strokeWidth={1.75} aria-hidden />
+          </span>
+          <h1 className="font-display mt-2 text-2xl font-semibold tracking-[-0.035em]">
+            {title}
+          </h1>
+          <p className="mt-2 max-w-xs text-sm leading-5 text-slate-500">
+            {instructionPill ?? "Position the document inside the frame."}
+          </p>
+        </div>
 
         {showError ? (
-          <Alert
-            variant="destructive"
-            className="mt-auto border-white/20 bg-black/55 text-white backdrop-blur-md [&>svg]:text-white"
-          >
+          <Alert variant="destructive" className="mt-4">
             <AlertTitle>Camera unavailable</AlertTitle>
             <AlertDescription>{cameraError}</AlertDescription>
           </Alert>
         ) : null}
 
-        <div className="mt-auto flex flex-col gap-4">
+        <div className="mt-auto flex flex-col gap-5">
+          <GuidanceList items={activeGuidance} />
+
           {file ? (
-            <div className="grid grid-cols-2 gap-2">
+            <div className="grid grid-cols-2 gap-3">
               <Button
                 type="button"
                 variant="outline"
-                className="border-white/25 bg-white/10 text-white hover:bg-white/20 hover:text-white"
                 onClick={() => {
                   stopCamera();
                   onChange(null);
@@ -335,17 +333,21 @@ export function VerifyCameraCanvas({
                 type="button"
                 onClick={capturePhoto}
                 aria-label={captureLabel ?? "Take photo"}
-                className="flex size-20 items-center justify-center rounded-full border-4 border-white/90 bg-white/10 shadow-[0_0_0_8px_rgba(255,255,255,0.12)] transition hover:bg-white/20 focus-visible:ring-2 focus-visible:ring-white/80 focus-visible:outline-none"
+                className="flex size-20 items-center justify-center rounded-full bg-emerald-100 shadow-[0_0_18px_rgba(16,185,129,0.18)] transition hover:bg-emerald-200 focus-visible:ring-2 focus-visible:ring-emerald-500 focus-visible:ring-offset-4 focus-visible:outline-none"
               >
-                <span className="size-14 rounded-full bg-white" />
+                <span className="size-14 rounded-full border-[7px] border-emerald-500 bg-white" />
               </button>
-              <button
-                type="button"
-                onClick={stopCamera}
-                className="justify-self-end rounded-full bg-black/35 px-4 py-2 text-xs font-semibold text-white shadow-sm backdrop-blur-md transition hover:bg-black/45 focus-visible:ring-2 focus-visible:ring-white/80 focus-visible:outline-none"
-              >
-                Cancel
-              </button>
+              {skipLabel && onSkip ? (
+                <button
+                  type="button"
+                  onClick={onSkip}
+                  className="justify-self-end text-xs font-semibold text-slate-500 transition hover:text-slate-900 focus-visible:ring-2 focus-visible:ring-[var(--ring)] focus-visible:outline-none"
+                >
+                  {skipLabel}
+                </button>
+              ) : (
+                <span />
+              )}
             </div>
           ) : (
             <div className="grid gap-2">
@@ -368,27 +370,22 @@ export function VerifyCameraCanvas({
                 />
               ) : null}
               {skipLabel && onSkip ? (
-                <Button
-                  type="button"
-                  variant="ghost"
-                  className="text-white hover:bg-white/10 hover:text-white"
-                  onClick={onSkip}
-                >
+                <Button type="button" variant="ghost" onClick={onSkip}>
                   {skipLabel}
                 </Button>
               ) : null}
             </div>
           )}
 
-          <div className="flex items-center justify-center gap-1.5 text-xs text-white/58">
-            <ShieldCheckIcon
+          <div className="flex items-center justify-center gap-1.5 text-xs text-slate-500">
+            <LockKeyholeIcon
               className="size-3.5"
               strokeWidth={1.75}
               aria-hidden
             />
             <span>Secured by</span>
             <BrandLogo variant="icon-color" className="size-4" />
-            <span className="font-medium text-white">HaloKYC</span>
+            <span className="font-semibold text-slate-900">HaloKYC</span>
           </div>
         </div>
       </div>
@@ -708,17 +705,20 @@ function GuidanceList({ items }: { items: string[] }) {
   const icons = [LightbulbIcon, EyeIcon, SlashIcon];
 
   return (
-    <ul className="flex flex-col gap-2 text-left text-sm font-medium text-white/88">
+    <ul className="grid w-full grid-cols-3 divide-x divide-slate-200 text-center">
       {items.map((item, index) => {
         const Icon = icons[index] ?? ShieldCheckIcon;
         return (
-          <li key={item} className="flex items-center gap-2">
+          <li
+            key={item}
+            className="flex min-w-0 flex-col items-center gap-2 px-2"
+          >
             <Icon
-              className="size-4 text-white/72"
+              className="size-5 text-emerald-500"
               strokeWidth={1.75}
               aria-hidden
             />
-            <span>{item}</span>
+            <span className="text-[10px] leading-4 font-semibold">{item}</span>
           </li>
         );
       })}
@@ -726,27 +726,15 @@ function GuidanceList({ items }: { items: string[] }) {
   );
 }
 
-function DocumentFrame({
-  instruction,
-  visible,
-}: {
-  instruction: string;
-  visible: boolean;
-}) {
+function DocumentFrame({ visible }: { visible: boolean }) {
   if (!visible) return null;
 
   return (
-    <div className="absolute inset-0 flex items-center justify-center pt-20">
-      <div className="relative aspect-[1.58] w-[78%] max-w-[360px]">
-        <div className="absolute inset-0 rounded-2xl border-[3px] border-black/85 shadow-[0_0_0_999px_rgba(0,0,0,0.18)]" />
-        <div className="absolute inset-1 rounded-xl border border-white/25" />
-        <div className="absolute -bottom-20 left-1/2 max-w-[112%] -translate-x-1/2">
-          <span className="block max-w-[360px] truncate rounded-full bg-black/45 px-5 py-3 text-sm font-semibold text-white shadow-sm backdrop-blur-md">
-            {instruction}
-          </span>
-        </div>
-      </div>
-    </div>
+    <>
+      <div className="absolute top-[212px] left-1/2 aspect-[1.58] w-[calc(82%+16px)] max-w-[376px] -translate-x-1/2 rounded-[20px] border border-dashed border-emerald-100" />
+      <div className="absolute top-[220px] left-1/2 aspect-[1.58] w-[82%] max-w-[360px] -translate-x-1/2 rounded-2xl border-2 border-emerald-400" />
+      <div className="absolute top-[228px] left-1/2 h-1.5 w-10 -translate-x-1/2 rounded-full bg-emerald-500" />
+    </>
   );
 }
 
