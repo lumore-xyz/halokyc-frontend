@@ -5,12 +5,16 @@ import {
   CameraIcon,
   EyeIcon,
   FileImageIcon,
+  GlassesIcon,
   LightbulbIcon,
+  LockKeyholeIcon,
+  ScanFaceIcon,
   RefreshCcwIcon,
   ShieldCheckIcon,
   SlashIcon,
+  SunIcon,
 } from "lucide-react";
-import { CSSProperties, useCallback, useEffect, useRef, useState } from "react";
+import { RefObject, useCallback, useEffect, useRef, useState } from "react";
 
 import { BrandLogo } from "@/components/brand-logo";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
@@ -185,6 +189,29 @@ export function VerifyCameraCanvas({
           "Avoid glare or shadows",
         ]);
 
+  if (frameType === "oval") {
+    return (
+      <SelfieCaptureCanvas
+        file={file}
+        videoRef={videoRef}
+        isActive={isActive}
+        cameraStatus={cameraStatus}
+        cameraError={cameraError}
+        acceptMime={acceptMime}
+        cameraOnly={cameraOnly}
+        captureLabel={captureLabel}
+        continueLabel={continueLabel}
+        showBack={showBack}
+        onBack={onBack}
+        onCapture={capturePhoto}
+        onChange={onChange}
+        onContinue={onContinue}
+        onRetry={startCamera}
+        onStop={stopCamera}
+      />
+    );
+  }
+
   return (
     <div className="relative flex min-h-0 flex-1 overflow-hidden bg-slate-950 text-white">
       {file ? (
@@ -196,7 +223,10 @@ export function VerifyCameraCanvas({
           autoPlay
           muted
           playsInline
-          className={cn("absolute inset-0 size-full object-cover", !isActive && "opacity-0")}
+          className={cn(
+            "absolute inset-0 size-full object-cover",
+            !isActive && "opacity-0",
+          )}
         />
       )}
 
@@ -208,19 +238,12 @@ export function VerifyCameraCanvas({
       <div className="absolute inset-x-0 bottom-0 h-56 bg-gradient-to-t from-black/65 to-transparent" />
 
       <div className="pointer-events-none absolute inset-0">
-        {frameType === "oval" ? (
-          <LivenessFrame
-            instruction={instructionPill ?? "Place your head within the frame"}
-            visible={isActive || Boolean(file)}
-          />
-        ) : (
-          <DocumentFrame
-            instruction={
-              instructionPill ?? "Position the document inside the frame"
-            }
-            visible={isActive || Boolean(file)}
-          />
-        )}
+        <DocumentFrame
+          instruction={
+            instructionPill ?? "Position the document inside the frame"
+          }
+          visible={isActive || Boolean(file)}
+        />
       </div>
 
       <div className="relative z-30 flex min-h-0 flex-1 flex-col px-5 py-5">
@@ -333,7 +356,9 @@ export function VerifyCameraCanvas({
                 className="w-full"
               >
                 <CameraIcon data-icon="inline-start" />
-                {cameraStatus === "requesting" ? "Opening camera..." : "Open camera"}
+                {cameraStatus === "requesting"
+                  ? "Opening camera..."
+                  : "Open camera"}
               </Button>
               {!cameraOnly ? (
                 <UploadFallback
@@ -356,7 +381,11 @@ export function VerifyCameraCanvas({
           )}
 
           <div className="flex items-center justify-center gap-1.5 text-xs text-white/58">
-            <ShieldCheckIcon className="size-3.5" strokeWidth={1.75} aria-hidden />
+            <ShieldCheckIcon
+              className="size-3.5"
+              strokeWidth={1.75}
+              aria-hidden
+            />
             <span>Secured by</span>
             <BrandLogo variant="icon-color" className="size-4" />
             <span className="font-medium text-white">HaloKYC</span>
@@ -364,6 +393,248 @@ export function VerifyCameraCanvas({
         </div>
       </div>
     </div>
+  );
+}
+
+function SelfieCaptureCanvas({
+  file,
+  videoRef,
+  isActive,
+  cameraStatus,
+  cameraError,
+  acceptMime,
+  cameraOnly,
+  captureLabel,
+  continueLabel,
+  showBack,
+  onBack,
+  onCapture,
+  onChange,
+  onContinue,
+  onRetry,
+  onStop,
+}: {
+  file: File | null;
+  videoRef: RefObject<HTMLVideoElement | null>;
+  isActive: boolean;
+  cameraStatus: CameraStatus;
+  cameraError: string | null;
+  acceptMime: string;
+  cameraOnly: boolean;
+  captureLabel?: string;
+  continueLabel: string;
+  showBack: boolean;
+  onBack?: () => void;
+  onCapture: () => void;
+  onChange: (file: File | null) => void;
+  onContinue?: () => void;
+  onRetry: () => void;
+  onStop: () => void;
+}) {
+  return (
+    <div className="flex min-h-full flex-1 flex-col overflow-y-auto bg-white px-6 py-5 text-slate-900 sm:px-9 sm:py-7">
+      <header className="grid grid-cols-[40px_1fr_40px] items-start">
+        <button
+          type="button"
+          onClick={onBack}
+          disabled={!showBack || !onBack}
+          aria-label="Go back"
+          className="flex size-10 items-center justify-center rounded-full transition hover:bg-black/5 focus-visible:ring-2 focus-visible:ring-[var(--ring)] focus-visible:outline-none disabled:pointer-events-none disabled:opacity-0"
+        >
+          <ArrowLeftIcon className="size-6" strokeWidth={1.75} />
+        </button>
+        <div className="pt-1 text-center">
+          <h2 className="font-display text-base font-semibold tracking-[-0.02em]">
+            Selfie capture
+          </h2>
+          <p className="mt-1 text-xs text-slate-500">Step 1 of 2</p>
+        </div>
+        <ShieldCheckIcon
+          className="m-2 size-6 text-emerald-500"
+          strokeWidth={1.75}
+          aria-label="Secure verification"
+        />
+      </header>
+
+      <main className="flex flex-1 flex-col items-center">
+        <div className="mt-5 flex size-12 items-center justify-center rounded-full bg-emerald-50 text-emerald-500 sm:mt-7">
+          <ScanFaceIcon className="size-6" strokeWidth={1.75} aria-hidden />
+        </div>
+        <h1 className="font-display mt-2 text-center text-2xl font-semibold tracking-[-0.035em]">
+          Let&apos;s verify you
+        </h1>
+        <p className="mt-2 max-w-xs text-center text-sm leading-5 text-slate-500">
+          Position your face in the center
+          <br />
+          and ensure good lighting.
+        </p>
+
+        <div className="relative mt-3 w-full max-w-[260px] sm:max-w-[270px]">
+          <div className="absolute top-1/2 -left-9 flex -translate-y-1/2 items-center text-emerald-500">
+            <span className="h-px w-5 bg-emerald-400" />
+            <span className="-ml-2 size-3 rotate-45 border-t border-r border-emerald-500" />
+          </div>
+          <div className="absolute top-1/2 -right-9 flex -translate-y-1/2 items-center text-emerald-500">
+            <span className="-mr-2 size-3 rotate-45 border-b border-l border-emerald-500" />
+            <span className="h-px w-5 bg-emerald-400" />
+          </div>
+          <div className="absolute -inset-2 rounded-[46%] border border-dashed border-emerald-100" />
+          <div className="relative aspect-[0.705] overflow-hidden rounded-[46%] border border-emerald-400 bg-emerald-50/40 p-2">
+            <div className="relative size-full overflow-hidden rounded-[45%] border-2 border-emerald-300 bg-slate-100">
+              {file ? (
+                <PreviewImage
+                  file={file}
+                  alt="Captured preview"
+                  className="size-full object-cover"
+                />
+              ) : (
+                <video
+                  ref={videoRef}
+                  aria-label="Camera preview"
+                  autoPlay
+                  muted
+                  playsInline
+                  className={cn(
+                    "size-full scale-x-[-1] object-cover",
+                    !isActive && "opacity-0",
+                  )}
+                />
+              )}
+              {!file && !isActive ? (
+                <div className="absolute inset-0 flex flex-col items-center justify-center gap-3 bg-gradient-to-b from-emerald-50 to-white text-center text-slate-400">
+                  <ScanFaceIcon
+                    className="size-16 text-emerald-300"
+                    strokeWidth={1.25}
+                  />
+                  <span className="text-xs font-medium">
+                    {cameraStatus === "requesting"
+                      ? "Opening camera..."
+                      : "Camera preview"}
+                  </span>
+                </div>
+              ) : null}
+            </div>
+            <div className="pointer-events-none absolute top-3 left-1/2 h-1.5 w-10 -translate-x-1/2 rounded-full bg-emerald-500" />
+          </div>
+        </div>
+
+        {cameraError ? (
+          <Alert variant="destructive" className="mt-4 max-w-sm">
+            <AlertTitle>Camera unavailable</AlertTitle>
+            <AlertDescription>{cameraError}</AlertDescription>
+          </Alert>
+        ) : null}
+
+        <ul className="mt-6 grid w-full max-w-sm grid-cols-3 divide-x divide-slate-200 text-center">
+          <SelfieTip icon={SunIcon} title="Good lighting" detail="Preferred" />
+          <SelfieTip
+            icon={ScanFaceIcon}
+            title="Face front"
+            detail="Clearly visible"
+          />
+          <SelfieTip
+            icon={GlassesIcon}
+            title="No hats or glasses"
+            detail="For best results"
+          />
+        </ul>
+
+        <div className="mt-7 flex min-h-20 items-center justify-center">
+          {file ? (
+            <div className="grid w-full max-w-xs grid-cols-2 gap-3">
+              <Button
+                type="button"
+                variant="outline"
+                onClick={() => {
+                  onStop();
+                  onChange(null);
+                }}
+              >
+                <RefreshCcwIcon data-icon="inline-start" />
+                Retake
+              </Button>
+              <Button type="button" onClick={onContinue}>
+                {continueLabel}
+              </Button>
+            </div>
+          ) : isActive ? (
+            <div className="grid w-full max-w-xs grid-cols-[1fr_auto_1fr] items-center">
+              {!cameraOnly ? (
+                <UploadFallback
+                  inputId="upload-user"
+                  acceptMime={acceptMime}
+                  onChange={onChange}
+                  iconOnly
+                />
+              ) : (
+                <span />
+              )}
+              <button
+                type="button"
+                onClick={onCapture}
+                aria-label={captureLabel ?? "Take selfie"}
+                className="flex size-20 items-center justify-center rounded-full bg-emerald-100 shadow-[0_0_18px_rgba(16,185,129,0.18)] transition hover:bg-emerald-200 focus-visible:ring-2 focus-visible:ring-emerald-500 focus-visible:ring-offset-4 focus-visible:outline-none"
+              >
+                <span className="size-14 rounded-full border-[7px] border-emerald-500 bg-white" />
+              </button>
+              <span />
+            </div>
+          ) : (
+            <div className="grid gap-2">
+              <Button
+                type="button"
+                onClick={onRetry}
+                disabled={
+                  cameraStatus === "requesting" ||
+                  cameraStatus === "unsupported"
+                }
+              >
+                <CameraIcon data-icon="inline-start" />
+                {cameraStatus === "requesting"
+                  ? "Opening camera..."
+                  : "Open camera"}
+              </Button>
+              {!cameraOnly ? (
+                <UploadFallback
+                  inputId="upload-user"
+                  acceptMime={acceptMime}
+                  onChange={onChange}
+                />
+              ) : null}
+            </div>
+          )}
+        </div>
+      </main>
+
+      <div className="mt-5 flex items-center justify-center gap-1.5 text-xs text-slate-500">
+        <LockKeyholeIcon className="size-3.5" strokeWidth={1.75} aria-hidden />
+        <span>Secured by</span>
+        <BrandLogo variant="icon-color" className="size-4" />
+        <span className="font-semibold text-slate-900">HaloKYC</span>
+      </div>
+    </div>
+  );
+}
+
+function SelfieTip({
+  icon: Icon,
+  title,
+  detail,
+}: {
+  icon: React.ElementType;
+  title: string;
+  detail: string;
+}) {
+  return (
+    <li className="flex min-w-0 flex-col items-center px-2">
+      <span className="text-emerald-500">
+        <Icon className="size-5" strokeWidth={1.75} aria-hidden />
+      </span>
+      <span className="mt-2 text-[11px] leading-4 font-semibold">{title}</span>
+      <span className="mt-0.5 text-[10px] leading-4 text-slate-400">
+        {detail}
+      </span>
+    </li>
   );
 }
 
@@ -442,64 +713,16 @@ function GuidanceList({ items }: { items: string[] }) {
         const Icon = icons[index] ?? ShieldCheckIcon;
         return (
           <li key={item} className="flex items-center gap-2">
-            <Icon className="size-4 text-white/72" strokeWidth={1.75} aria-hidden />
+            <Icon
+              className="size-4 text-white/72"
+              strokeWidth={1.75}
+              aria-hidden
+            />
             <span>{item}</span>
           </li>
         );
       })}
     </ul>
-  );
-}
-
-function LivenessFrame({
-  instruction,
-  visible,
-}: {
-  instruction: string;
-  visible: boolean;
-}) {
-  const vars = {
-    "--oval-cy": "45%",
-    "--oval-rx": "132px",
-    "--oval-ry": "178px",
-    "--mask-rx": "140px",
-    "--mask-ry": "186px",
-  } as CSSProperties;
-
-  if (!visible) return null;
-
-  return (
-    <div className="absolute inset-0 overflow-hidden" style={vars}>
-      <div
-        aria-hidden
-        className="absolute inset-0 bg-black/10"
-        style={{
-          WebkitMaskImage:
-            "radial-gradient(ellipse var(--mask-rx) var(--mask-ry) at 50% var(--oval-cy), transparent 0 99%, black 100%)",
-          maskImage:
-            "radial-gradient(ellipse var(--mask-rx) var(--mask-ry) at 50% var(--oval-cy), transparent 0 99%, black 100%)",
-        }}
-      />
-      <div
-        aria-hidden
-        className="absolute rounded-full border-[3px] border-black/80 shadow-[0_0_0_999px_rgba(0,0,0,0.18)]"
-        style={{
-          width: "calc(var(--oval-rx) * 2)",
-          height: "calc(var(--oval-ry) * 2)",
-          left: "50%",
-          top: "var(--oval-cy)",
-          transform: "translate(-50%, -50%)",
-        }}
-      />
-      <div
-        className="absolute left-1/2 max-w-[86%] -translate-x-1/2"
-        style={{ top: "calc(var(--oval-cy) + var(--oval-ry) + 28px)" }}
-      >
-        <span className="block truncate rounded-full bg-black/45 px-5 py-3 text-sm font-semibold whitespace-nowrap text-white shadow-sm backdrop-blur-md">
-          {instruction}
-        </span>
-      </div>
-    </div>
   );
 }
 
@@ -527,14 +750,22 @@ function DocumentFrame({
   );
 }
 
-function PreviewImage({ file, alt }: { file: File; alt: string }) {
+function PreviewImage({
+  file,
+  alt,
+  className = "absolute inset-0 size-full object-cover",
+}: {
+  file: File;
+  alt: string;
+  className?: string;
+}) {
   const src = URL.createObjectURL(file);
   return (
     // eslint-disable-next-line @next/next/no-img-element
     <img
       src={src}
       alt={alt}
-      className="absolute inset-0 size-full object-cover"
+      className={className}
       onLoad={() => URL.revokeObjectURL(src)}
     />
   );

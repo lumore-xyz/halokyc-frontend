@@ -970,10 +970,11 @@ destructive. Do not introduce new status colours here.
 ### Liveness frame
 
 When the workflow requests a selfie or liveness check, the camera canvas
-renders a static SVG ellipse and a "Place your head within the frame"
-pill. The check itself runs server-side via the
-`HeuristicLivenessProvider` (ADR-012); the frame is honest UX, not a
-fake promise. Do not animate the ellipse.
+uses a light, single-task capture surface: centered title and guidance,
+an emerald oval crop around the live camera feed, three short preparation
+tips, and a circular shutter control. The check itself runs server-side
+via the `HeuristicLivenessProvider` (ADR-012); the frame is honest UX,
+not a fake promise. Do not animate the oval.
 
 ### Privacy footer
 

@@ -36,7 +36,7 @@ export function VerifyShell({
         {!immersive ? (
         <div className="flex justify-center pb-4">
           <BrandLogo
-            variant="wordmark-dark"
+            variant="wordmark-light"
             priority
             className="h-9 w-36"
           />
