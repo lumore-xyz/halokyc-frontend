@@ -228,7 +228,7 @@ export default function PrivacyPage() {
             </div>
             <p className="text-xs italic">
               We also process device/network data (IP, browser, device
-              identifier, and approximate location when you choose to share it)
+              identifier, public IP, and an approximate region derived from the IP)
               and communications (support tickets) as needed for platform
               security and operation.
             </p>

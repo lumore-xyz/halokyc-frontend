@@ -47,11 +47,16 @@ export function DeviceNetworkCard({ context }: Props) {
 
       <div className="grid lg:grid-cols-[minmax(0,0.9fr)_minmax(320px,1.1fr)]">
         <dl className="grid content-start gap-x-8 gap-y-5 p-5 sm:grid-cols-2">
-          <Detail label="IP address" value={context?.ip_address} />
+          <Detail
+            label="Public IP address"
+            value={context?.ip_address}
+            empty="Unavailable (private and local addresses are ignored)"
+          />
           <Detail label="Device type" value={context?.device_type} />
           <Detail label="Platform" value={context?.platform} />
           <Detail label="Browser" value={context?.browser} />
           <Detail label="Timezone" value={context?.timezone} />
+          <Detail label="IP timezone" value={context?.ip_timezone} />
           <Detail label="Language" value={context?.language} />
           <Detail
             label="Screen"
@@ -94,11 +99,12 @@ export function DeviceNetworkCard({ context }: Props) {
                 aria-hidden
               />
               <p className="text-foreground text-sm font-medium">
-                Location not shared
+                IP location unavailable
               </p>
               <p className="mt-1 max-w-xs text-xs leading-relaxed">
-                The session still includes server-captured network data. A map
-                appears only when the subject grants location access.
+                An approximate map appears when Cloudflare provides location
+                data for a valid public IP. No device location permission is
+                requested.
               </p>
             </div>
           )}
@@ -113,11 +119,13 @@ function Detail({
   value,
   mono = false,
   className,
+  empty = "Not captured",
 }: {
   label: string;
   value: string | null | undefined;
   mono?: boolean;
   className?: string;
+  empty?: string;
 }) {
   return (
     <div className={className}>
@@ -125,7 +133,7 @@ function Detail({
       <dd
         className={`mt-1 text-sm font-medium break-words ${mono ? "font-mono text-xs" : ""}`}
       >
-        {value || "Not captured"}
+        {value || empty}
       </dd>
     </div>
   );

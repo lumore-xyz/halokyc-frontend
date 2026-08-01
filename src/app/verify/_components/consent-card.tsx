@@ -16,12 +16,11 @@ import { cn } from "@/lib/utils";
  * auditors can prove the user agreed to the version that was live
  * at the time, not the version that exists today.
  */
-export const CONSENT_POLICY_VERSION = "2026-08-01";
+export const CONSENT_POLICY_VERSION = "2026-08-01.1";
 
 export type ConsentRecord = {
   policy_version: string;
   consent_timestamp: string;
-  ip_address: string | null;
   device_id: string | null;
   session_id: string | null;
   device_context?: {
@@ -34,11 +33,6 @@ export type ConsentRecord = {
     screen_height: number | null;
     touch_points: number | null;
   };
-  location?: {
-    latitude: number;
-    longitude: number;
-    accuracy_meters: number | null;
-  } | null;
 };
 
 type ConsentCardProps = {
@@ -105,22 +99,6 @@ function readDeviceContext(): NonNullable<ConsentRecord["device_context"]> {
   };
 }
 
-function readApproximateLocation(): Promise<ConsentRecord["location"]> {
-  if (!("geolocation" in navigator)) return Promise.resolve(null);
-  return new Promise((resolve) => {
-    navigator.geolocation.getCurrentPosition(
-      ({ coords }) =>
-        resolve({
-          latitude: Number(coords.latitude.toFixed(2)),
-          longitude: Number(coords.longitude.toFixed(2)),
-          accuracy_meters: Math.round(coords.accuracy),
-        }),
-      () => resolve(null),
-      { enableHighAccuracy: false, timeout: 5000, maximumAge: 300000 },
-    );
-  });
-}
-
 export function ConsentCard({
   sessionId,
   onAccept,
@@ -130,25 +108,16 @@ export function ConsentCard({
 }: ConsentCardProps) {
   const checkboxId = useId();
   const [accepted, setAccepted] = useState(false);
-  const [collectingContext, setCollectingContext] = useState(false);
-  const busy = pending || collectingContext;
+  const busy = pending;
 
-  async function handleAccept() {
-    setCollectingContext(true);
-    try {
-      const record: ConsentRecord = {
-        policy_version: policyVersion,
-        consent_timestamp: new Date().toISOString(),
-        ip_address: null,
-        device_id: readDeviceId(),
-        session_id: sessionId ?? null,
-        device_context: readDeviceContext(),
-        location: await readApproximateLocation(),
-      };
-      onAccept(record);
-    } finally {
-      setCollectingContext(false);
-    }
+  function handleAccept() {
+    onAccept({
+      policy_version: policyVersion,
+      consent_timestamp: new Date().toISOString(),
+      device_id: readDeviceId(),
+      session_id: sessionId ?? null,
+      device_context: readDeviceContext(),
+    });
   }
 
   return (
@@ -183,7 +152,7 @@ export function ConsentCard({
       <dl className="grid gap-3 text-xs">
         <ConsentRow
           label="What we collect"
-          value="A photo of your face, your ID document, basic device metadata (IP, browser, device id), and approximate location if you choose to share it."
+          value="A photo of your face, your ID document, basic device metadata, your public IP, and an approximate region derived from that IP. We do not request your device location."
         />
         <ConsentRow
           label="Why we collect it"
@@ -230,7 +199,7 @@ export function ConsentCard({
         onSubmit={(event) => {
           event.preventDefault();
           if (!accepted || busy) return;
-          void handleAccept();
+          handleAccept();
         }}
         className="mt-auto"
       >

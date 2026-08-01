@@ -21,9 +21,9 @@
 - Added a dedicated duplicate-session investigation panel and session audit
   timeline to workspace verification details.
 - Added a responsive device and network investigation panel to session detail,
-  including server-captured IP, consented browser/device facts, a clear legacy
-  empty state, and an embedded OpenStreetMap view when approximate location was
-  shared.
+  including the trusted Cloudflare public IP, consented browser/device facts, a
+  clear production-only empty state, and an embedded OpenStreetMap view for
+  approximate IP-derived location. `/verify` no longer requests browser location.
 - Unified verification and manual-review detail rendering so both routes show
   the same duplicate investigation, device/network, risk, checks, evidence,
   audit, case-summary, and technical-payload sections. Review decisions remain

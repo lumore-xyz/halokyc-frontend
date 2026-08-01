@@ -349,11 +349,11 @@ type VerificationSessionDetail = VerificationDetail & {
   device_context: VerificationDeviceContext | null;
 };
 
-`device_context` combines the server-observed IP and user agent with coarse
-browser/device metadata submitted alongside consent. Approximate coordinates
-are rounded to two decimal places before storage and are null when the subject
-does not grant browser location access. Denying location never blocks consent
-or verification.
+`device_context` combines coarse browser/device metadata with a validated public
+IP and approximate location from trusted Cloudflare production headers. The
+browser does not submit IP or coordinates and `/verify` never requests location
+permission. Private/local addresses are discarded; local development returns no
+IP-derived location. Coordinates are rounded to two decimal places.
 
 type AdminDecisionResponse = {
   verification_id: string;

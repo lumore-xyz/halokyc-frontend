@@ -161,11 +161,6 @@ export type ConsentCaptureRequest = {
     screen_height: number | null;
     touch_points: number | null;
   };
-  location?: {
-    latitude: number;
-    longitude: number;
-    accuracy_meters: number | null;
-  } | null;
 };
 
 export type ConsentCaptureResponse = {
@@ -408,6 +403,7 @@ export type VerificationDeviceContext = {
   ip_country: string | null;
   ip_region: string | null;
   ip_city: string | null;
+  ip_timezone: string | null;
   device_id: string | null;
   user_agent: string | null;
   device_type: string | null;

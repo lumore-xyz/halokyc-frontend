@@ -47,7 +47,6 @@ function parse(sessionId: string | null | undefined, raw: string | null): Consen
       consent_timestamp: parsed.consent_timestamp,
       device_id: parsed.device_id ?? null,
       session_id: parsed.session_id ?? null,
-      ip_address: null,
     };
     return entry.snapshot;
   } catch {
