@@ -2,8 +2,8 @@ import {
   Baby,
   CopyX,
   Eye,
-  Fingerprint,
   FileWarning,
+  Fingerprint,
   ScanFace,
   ScanText,
   UserCheck,
@@ -11,9 +11,9 @@ import {
 } from "lucide-react";
 import Link from "next/link";
 
+import { StatusPill } from "@/components/status-pill";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { StatusPill } from "@/components/status-pill";
 import type {
   CheckResult,
   DocumentQualityCheckResult,
@@ -113,7 +113,10 @@ export function CheckCard({
           </div>
           <StatusPill status={mapCheckStatus(status, verificationStatus)} />
         </div>
-        {timedOut || matchKind || ocr || metadataMatching?.informational_only ? (
+        {timedOut ||
+        matchKind ||
+        ocr ||
+        metadataMatching?.informational_only ? (
           <div className="flex flex-wrap gap-1.5">
             {timedOut ? (
               <Badge variant="outline">
@@ -168,14 +171,9 @@ export function CheckCard({
           ) : null}
           {detail ? (
             <>
-              <dt className="text-muted-foreground col-span-2 pt-2">
-                Detail
-              </dt>
+              <dt className="text-muted-foreground col-span-2 pt-2">Detail</dt>
               <dd className="col-span-2">
-                <CheckDetailSummary
-                  checkKey={checkKey}
-                  value={detail}
-                />
+                <CheckDetailSummary checkKey={checkKey} value={detail} />
               </dd>
             </>
           ) : null}
@@ -190,7 +188,9 @@ function mapCheckStatus(
   verificationStatus?: VerificationStatus,
 ): VerificationStatus {
   if (status === "pending" || status === "skipped") {
-    return verificationStatus === "processing" ? "processing" : "pending_upload";
+    return verificationStatus === "processing"
+      ? "processing"
+      : "pending_upload";
   }
   if (status === "pass") return "approved";
   if (status === "fail") return "rejected";
@@ -204,8 +204,8 @@ export function orderedCheckKeys(): Array<keyof typeof CHECK_META> {
     "metadata_matching",
     "face_match",
     "liveness",
-    "duplicate",
     "age",
+    "duplicate",
   ];
 }
 
@@ -282,9 +282,9 @@ function DocumentQualityMetrics({
       <dt className="text-muted-foreground">Provider</dt>
       <dd>{formatMachineLabel(quality.provider)}</dd>
       {quality.retry_recommended ? (
-        <dd className="col-span-2 rounded-md border border-border bg-[color:var(--status-review-bg)] px-3 py-2 text-sm">
-          <span className="font-medium">Retake document.</span>{" "}
-          The uploaded ID was not clear enough for confident automated review.
+        <dd className="border-border col-span-2 rounded-md border bg-[color:var(--status-review-bg)] px-3 py-2 text-sm">
+          <span className="font-medium">Retake document.</span> The uploaded ID
+          was not clear enough for confident automated review.
         </dd>
       ) : null}
     </>
@@ -310,7 +310,7 @@ function MetadataMatchingMetrics({
           <dd>{metadata.skipped_fields.map(formatMachineLabel).join(", ")}</dd>
         </>
       ) : null}
-      <dd className="col-span-2 rounded-md border border-border bg-muted/30 px-3 py-2 text-sm">
+      <dd className="border-border bg-muted/30 col-span-2 rounded-md border px-3 py-2 text-sm">
         Metadata matching is recorded separately from OCR and does not affect
         automated risk scoring.
       </dd>
@@ -356,7 +356,9 @@ function getOcrExtraction(
     document_pattern_id:
       typeof documentPatternId === "string" ? documentPatternId : undefined,
     ai_extraction:
-      aiExtraction && typeof aiExtraction === "object" && !Array.isArray(aiExtraction)
+      aiExtraction &&
+      typeof aiExtraction === "object" &&
+      !Array.isArray(aiExtraction)
         ? (aiExtraction as OcrExtractionSummary["ai_extraction"])
         : undefined,
   };
@@ -445,7 +447,7 @@ function CheckDetailSummary({
   }
 
   return (
-    <div className="flex flex-col gap-2 rounded-md border border-border bg-muted/30 p-3">
+    <div className="border-border bg-muted/30 flex flex-col gap-2 rounded-md border p-3">
       {metadataMatching ? (
         <MetadataMatchingSummary metadata={metadataMatching} />
       ) : null}
@@ -457,7 +459,7 @@ function CheckDetailSummary({
           <span className="text-muted-foreground">
             {formatMachineLabel(key)}
           </span>
-          <span className="min-w-0 break-words font-medium">
+          <span className="min-w-0 font-medium break-words">
             {formatDetailValue(entryValue)}
           </span>
         </div>
@@ -491,7 +493,7 @@ function MetadataMatchingSummary({
 }) {
   const hasMismatch = metadata.mismatches.length > 0;
   return (
-    <div className="flex flex-col gap-2 rounded-md border border-border bg-background p-3">
+    <div className="border-border bg-background flex flex-col gap-2 rounded-md border p-3">
       <div className="flex items-center justify-between gap-2">
         <span className="font-medium">Metadata match</span>
         <Badge variant={hasMismatch ? "destructive" : "outline"}>
@@ -558,7 +560,9 @@ function readMetadataMatching(
   }
   return {
     status,
-    mismatches: mismatches.filter((item): item is string => typeof item === "string"),
+    mismatches: mismatches.filter(
+      (item): item is string => typeof item === "string",
+    ),
     skipped_fields: skippedFields.filter(
       (item): item is string => typeof item === "string",
     ),

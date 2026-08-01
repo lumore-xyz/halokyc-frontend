@@ -24,7 +24,7 @@ HaloKYC is a usage-based identity verification SaaS. It combines a policy-driven
 LangGraph-powered adjudicator that reviews normalized tool outputs (OCR, face match, liveness, duplicate, age, quality) and returns a structured verdict: `recommended_status`, `confidence`, `reason_codes`, `human_summary`, `evidence_references`, `requires_manual_review`. Supports `disabled`, `shadow`, `assist_review`, and `auto_decide` modes with provider abstraction (Google Gemini / OpenAI-compatible), cost controls, and rollout criteria.
 
 ### 2.2 Deterministic Decision Rules
-Risk scoring with terminal overrides (under-min-age → `REJECTED`, confirmed face mismatch → `REJECTED`, liveness failure → `REJECTED`, confirmed duplicate → `REJECTED`). Score bands: `< 30` → approved, `30–59` → manual_review, `≥ 60` → rejected.
+Risk scoring with terminal overrides (under-min-age → `REJECTED`, confirmed face mismatch → `REJECTED`, liveness failure → `REJECTED`, active subject ban → `REJECTED`). Confirmed non-ban duplicates always route to `manual_review`. Score bands: `< 30` → approved, `30–59` → manual_review, `≥ 60` → rejected.
 
 ### 2.3 AI Services
 - Selfie capture with liveness detection (camera-only, heuristic anti-spoof)
@@ -153,7 +153,7 @@ Full contract: `API_CONTRACTS.md`.
 
 ### Agentic Policy
 - Deterministic checks run first; agent receives normalized payloads without raw OCR text, full document numbers, or biometric images.
-- Terminal rules override model (age, face mismatch, liveness fail, confirmed duplicate).
+- Terminal rules override model (age, face mismatch, liveness fail, active subject ban). Confirmed non-ban duplicates require manual review.
 - Model can only downgrade auto-approvals to `manual_review` or suggest `rejected`/`approved` within policy.
 - Structured output required; optional user-action limited to `retake_document`.
 - Workflows may set `auto_decide_confidence_threshold` for gray-zone auto-decisions: agent confidence ≥ threshold AND recommendation aligns with deterministic direction (lower half of manual band approves, upper half rejects).
@@ -213,7 +213,7 @@ Next.js 16 (App Router), React 19, TypeScript 5 (strict). Tailwind CSS v4, shadc
 Target: Reduce manual review volume by 30–50% while maintaining false approve rate < 1%.
 
 - Timeout recovery: agent adjudicates after service timeouts using available evidence + document images
-- Deterministic duplicate policy: auto-decide clear-cut duplicates without agent involvement
+- Deterministic duplicate policy: route face duplicates to manual review and auto-reject active subject bans without agent involvement
 - Document quality assessment: multimodal LLM evaluates image quality, readability, suspected tampering, retry recommendation
 - Confidence-based auto-decide: enable auto-decide for high-confidence gray-zone sessions after replay validation
 - Client-side risk signals: optional trusted metadata from clients (trust score, IP reputation, device ID)

@@ -337,11 +337,23 @@ type DuplicateSessionReference = {
   updated_at: string;
 };
 
+`duplicate_sessions` contains every retained session in the same tenant scope
+for the matched external user, ordered newest first. A confirmed non-ban face
+duplicate sets the duplicate check and parent verification to `manual_review`;
+an active subject-ban match remains a terminal `rejected` decision.
+
 type VerificationSessionDetail = VerificationDetail & {
   files: VerificationEvidenceFile[];
   audit_logs: AdminAuditLogItem[];
   duplicate_sessions: DuplicateSessionReference[];
+  device_context: VerificationDeviceContext | null;
 };
+
+`device_context` combines the server-observed IP and user agent with coarse
+browser/device metadata submitted alongside consent. Approximate coordinates
+are rounded to two decimal places before storage and are null when the subject
+does not grant browser location access. Denying location never blocks consent
+or verification.
 
 type AdminDecisionResponse = {
   verification_id: string;

@@ -1,38 +1,22 @@
 "use client";
 
-import { useState } from "react";
-import { ScrollTextIcon } from "lucide-react";
-import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import {
-  apiClient,
-  type AdminAuditLogItem,
-  type VerificationDetail,
-  type VerificationSessionDetail,
-} from "@/lib/api-client";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
-import { Skeleton } from "@/components/ui/skeleton";
-import { ScoreMeter } from "@/components/score-meter";
-import { StatusPill } from "@/components/status-pill";
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
 import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from "@/components/ui/table";
-import { EmptyState } from "@/components/empty-state";
-import { formatDate } from "@/lib/format";
-import { JsonViewer } from "@/components/json-viewer";
-import { CheckCard, orderedCheckKeys } from "@/components/check-card";
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
+import { Input } from "@/components/ui/input";
+import { Skeleton } from "@/components/ui/skeleton";
+import { apiClient, type VerificationSessionDetail } from "@/lib/api-client";
 import { useClientSession } from "@/lib/hooks/use-client-session";
-import { TimeoutRecoveryBanner } from "@/components/timeout-recovery-banner";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { useState } from "react";
 
-import { EvidenceViewer } from "../../../_components/evidence-viewer";
+import { SessionDetailContent } from "../../../sessions/[id]/_components/session-detail-manager";
 
 export function ReviewDetailManager({
   workspaceId,
@@ -50,40 +34,39 @@ export function ReviewDetailManager({
     role === "client_admin" ||
     role === "client_reviewer";
   const canViewRawData = role === "client_owner" || role === "client_admin";
+  const canUpload =
+    role === "client_owner" ||
+    role === "client_admin" ||
+    role === "client_developer";
 
-  const reviewQuery = useQuery({
-    queryKey: ["workspace-review", workspaceId, verificationId],
-    queryFn: () => apiClient.getWorkspaceReview(workspaceId, verificationId),
-  });
-
-  const sessionQuery = useQuery({
+  const verificationQuery = useQuery({
     queryKey: ["workspace-verification", workspaceId, verificationId],
-    queryFn: () => apiClient.getWorkspaceVerification(workspaceId, verificationId),
+    queryFn: () =>
+      apiClient.getWorkspaceVerification(workspaceId, verificationId),
   });
 
   const decideMutation = useMutation({
     mutationFn: (input: { decision: "approve" | "reject"; reason?: string }) =>
-      apiClient.submitWorkspaceReviewDecision(workspaceId, verificationId, input),
+      apiClient.submitWorkspaceReviewDecision(
+        workspaceId,
+        verificationId,
+        input,
+      ),
     onSuccess: () => {
-      void queryClient.invalidateQueries({
-        queryKey: ["workspace-review", workspaceId, verificationId],
-      });
-      void queryClient.invalidateQueries({
-        queryKey: ["workspace-verification", workspaceId, verificationId],
-      });
-      void queryClient.invalidateQueries({
-        queryKey: ["workspace-reviews", workspaceId],
-      });
-      void queryClient.invalidateQueries({
-        queryKey: ["workspace-verifications", workspaceId],
-      });
-      void queryClient.invalidateQueries({
-        queryKey: ["workspace-verification-summary", workspaceId],
-      });
+      setReason("");
+      for (const queryKey of [
+        ["workspace-verification", workspaceId, verificationId],
+        ["workspace-review", workspaceId, verificationId],
+        ["workspace-reviews", workspaceId],
+        ["workspace-verifications", workspaceId],
+        ["workspace-verification-summary", workspaceId],
+      ]) {
+        void queryClient.invalidateQueries({ queryKey });
+      }
     },
   });
 
-  if (reviewQuery.isLoading) {
+  if (verificationQuery.isLoading) {
     return (
       <div className="flex flex-col gap-8">
         <Skeleton className="h-32 w-full rounded-2xl" />
@@ -95,350 +78,123 @@ export function ReviewDetailManager({
     );
   }
 
-  if (reviewQuery.error) {
+  if (verificationQuery.error) {
     return (
       <Alert variant="destructive">
         <AlertTitle>Could not load review details</AlertTitle>
         <AlertDescription>
-          An error occurred while fetching the review. Please try again later.
+          The verification detail could not be loaded. Refresh the page and try
+          again.
         </AlertDescription>
       </Alert>
     );
   }
 
-  if (!reviewQuery.data) return null;
-
-  const data = sessionQuery.data ?? reviewQuery.data;
-  const auditLogs =
-    sessionQuery.data?.audit_logs ?? reviewQuery.data.audit_logs ?? [];
-  const timedOutServices = data.timed_out_services ?? [];
-  const duplicateSessionHref = data.duplicate_session_id
-    ? `/dashboard/${workspaceId}/sessions/${data.duplicate_session_id}`
-    : undefined;
+  const data = verificationQuery.data;
+  if (!data) return null;
 
   return (
-    <div className="flex flex-col gap-8">
-      <header className="flex flex-col gap-3">
-        <span className="text-xs font-medium tracking-wide text-muted-foreground uppercase">
-          Review Detail
-        </span>
-        <div className="flex flex-col gap-2 sm:flex-row sm:items-end sm:justify-between">
-          <div className="flex flex-col gap-1.5">
-            <div className="flex items-center gap-3">
-              <h1 className="text-3xl font-semibold tracking-tight">
-                {data.external_user_id}
-              </h1>
-              <StatusPill status={data.status} />
-            </div>
-            <p className="text-muted-foreground font-mono text-xs">
-              ID: {data.verification_id}
-            </p>
-          </div>
-          <div className="text-right">
-            <p className="text-xs text-muted-foreground">Created</p>
-            <p className="text-sm font-medium">{formatDate(data.created_at)}</p>
-          </div>
-        </div>
-      </header>
-
-      <div className="grid gap-6 md:grid-cols-3">
-        <div className="flex flex-col gap-6 md:col-span-2">
-          <TimeoutRecoveryBanner
-            timeoutRecovery={data.timeout_recovery}
-            timedOutServices={timedOutServices}
-          />
-
-          <Card>
-            <CardHeader>
-              <CardTitle>Risk Assessment</CardTitle>
-              <CardDescription>
-                The risk score is calculated based on the results of all performed checks.
-              </CardDescription>
-            </CardHeader>
-            <CardContent className="space-y-6">
-              <ScoreMeter score={data.risk_score} />
-              {data.decision_reason && (
-                <div className="rounded-md border border-border bg-muted/40 px-4 py-3 text-sm">
-                  {data.decision_reason}
-                </div>
-              )}
-            </CardContent>
-          </Card>
-
-          <Card>
-            <CardHeader>
-              <CardTitle>Check Results</CardTitle>
-              <CardDescription>
-                Detailed breakdown of each verification check performed.
-              </CardDescription>
-            </CardHeader>
-            <CardContent>
-              <div className="grid gap-4 sm:grid-cols-2">
-                {orderedCheckKeys().map((key) => (
-                  <CheckCard
-                    key={key}
-                    checkKey={key}
-                    result={data.checks?.[key]}
-                    verificationStatus={data.status}
-                    timedOut={timedOutServices.includes(key)}
-                    duplicateSessionHref={
-                      key === "duplicate" ? duplicateSessionHref : undefined
-                    }
-                    duplicateMatchKind={
-                      key === "duplicate" ? data.duplicate_match_kind : null
-                    }
-                  />
-                ))}
-              </div>
-            </CardContent>
-          </Card>
-
-          {sessionQuery.error ? (
-            <Alert variant="destructive">
-              <AlertTitle>Could not load captured evidence</AlertTitle>
-              <AlertDescription>
-                The review details loaded, but the session evidence endpoint
-                did not respond. Refresh the page or open the verification from
-                the activity log.
-              </AlertDescription>
-            </Alert>
-          ) : sessionQuery.isLoading ? (
-            <Card>
-              <CardHeader>
-                <CardTitle>Captured evidence</CardTitle>
-                <CardDescription>
-                  Loading uploaded files for this verification.
-                </CardDescription>
-              </CardHeader>
-              <CardContent>
-                <Skeleton className="h-72 rounded-xl" />
-              </CardContent>
-            </Card>
-          ) : sessionQuery.data ? (
-            <EvidenceViewer
-              workspaceId={workspaceId}
-              session={sessionQuery.data as VerificationSessionDetail}
-              canViewEvidence={canViewEvidence}
-            />
-          ) : null}
-
-          <AuditLogCard logs={auditLogs} />
-        </div>
-
-        <div className="flex flex-col gap-6">
-          <ReviewCaseSummaryCard
-            data={data}
-            auditLogCount={auditLogs.length}
-            evidenceLoaded={Boolean(sessionQuery.data)}
-          />
-
-          <Card>
-            <CardHeader>
-              <CardTitle>Decision</CardTitle>
-              <CardDescription>
-                Review the evidence and make a decision on this verification.
-              </CardDescription>
-            </CardHeader>
-            <CardContent className="flex flex-col gap-4">
-              <div className="flex flex-col gap-2">
-                <label className="text-xs font-medium text-muted-foreground">Reason</label>
-                <Input
-                  value={reason}
-                  onChange={(e) => setReason(e.target.value)}
-                  placeholder="Enter reason for rejection..."
-                />
-              </div>
-              <div className="grid grid-cols-2 gap-2">
-                <Button
-                  variant="outline"
-                  className="border-destructive text-destructive hover:bg-destructive/10"
-                  onClick={() => decideMutation.mutate({ decision: "reject", reason })}
-                  disabled={decideMutation.isPending || !reason}
-                >
-                  Reject
-                </Button>
-                <Button
-                  variant="default"
-                  onClick={() => decideMutation.mutate({ decision: "approve" })}
-                  disabled={decideMutation.isPending}
-                >
-                  Approve
-                </Button>
-              </div>
-            </CardContent>
-          </Card>
-
-          {canViewRawData ? (
-            <Card>
-              <CardHeader>
-                <CardTitle>Technical payload</CardTitle>
-                <CardDescription>
-                  Full API response. Visible only to workspace owners and
-                  admins.
-                </CardDescription>
-              </CardHeader>
-              <CardContent>
-                <JsonViewer
-                  value={data}
-                  initiallyCollapsed
-                  title="Raw response"
-                />
-              </CardContent>
-            </Card>
-          ) : null}
-        </div>
-      </div>
-    </div>
+    <SessionDetailContent
+      workspaceId={workspaceId}
+      verificationId={verificationId}
+      data={data as VerificationSessionDetail}
+      canViewEvidence={canViewEvidence}
+      canViewSubject={canViewEvidence}
+      canUpload={canUpload}
+      canViewRawData={canViewRawData}
+      onRefresh={() => {
+        void verificationQuery.refetch();
+      }}
+      sidebarExtra={
+        <DecisionCard
+          status={data.status}
+          reason={reason}
+          onReasonChange={setReason}
+          pending={decideMutation.isPending}
+          error={decideMutation.isError}
+          onApprove={() => decideMutation.mutate({ decision: "approve" })}
+          onReject={() =>
+            decideMutation.mutate({
+              decision: "reject",
+              reason: reason.trim(),
+            })
+          }
+        />
+      }
+    />
   );
 }
 
-function ReviewCaseSummaryCard({
-  data,
-  auditLogCount,
-  evidenceLoaded,
+function DecisionCard({
+  status,
+  reason,
+  onReasonChange,
+  pending,
+  error,
+  onApprove,
+  onReject,
 }: {
-  data: VerificationDetail;
-  auditLogCount: number;
-  evidenceLoaded: boolean;
+  status: VerificationSessionDetail["status"];
+  reason: string;
+  onReasonChange: (value: string) => void;
+  pending: boolean;
+  error: boolean;
+  onApprove: () => void;
+  onReject: () => void;
 }) {
-  const completedChecks = Object.values(data.checks ?? {}).filter(
-    (check) => check && check.status !== "pending" && check.status !== "skipped",
-  ).length;
+  const reviewable = status === "manual_review";
 
   return (
-    <Card>
+    <Card className="border-t-2 border-t-[color:var(--status-review-fg)]/40">
       <CardHeader>
-        <CardTitle>Review summary</CardTitle>
+        <CardTitle>Decision</CardTitle>
         <CardDescription>
-          The decision context reviewers need, without raw response data.
+          {reviewable
+            ? "Resolve this case after reviewing every section."
+            : "A final decision has already been recorded."}
         </CardDescription>
       </CardHeader>
       <CardContent className="flex flex-col gap-4">
-        <div className="flex flex-wrap gap-2">
-          <Badge variant="secondary">{completedChecks} checks complete</Badge>
-          <Badge variant="outline">{auditLogCount} audit events</Badge>
-          <Badge variant={evidenceLoaded ? "outline" : "secondary"}>
-            {evidenceLoaded ? "Evidence loaded" : "Evidence loading"}
-          </Badge>
-        </div>
-        <dl className="grid gap-3 text-sm">
-          <SummaryRow label="Subject" value={data.external_user_id} />
-          <SummaryRow
-            label="Risk score"
-            value={
-              typeof data.risk_score === "number"
-                ? `${Math.round(data.risk_score)} / 100`
-                : "Not scored yet"
-            }
-          />
-          <SummaryRow label="Created" value={formatDate(data.created_at)} />
-          <SummaryRow label="Updated" value={formatDate(data.updated_at)} />
-        </dl>
-        {data.decision_reason ? (
-          <div className="rounded-md border border-border bg-muted/30 p-3 text-sm">
-            <p className="font-medium">Decision note</p>
-            <p className="mt-1 text-muted-foreground">{data.decision_reason}</p>
-          </div>
+        {error ? (
+          <Alert variant="destructive">
+            <AlertTitle>Decision not saved</AlertTitle>
+            <AlertDescription>Refresh the case and try again.</AlertDescription>
+          </Alert>
         ) : null}
-      </CardContent>
-    </Card>
-  );
-}
-
-function AuditLogCard({ logs }: { logs: AdminAuditLogItem[] }) {
-  return (
-    <Card>
-      <CardHeader>
-        <CardTitle>Session audit log</CardTitle>
-        <CardDescription>
-          Status changes and reviewer actions recorded for this verification.
-        </CardDescription>
-      </CardHeader>
-      <CardContent>
-        {logs.length === 0 ? (
-          <EmptyState
-            icon={ScrollTextIcon}
-            title="No audit events"
-            description="No audit-log entries are attached to this verification session yet."
+        <div className="grid gap-2">
+          <label
+            htmlFor="review-decision-reason"
+            className="text-muted-foreground text-xs font-medium"
+          >
+            Rejection reason
+          </label>
+          <Input
+            id="review-decision-reason"
+            value={reason}
+            onChange={(event) => onReasonChange(event.target.value)}
+            placeholder="Required when rejecting"
+            disabled={!reviewable || pending}
           />
-        ) : (
-          <Table>
-            <TableHeader>
-              <TableRow>
-                <TableHead>Action</TableHead>
-                <TableHead>Old</TableHead>
-                <TableHead>New</TableHead>
-                <TableHead>Created</TableHead>
-              </TableRow>
-            </TableHeader>
-            <TableBody>
-              {logs.map((log, index) => (
-                <TableRow key={`${log.created_at}-${log.action}-${index}`}>
-                  <TableCell>
-                    <code className="font-mono text-xs">{log.action}</code>
-                  </TableCell>
-                  <AuditPayloadCell value={log.old_value} />
-                  <AuditPayloadCell value={log.new_value} />
-                  <TableCell className="whitespace-nowrap text-xs text-muted-foreground">
-                    {formatDate(log.created_at)}
-                  </TableCell>
-                </TableRow>
-              ))}
-            </TableBody>
-          </Table>
-        )}
+        </div>
+        <div className="grid grid-cols-2 gap-2">
+          <Button
+            type="button"
+            variant="outline"
+            className="border-destructive text-destructive hover:bg-destructive/10"
+            onClick={onReject}
+            disabled={!reviewable || pending || !reason.trim()}
+          >
+            Reject
+          </Button>
+          <Button
+            type="button"
+            onClick={onApprove}
+            disabled={!reviewable || pending}
+          >
+            Approve
+          </Button>
+        </div>
       </CardContent>
     </Card>
   );
-}
-
-function AuditPayloadCell({ value }: { value: Record<string, unknown> | null }) {
-  return (
-    <TableCell className="max-w-xs truncate text-xs">
-      {value ? (
-        <span className="text-muted-foreground">
-          {summarizeAuditPayload(value)}
-        </span>
-      ) : (
-        <span className="text-muted-foreground">-</span>
-      )}
-    </TableCell>
-  );
-}
-
-function SummaryRow({ label, value }: { label: string; value: string }) {
-  return (
-    <div className="grid gap-1">
-      <dt className="text-muted-foreground">{label}</dt>
-      <dd className="break-words font-medium">{value}</dd>
-    </div>
-  );
-}
-
-function summarizeAuditPayload(value: Record<string, unknown>): string {
-  const entries = Object.entries(value).filter(
-    ([, entryValue]) => entryValue !== null && entryValue !== undefined,
-  );
-  if (entries.length === 0) return "No changes";
-
-  return entries
-    .slice(0, 2)
-    .map(([key, entryValue]) => `${formatMachineLabel(key)}: ${formatAuditValue(entryValue)}`)
-    .join("; ");
-}
-
-function formatAuditValue(value: unknown): string {
-  if (typeof value === "boolean") return value ? "Yes" : "No";
-  if (typeof value === "number") return Number.isInteger(value) ? String(value) : value.toFixed(2);
-  if (typeof value === "string") return formatMachineLabel(value);
-  if (Array.isArray(value)) return `${value.length} item${value.length === 1 ? "" : "s"}`;
-  if (value && typeof value === "object") {
-    const count = Object.keys(value).length;
-    return `${count} field${count === 1 ? "" : "s"}`;
-  }
-  return "Not provided";
-}
-
-function formatMachineLabel(value: string): string {
-  return value.replaceAll("_", " ");
 }

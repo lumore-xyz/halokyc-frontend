@@ -18,6 +18,16 @@
 
 ### Added
 
+- Added a dedicated duplicate-session investigation panel and session audit
+  timeline to workspace verification details.
+- Added a responsive device and network investigation panel to session detail,
+  including server-captured IP, consented browser/device facts, a clear legacy
+  empty state, and an embedded OpenStreetMap view when approximate location was
+  shared.
+- Unified verification and manual-review detail rendering so both routes show
+  the same duplicate investigation, device/network, risk, checks, evidence,
+  audit, case-summary, and technical-payload sections. Review decisions remain
+  a review-only sidebar action.
 - Added a verified owner/admin `Manage billing & invoices` action backed by a
   short-lived Dodo customer-portal session.
 - Added typed portal availability, no-purchase/conflict states, structured
@@ -32,6 +42,8 @@
 
 ### Changed
 
+- Reworked verification check results into a scan-friendly evidence section
+  that only shows checks present on the session.
 - Redesigned the `/verify` selfie capture screen to match the approved light
   reference: centered guidance, oval live-camera frame, preparation tips,
   circular shutter, and HaloKYC security footer.

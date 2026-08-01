@@ -151,6 +151,21 @@ export type ConsentCaptureRequest = {
   consent_timestamp: string;
   device_id: string | null;
   session_id: string | null;
+  device_context?: {
+    device_type: string | null;
+    platform: string | null;
+    browser: string | null;
+    language: string | null;
+    timezone: string | null;
+    screen_width: number | null;
+    screen_height: number | null;
+    touch_points: number | null;
+  };
+  location?: {
+    latitude: number;
+    longitude: number;
+    accuracy_meters: number | null;
+  } | null;
 };
 
 export type ConsentCaptureResponse = {
@@ -388,11 +403,32 @@ export type DuplicateSessionReference = {
   updated_at: string;
 };
 
+export type VerificationDeviceContext = {
+  ip_address: string | null;
+  ip_country: string | null;
+  ip_region: string | null;
+  ip_city: string | null;
+  device_id: string | null;
+  user_agent: string | null;
+  device_type: string | null;
+  platform: string | null;
+  browser: string | null;
+  language: string | null;
+  timezone: string | null;
+  screen_width: number | null;
+  screen_height: number | null;
+  touch_points: number | null;
+  latitude: number | null;
+  longitude: number | null;
+  accuracy_meters: number | null;
+};
+
 export type VerificationSessionDetail = VerificationDetail & {
   workflow_id?: string | null;
   files: VerificationEvidenceFile[];
   audit_logs: AdminAuditLogItem[];
   duplicate_sessions: DuplicateSessionReference[];
+  device_context: VerificationDeviceContext | null;
 };
 
 export type AdminDecisionResponse = {

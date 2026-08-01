@@ -16,7 +16,7 @@ import { cn } from "@/lib/utils";
  * auditors can prove the user agreed to the version that was live
  * at the time, not the version that exists today.
  */
-export const CONSENT_POLICY_VERSION = "2026-07-03";
+export const CONSENT_POLICY_VERSION = "2026-08-01";
 
 export type ConsentRecord = {
   policy_version: string;
@@ -24,6 +24,21 @@ export type ConsentRecord = {
   ip_address: string | null;
   device_id: string | null;
   session_id: string | null;
+  device_context?: {
+    device_type: string | null;
+    platform: string | null;
+    browser: string | null;
+    language: string | null;
+    timezone: string | null;
+    screen_width: number | null;
+    screen_height: number | null;
+    touch_points: number | null;
+  };
+  location?: {
+    latitude: number;
+    longitude: number;
+    accuracy_meters: number | null;
+  } | null;
 };
 
 type ConsentCardProps = {
@@ -35,12 +50,18 @@ type ConsentCardProps = {
 };
 
 const RETENTION_SUMMARY = {
-  evidence: "Verification evidence is kept until you request deletion or your account is closed.",
-  embeddings: "Face embeddings are kept until duplicate detection is no longer required, or until a ban is lifted.",
-  audit: "Audit logs and final verdicts are retained permanently for compliance.",
+  evidence:
+    "Verification evidence is kept until you request deletion or your account is closed.",
+  embeddings:
+    "Face embeddings are kept until duplicate detection is no longer required, or until a ban is lifted.",
+  audit:
+    "Audit logs and final verdicts are retained permanently for compliance.",
 } as const;
 
-function appendSessionId(value: string, sessionId: string | null | undefined): string {
+function appendSessionId(
+  value: string,
+  sessionId: string | null | undefined,
+): string {
   if (!sessionId) return value;
   return `${value}#${sessionId}`;
 }
@@ -59,6 +80,47 @@ function readDeviceId(): string | null {
   }
 }
 
+function browserName(userAgent: string): string {
+  if (/Edg\//.test(userAgent)) return "Edge";
+  if (/OPR\//.test(userAgent)) return "Opera";
+  if (/Chrome\//.test(userAgent)) return "Chrome";
+  if (/Firefox\//.test(userAgent)) return "Firefox";
+  if (/Safari\//.test(userAgent)) return "Safari";
+  return "Unknown";
+}
+
+function readDeviceContext(): NonNullable<ConsentRecord["device_context"]> {
+  const userAgent = navigator.userAgent;
+  return {
+    device_type: /Mobi|Android|iPhone|iPad/i.test(userAgent)
+      ? "mobile"
+      : "desktop",
+    platform: navigator.platform || null,
+    browser: browserName(userAgent),
+    language: navigator.language || null,
+    timezone: Intl.DateTimeFormat().resolvedOptions().timeZone || null,
+    screen_width: window.screen.width,
+    screen_height: window.screen.height,
+    touch_points: navigator.maxTouchPoints,
+  };
+}
+
+function readApproximateLocation(): Promise<ConsentRecord["location"]> {
+  if (!("geolocation" in navigator)) return Promise.resolve(null);
+  return new Promise((resolve) => {
+    navigator.geolocation.getCurrentPosition(
+      ({ coords }) =>
+        resolve({
+          latitude: Number(coords.latitude.toFixed(2)),
+          longitude: Number(coords.longitude.toFixed(2)),
+          accuracy_meters: Math.round(coords.accuracy),
+        }),
+      () => resolve(null),
+      { enableHighAccuracy: false, timeout: 5000, maximumAge: 300000 },
+    );
+  });
+}
+
 export function ConsentCard({
   sessionId,
   onAccept,
@@ -68,16 +130,25 @@ export function ConsentCard({
 }: ConsentCardProps) {
   const checkboxId = useId();
   const [accepted, setAccepted] = useState(false);
+  const [collectingContext, setCollectingContext] = useState(false);
+  const busy = pending || collectingContext;
 
-  function handleAccept() {
-    const record: ConsentRecord = {
-      policy_version: policyVersion,
-      consent_timestamp: new Date().toISOString(),
-      ip_address: null,
-      device_id: readDeviceId(),
-      session_id: sessionId ?? null,
-    };
-    onAccept(record);
+  async function handleAccept() {
+    setCollectingContext(true);
+    try {
+      const record: ConsentRecord = {
+        policy_version: policyVersion,
+        consent_timestamp: new Date().toISOString(),
+        ip_address: null,
+        device_id: readDeviceId(),
+        session_id: sessionId ?? null,
+        device_context: readDeviceContext(),
+        location: await readApproximateLocation(),
+      };
+      onAccept(record);
+    } finally {
+      setCollectingContext(false);
+    }
   }
 
   return (
@@ -103,17 +174,29 @@ export function ConsentCard({
             Privacy Notice
           </h2>
           <p className="text-muted-foreground text-xs leading-relaxed">
-            Review what we collect, why we need it, how long we keep it, and
-            who can see it.
+            Review what we collect, why we need it, how long we keep it, and who
+            can see it.
           </p>
         </div>
       </header>
 
       <dl className="grid gap-3 text-xs">
-        <ConsentRow label="What we collect" value="A photo of your face, your ID document, and basic device metadata (IP, browser, device id)." />
-        <ConsentRow label="Why we collect it" value="To verify your identity, run liveness and face-match checks, and protect against duplicate and fraudulent accounts." />
-        <ConsentRow label="How long we keep it" value={RETENTION_SUMMARY.evidence} />
-        <ConsentRow label="Who can see it" value="The business that asked you to verify, and HaloKYC operators acting on their behalf. We do not sell biometric data." />
+        <ConsentRow
+          label="What we collect"
+          value="A photo of your face, your ID document, basic device metadata (IP, browser, device id), and approximate location if you choose to share it."
+        />
+        <ConsentRow
+          label="Why we collect it"
+          value="To verify your identity, run liveness and face-match checks, and protect against duplicate and fraudulent accounts."
+        />
+        <ConsentRow
+          label="How long we keep it"
+          value={RETENTION_SUMMARY.evidence}
+        />
+        <ConsentRow
+          label="Who can see it"
+          value="The business that asked you to verify, and HaloKYC operators acting on their behalf. We do not sell biometric data."
+        />
       </dl>
 
       <a
@@ -125,17 +208,20 @@ export function ConsentCard({
         Read the full Privacy Policy
       </a>
 
-      <div className="flex items-start gap-3 rounded-lg border border-border/60 bg-background/40 p-3">
+      <div className="border-border/60 bg-background/40 flex items-start gap-3 rounded-lg border p-3">
         <Checkbox
           id={checkboxId}
           checked={accepted}
           onCheckedChange={(value) => setAccepted(value === true)}
-          disabled={pending}
+          disabled={busy}
         />
         <div className="flex flex-col gap-1">
-          <Label htmlFor={checkboxId} className="text-sm font-medium leading-snug">
-            I have read the Privacy Notice and consent to HaloKYC processing my biometric and
-            identity data for this verification.
+          <Label
+            htmlFor={checkboxId}
+            className="text-sm leading-snug font-medium"
+          >
+            I have read the Privacy Notice and consent to HaloKYC processing my
+            biometric and identity data for this verification.
           </Label>
         </div>
       </div>
@@ -143,8 +229,8 @@ export function ConsentCard({
       <form
         onSubmit={(event) => {
           event.preventDefault();
-          if (!accepted || pending) return;
-          handleAccept();
+          if (!accepted || busy) return;
+          void handleAccept();
         }}
         className="mt-auto"
       >
@@ -152,14 +238,14 @@ export function ConsentCard({
           type="submit"
           size="lg"
           className="w-full"
-          disabled={!accepted || pending}
+          disabled={!accepted || busy}
         >
-          {pending ? (
+          {busy ? (
             <Spinner data-icon="inline-start" />
           ) : (
             <ShieldCheckIcon data-icon="inline-start" />
           )}
-          {pending ? "Saving consent..." : "Agree and continue"}
+          {busy ? "Saving consent..." : "Agree and continue"}
         </Button>
       </form>
     </section>
@@ -177,6 +263,8 @@ function ConsentRow({ label, value }: { label: string; value: string }) {
   );
 }
 
-export function buildConsentAuditKey(sessionId: string | null | undefined): string {
+export function buildConsentAuditKey(
+  sessionId: string | null | undefined,
+): string {
   return appendSessionId("halokyc.consent", sessionId);
 }
