@@ -1,5 +1,5 @@
-import { render, screen } from "@testing-library/react";
-import { describe, expect, it } from "vitest";
+import { fireEvent, render, screen } from "@testing-library/react";
+import { describe, expect, it, vi } from "vitest";
 
 import type { VerificationSessionDetail } from "@/lib/api-client";
 
@@ -51,5 +51,27 @@ describe("SessionDetailContent", () => {
     ]) {
       expect(screen.getByText(label)).toBeInTheDocument();
     }
+  });
+
+  it("offers reprocessing for terminal sessions", () => {
+    const onReprocess = vi.fn();
+    render(
+      <SessionDetailContent
+        workspaceId="workspace-1"
+        verificationId="verification-1"
+        data={SESSION}
+        canViewEvidence
+        canViewSubject
+        canUpload={false}
+        canViewRawData
+        canReprocess
+        onRefresh={() => undefined}
+        onReprocess={onReprocess}
+      />,
+    );
+
+    fireEvent.click(screen.getByRole("button", { name: "Reprocess" }));
+
+    expect(onReprocess).toHaveBeenCalledOnce();
   });
 });

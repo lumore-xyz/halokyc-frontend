@@ -113,10 +113,7 @@ export function CheckCard({
           </div>
           <StatusPill status={mapCheckStatus(status, verificationStatus)} />
         </div>
-        {timedOut ||
-        matchKind ||
-        ocr ||
-        metadataMatching?.informational_only ? (
+        {timedOut || matchKind || ocr ? (
           <div className="flex flex-wrap gap-1.5">
             {timedOut ? (
               <Badge variant="outline">
@@ -137,9 +134,6 @@ export function CheckCard({
             ) : null}
             {ocr?.document_pattern_id ? (
               <Badge variant="outline">Pattern trained</Badge>
-            ) : null}
-            {metadataMatching?.informational_only ? (
-              <Badge variant="outline">Informational</Badge>
             ) : null}
           </div>
         ) : null}
@@ -311,8 +305,7 @@ function MetadataMatchingMetrics({
         </>
       ) : null}
       <dd className="border-border bg-muted/30 col-span-2 rounded-md border px-3 py-2 text-sm">
-        Metadata matching is recorded separately from OCR and does not affect
-        automated risk scoring.
+        A failed comparison routes the verification to manual review.
       </dd>
     </>
   );
@@ -371,15 +364,7 @@ function getMetadataMatching(
   if (checkKey !== "metadata_matching") return null;
   const value = result?.result;
   if (!value || typeof value !== "object") return null;
-  if (
-    !Array.isArray(value.mismatches) ||
-    !Array.isArray(value.skipped_fields) ||
-    !Array.isArray(value.comparisons) ||
-    typeof value.informational_only !== "boolean"
-  ) {
-    return null;
-  }
-  return value as MetadataMatchingCheckResult["result"];
+  return readMetadataMatching(value as Record<string, unknown>);
 }
 
 function readDuplicateMatchKind(
@@ -432,7 +417,7 @@ function CheckDetailSummary({
         "comparisons",
         "mismatches",
         "skipped_fields",
-        "informational_only",
+        "manual_review_on_mismatch",
       ].includes(key) &&
       entryValue !== null &&
       entryValue !== undefined,
@@ -473,18 +458,7 @@ function CheckDetailSummary({
   );
 }
 
-type MetadataMatchingSummaryValue = {
-  status: "pass" | "fail" | "manual_review" | "pending" | "skipped";
-  mismatches: string[];
-  skipped_fields: string[];
-  informational_only: boolean;
-  comparisons: Array<{
-    field: string;
-    expected: unknown;
-    actual: unknown;
-    matched: boolean;
-  }>;
-};
+type MetadataMatchingSummaryValue = MetadataMatchingCheckResult["result"];
 
 function MetadataMatchingSummary({
   metadata,
@@ -492,43 +466,66 @@ function MetadataMatchingSummary({
   metadata: MetadataMatchingSummaryValue;
 }) {
   const hasMismatch = metadata.mismatches.length > 0;
+  const overallLabel = {
+    pass: "Passed",
+    fail: "Failed",
+    skipped: "Skipped",
+    manual_review: "Needs review",
+    pending: "Pending",
+  }[metadata.status];
   return (
     <div className="border-border bg-background flex flex-col gap-2 rounded-md border p-3">
       <div className="flex items-center justify-between gap-2">
         <span className="font-medium">Metadata match</span>
         <Badge variant={hasMismatch ? "destructive" : "outline"}>
-          {hasMismatch ? "Mismatch" : "Matched"}
+          {overallLabel}
         </Badge>
       </div>
-      {metadata.informational_only ? (
-        <p className="text-muted-foreground text-xs">
-          Informational only. OCR extraction is evaluated separately.
-        </p>
-      ) : null}
       {metadata.comparisons.map((comparison) => (
         <div
           key={comparison.field}
-          className="grid gap-1 text-sm sm:grid-cols-[minmax(0,0.35fr)_minmax(0,0.65fr)]"
+          className="border-border grid gap-2 border-t pt-2 text-sm first:border-t-0 first:pt-0 sm:grid-cols-[minmax(0,0.35fr)_minmax(0,0.65fr)]"
         >
-          <span className="text-muted-foreground">
-            {formatMachineLabel(comparison.field)}
-          </span>
-          <span className="min-w-0 break-words">
-            <span className="font-medium">
-              {formatDetailValue(comparison.actual)}
-            </span>
+          <span className="flex items-center gap-2">
             <span className="text-muted-foreground">
-              {" "}
-              expected {formatDetailValue(comparison.expected)}
+              {formatMachineLabel(comparison.field)}
+            </span>
+            <Badge variant={comparison.matched ? "outline" : "destructive"}>
+              {comparison.matched ? "Passed" : "Failed"}
+            </Badge>
+          </span>
+          <span className="grid min-w-0 gap-1 break-words">
+            <span>
+              <span className="text-muted-foreground">Extracted: </span>
+              <span className="font-medium">
+                {formatDetailValue(comparison.actual)}
+              </span>
+            </span>
+            <span>
+              <span className="text-muted-foreground">Submitted: </span>
+              <span className="font-medium">
+                {formatDetailValue(comparison.expected)}
+              </span>
             </span>
           </span>
         </div>
       ))}
-      {metadata.skipped_fields.length > 0 ? (
-        <p className="text-muted-foreground text-xs">
-          Skipped {metadata.skipped_fields.map(formatMachineLabel).join(", ")}
-        </p>
-      ) : null}
+      {metadata.skipped_fields.map((field) => (
+        <div
+          key={field}
+          className="border-border grid gap-2 border-t pt-2 text-sm sm:grid-cols-[minmax(0,0.35fr)_minmax(0,0.65fr)]"
+        >
+          <span className="flex items-center gap-2">
+            <span className="text-muted-foreground">
+              {formatMachineLabel(field)}
+            </span>
+            <Badge variant="outline">Skipped</Badge>
+          </span>
+          <span className="text-muted-foreground">
+            Required extracted data was unavailable.
+          </span>
+        </div>
+      ))}
     </div>
   );
 }
@@ -540,7 +537,7 @@ function readMetadataMatching(
   const comparisons = value.comparisons;
   const mismatches = value.mismatches;
   const skippedFields = value.skipped_fields;
-  const informationalOnly = value.informational_only;
+  const manualReviewOnMismatch = value.manual_review_on_mismatch;
   if (
     status !== "pass" &&
     status !== "fail" &&
@@ -554,7 +551,7 @@ function readMetadataMatching(
     !Array.isArray(comparisons) ||
     !Array.isArray(mismatches) ||
     !Array.isArray(skippedFields) ||
-    typeof informationalOnly !== "boolean"
+    typeof manualReviewOnMismatch !== "boolean"
   ) {
     return null;
   }
@@ -566,7 +563,7 @@ function readMetadataMatching(
     skipped_fields: skippedFields.filter(
       (item): item is string => typeof item === "string",
     ),
-    informational_only: informationalOnly,
+    manual_review_on_mismatch: manualReviewOnMismatch,
     comparisons: comparisons.flatMap((item) => {
       if (!item || typeof item !== "object" || Array.isArray(item)) return [];
       const comparison = item as Record<string, unknown>;

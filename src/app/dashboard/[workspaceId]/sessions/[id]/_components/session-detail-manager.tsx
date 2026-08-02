@@ -30,16 +30,18 @@ import {
 import { publicEnv } from "@/lib/env";
 import { formatDate } from "@/lib/format";
 import { useClientSession } from "@/lib/hooks/use-client-session";
-import { useQuery } from "@tanstack/react-query";
+import { useMutation, useQuery } from "@tanstack/react-query";
 import {
   ArrowUpRightIcon,
   FingerprintIcon,
   RefreshCwIcon,
+  RotateCcwIcon,
   ScrollTextIcon,
   ShieldAlertIcon,
 } from "lucide-react";
 import Link from "next/link";
 import type { ReactNode } from "react";
+import { toast } from "sonner";
 
 import { EvidenceViewer } from "../../../_components/evidence-viewer";
 import { DeviceNetworkCard } from "./device-network-card";
@@ -94,6 +96,19 @@ export function SessionDetailManager({
     },
     refetchIntervalInBackground: false,
   });
+  const reprocess = useMutation({
+    mutationFn: () =>
+      apiClient.reprocessWorkspaceVerification(workspaceId, verificationId),
+    onSuccess: () => {
+      toast.success("Verification queued for reprocessing");
+      void refetch();
+    },
+    onError: (mutationError) => {
+      toast.error("Could not reprocess verification", {
+        description: mutationError.message,
+      });
+    },
+  });
 
   const isPolling = isFetching && !isTerminalStatus(data?.status);
 
@@ -132,9 +147,20 @@ export function SessionDetailManager({
       canViewSubject={canViewSubject}
       canUpload={canUpload}
       canViewRawData={canViewRawData}
+      canReprocess={canViewEvidence}
+      isReprocessing={reprocess.isPending}
       isPolling={isPolling}
       onRefresh={() => {
         void refetch();
+      }}
+      onReprocess={() => {
+        if (
+          window.confirm(
+            "Reprocess this verification using its existing evidence? Previous automated check results will be replaced.",
+          )
+        ) {
+          reprocess.mutate();
+        }
       }}
     />
   );
@@ -148,8 +174,11 @@ export function SessionDetailContent({
   canViewSubject,
   canUpload,
   canViewRawData,
+  canReprocess = false,
+  isReprocessing = false,
   isPolling = false,
   onRefresh,
+  onReprocess,
   sidebarExtra,
 }: {
   workspaceId: string;
@@ -159,8 +188,11 @@ export function SessionDetailContent({
   canViewSubject: boolean;
   canUpload: boolean;
   canViewRawData: boolean;
+  canReprocess?: boolean;
+  isReprocessing?: boolean;
   isPolling?: boolean;
   onRefresh: () => void;
+  onReprocess?: () => void;
   sidebarExtra?: ReactNode;
 }) {
   const timedOutServices = data.timed_out_services ?? [];
@@ -209,16 +241,36 @@ export function SessionDetailContent({
             </p>
           </div>
           <div className="flex flex-col items-end gap-2 sm:items-end">
-            <Button
-              type="button"
-              variant="outline"
-              size="sm"
-              onClick={onRefresh}
-              aria-label="Refresh verification"
-            >
-              <RefreshCwIcon className="size-4" aria-hidden />
-              Refresh
-            </Button>
+            <div className="flex flex-wrap justify-end gap-2">
+              {canReprocess &&
+              onReprocess &&
+              isTerminalStatus(data.status) ? (
+                <Button
+                  type="button"
+                  variant="outline"
+                  size="sm"
+                  onClick={onReprocess}
+                  disabled={isReprocessing}
+                >
+                  {isReprocessing ? (
+                    <Spinner className="size-4" aria-hidden />
+                  ) : (
+                    <RotateCcwIcon className="size-4" aria-hidden />
+                  )}
+                  {isReprocessing ? "Queuing..." : "Reprocess"}
+                </Button>
+              ) : null}
+              <Button
+                type="button"
+                variant="outline"
+                size="sm"
+                onClick={onRefresh}
+                aria-label="Refresh verification"
+              >
+                <RefreshCwIcon className="size-4" aria-hidden />
+                Refresh
+              </Button>
+            </div>
             {canViewSubject ? (
               <Button
                 render={

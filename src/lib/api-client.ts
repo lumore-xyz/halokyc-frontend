@@ -90,7 +90,7 @@ export type MetadataMatchingCheckResult = Omit<CheckResult, "result"> & {
       actual: unknown;
       matched: boolean;
     }>;
-    informational_only: boolean;
+    manual_review_on_mismatch: boolean;
   };
 };
 
@@ -1676,6 +1676,15 @@ export const apiClient = {
   getWorkspaceVerification: (workspaceId: string, verificationId: string) =>
     browserRequest<VerificationSessionDetail>(
       `/api/client/workspaces/${workspaceId}/verifications/${verificationId}`,
+    ),
+
+  reprocessWorkspaceVerification: (
+    workspaceId: string,
+    verificationId: string,
+  ) =>
+    browserRequest<StartVerificationResponse>(
+      `/api/client/workspaces/${workspaceId}/verifications/${verificationId}/reprocess`,
+      { method: "POST" },
     ),
 
   getMyVerificationFileUrl: (verificationId: string, fileId: string) =>
