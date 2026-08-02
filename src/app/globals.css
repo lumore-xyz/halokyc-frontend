@@ -399,6 +399,66 @@
   animation: verify-step-in 150ms ease-out both;
 }
 
+.verify-guide-ring {
+  animation: verify-guide-pulse 1.8s ease-in-out infinite;
+}
+
+.verify-capture-button {
+  animation: verify-capture-pulse 1.8s ease-in-out infinite;
+}
+
+.selfie-guide-arrow-left {
+  animation: selfie-arrow-left 1.4s ease-in-out infinite;
+}
+
+.selfie-guide-arrow-right {
+  animation: selfie-arrow-right 1.4s ease-in-out infinite;
+}
+
+@keyframes verify-guide-pulse {
+  0%,
+  100% {
+    opacity: 0.45;
+    transform: scale(1);
+  }
+  50% {
+    opacity: 1;
+    transform: scale(1.025);
+  }
+}
+
+@keyframes verify-capture-pulse {
+  0%,
+  100% {
+    box-shadow: 0 0 0 0 rgb(16 185 129 / 0.28);
+    transform: scale(1);
+  }
+  50% {
+    box-shadow: 0 0 0 12px rgb(16 185 129 / 0);
+    transform: scale(1.04);
+  }
+}
+
+@keyframes selfie-arrow-left {
+  0%,
+  100% {
+    transform: translateX(0);
+  }
+  50% {
+    transform: translateX(6px);
+  }
+}
+
+@keyframes selfie-arrow-right {
+  0%,
+  100% {
+    transform: translateX(0);
+  }
+  50% {
+    transform: translateX(-6px);
+  }
+}
+
 @keyframes verify-card-in {
   from {
     opacity: 0;
@@ -423,7 +483,11 @@
 
 @media (prefers-reduced-motion: reduce) {
   .verify-card,
-  .verify-step-enter {
+  .verify-step-enter,
+  .verify-guide-ring,
+  .verify-capture-button,
+  .selfie-guide-arrow-left,
+  .selfie-guide-arrow-right {
     animation: none !important;
   }
 }

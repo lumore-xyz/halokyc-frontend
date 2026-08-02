@@ -33,6 +33,11 @@ type CameraStatus =
   | "blocked"
   | "unsupported";
 
+const RETAKE_BUTTON_CLASS =
+  "border-slate-200 bg-white text-slate-900 shadow-sm hover:border-emerald-200 hover:bg-emerald-50 hover:text-emerald-800";
+const CAPTURE_BUTTON_CLASS =
+  "verify-capture-button flex size-20 items-center justify-center rounded-full bg-emerald-100 shadow-[0_0_18px_rgba(16,185,129,0.18)] transition hover:bg-emerald-200 focus-visible:ring-2 focus-visible:ring-emerald-500 focus-visible:ring-offset-4 focus-visible:outline-none";
+
 type VerifyCameraCanvasProps = {
   facing: "user" | "environment";
   file: File | null;
@@ -214,44 +219,6 @@ export function VerifyCameraCanvas({
 
   return (
     <div className="relative flex min-h-0 flex-1 overflow-hidden bg-white text-slate-900">
-      {file ? (
-        <PreviewImage
-          file={file}
-          alt="Captured preview"
-          className="absolute top-[220px] left-1/2 aspect-[1.58] w-[82%] max-w-[360px] -translate-x-1/2 rounded-2xl object-cover"
-        />
-      ) : (
-        <video
-          ref={videoRef}
-          aria-label="Camera preview"
-          autoPlay
-          muted
-          playsInline
-          className={cn(
-            "absolute top-[220px] left-1/2 aspect-[1.58] w-[82%] max-w-[360px] -translate-x-1/2 rounded-2xl object-cover",
-            !isActive && "opacity-0",
-          )}
-        />
-      )}
-
-      {!file && !isActive ? (
-        <div className="absolute top-[220px] left-1/2 flex aspect-[1.58] w-[82%] max-w-[360px] -translate-x-1/2 flex-col items-center justify-center gap-3 rounded-2xl bg-emerald-50 text-center text-slate-400">
-          <FileImageIcon
-            className="size-12 text-emerald-300"
-            strokeWidth={1.25}
-          />
-          <span className="text-xs font-medium">
-            {cameraStatus === "requesting"
-              ? "Opening camera..."
-              : "Camera preview"}
-          </span>
-        </div>
-      ) : null}
-
-      <div className="pointer-events-none absolute inset-0">
-        <DocumentFrame visible />
-      </div>
-
       <div className="relative z-30 flex min-h-0 flex-1 flex-col px-5 py-5">
         <div className="grid grid-cols-[40px_1fr_40px] items-start gap-2">
           <button
@@ -290,6 +257,44 @@ export function VerifyCameraCanvas({
           </p>
         </div>
 
+        <div className="relative mt-5 aspect-[1.58] w-[82%] max-w-[360px] shrink-0 self-center">
+          {file ? (
+            <PreviewImage
+              file={file}
+              alt="Captured preview"
+              className="size-full rounded-2xl object-cover"
+            />
+          ) : (
+            <video
+              ref={videoRef}
+              aria-label="Camera preview"
+              autoPlay
+              muted
+              playsInline
+              className={cn(
+                "size-full rounded-2xl object-cover",
+                !isActive && "opacity-0",
+              )}
+            />
+          )}
+
+          {!file && !isActive ? (
+            <div className="absolute inset-0 flex flex-col items-center justify-center gap-3 rounded-2xl bg-emerald-50 text-center text-slate-400">
+              <FileImageIcon
+                className="size-12 text-emerald-300"
+                strokeWidth={1.25}
+              />
+              <span className="text-xs font-medium">
+                {cameraStatus === "requesting"
+                  ? "Opening camera..."
+                  : "Camera preview"}
+              </span>
+            </div>
+          ) : null}
+
+          <DocumentFrame visible />
+        </div>
+
         {showError ? (
           <Alert variant="destructive" className="mt-4">
             <AlertTitle>Camera unavailable</AlertTitle>
@@ -305,6 +310,7 @@ export function VerifyCameraCanvas({
               <Button
                 type="button"
                 variant="outline"
+                className={RETAKE_BUTTON_CLASS}
                 onClick={() => {
                   stopCamera();
                   onChange(null);
@@ -333,7 +339,7 @@ export function VerifyCameraCanvas({
                 type="button"
                 onClick={capturePhoto}
                 aria-label={captureLabel ?? "Take photo"}
-                className="flex size-20 items-center justify-center rounded-full bg-emerald-100 shadow-[0_0_18px_rgba(16,185,129,0.18)] transition hover:bg-emerald-200 focus-visible:ring-2 focus-visible:ring-emerald-500 focus-visible:ring-offset-4 focus-visible:outline-none"
+                className={CAPTURE_BUTTON_CLASS}
               >
                 <span className="size-14 rounded-full border-[7px] border-emerald-500 bg-white" />
               </button>
@@ -446,36 +452,28 @@ function SelfieCaptureCanvas({
           </h2>
           <p className="mt-1 text-xs text-slate-500">Step 1 of 2</p>
         </div>
-        <ShieldCheckIcon
+        <ScanFaceIcon
           className="m-2 size-6 text-emerald-500"
           strokeWidth={1.75}
-          aria-label="Secure verification"
+          aria-label="Face verification"
         />
       </header>
 
       <main className="flex flex-1 flex-col items-center">
-        <div className="mt-5 flex size-12 items-center justify-center rounded-full bg-emerald-50 text-emerald-500 sm:mt-7">
-          <ScanFaceIcon className="size-6" strokeWidth={1.75} aria-hidden />
-        </div>
-        <h1 className="font-display mt-2 text-center text-2xl font-semibold tracking-[-0.035em]">
-          Let&apos;s verify you
-        </h1>
-        <p className="mt-2 max-w-xs text-center text-sm leading-5 text-slate-500">
-          Position your face in the center
-          <br />
-          and ensure good lighting.
-        </p>
-
-        <div className="relative mt-3 w-full max-w-[260px] sm:max-w-[270px]">
+        <div className="relative mt-3 w-full max-w-[260px] sm:mt-4 sm:max-w-[270px]">
           <div className="absolute top-1/2 -left-9 flex -translate-y-1/2 items-center text-emerald-500">
-            <span className="h-px w-5 bg-emerald-400" />
-            <span className="-ml-2 size-3 rotate-45 border-t border-r border-emerald-500" />
+            <span className="selfie-guide-arrow-left flex items-center">
+              <span className="h-px w-5 bg-emerald-400" />
+              <span className="-ml-2 size-3 rotate-45 border-t border-r border-emerald-500" />
+            </span>
           </div>
           <div className="absolute top-1/2 -right-9 flex -translate-y-1/2 items-center text-emerald-500">
-            <span className="-mr-2 size-3 rotate-45 border-b border-l border-emerald-500" />
-            <span className="h-px w-5 bg-emerald-400" />
+            <span className="selfie-guide-arrow-right flex items-center">
+              <span className="-mr-2 size-3 rotate-45 border-b border-l border-emerald-500" />
+              <span className="h-px w-5 bg-emerald-400" />
+            </span>
           </div>
-          <div className="absolute -inset-2 rounded-[46%] border border-dashed border-emerald-100" />
+          <div className="verify-guide-ring absolute -inset-2 rounded-[46%] border border-dashed border-emerald-200" />
           <div className="relative aspect-[0.705] overflow-hidden rounded-[46%] border border-emerald-400 bg-emerald-50/40 p-2">
             <div className="relative size-full overflow-hidden rounded-[45%] border-2 border-emerald-300 bg-slate-100">
               {file ? (
@@ -511,9 +509,17 @@ function SelfieCaptureCanvas({
                 </div>
               ) : null}
             </div>
-            <div className="pointer-events-none absolute top-3 left-1/2 h-1.5 w-10 -translate-x-1/2 rounded-full bg-emerald-500" />
           </div>
         </div>
+
+        <h1 className="font-display mt-5 text-center text-2xl font-semibold tracking-[-0.035em]">
+          Let&apos;s verify you
+        </h1>
+        <p className="mt-2 max-w-xs text-center text-sm leading-5 text-slate-500">
+          Position your face in the center
+          <br />
+          and ensure good lighting.
+        </p>
 
         {cameraError ? (
           <Alert variant="destructive" className="mt-4 max-w-sm">
@@ -542,6 +548,7 @@ function SelfieCaptureCanvas({
               <Button
                 type="button"
                 variant="outline"
+                className={RETAKE_BUTTON_CLASS}
                 onClick={() => {
                   onStop();
                   onChange(null);
@@ -570,7 +577,7 @@ function SelfieCaptureCanvas({
                 type="button"
                 onClick={onCapture}
                 aria-label={captureLabel ?? "Take selfie"}
-                className="flex size-20 items-center justify-center rounded-full bg-emerald-100 shadow-[0_0_18px_rgba(16,185,129,0.18)] transition hover:bg-emerald-200 focus-visible:ring-2 focus-visible:ring-emerald-500 focus-visible:ring-offset-4 focus-visible:outline-none"
+                className={CAPTURE_BUTTON_CLASS}
               >
                 <span className="size-14 rounded-full border-[7px] border-emerald-500 bg-white" />
               </button>
@@ -731,9 +738,9 @@ function DocumentFrame({ visible }: { visible: boolean }) {
 
   return (
     <>
-      <div className="absolute top-[212px] left-1/2 aspect-[1.58] w-[calc(82%+16px)] max-w-[376px] -translate-x-1/2 rounded-[20px] border border-dashed border-emerald-100" />
-      <div className="absolute top-[220px] left-1/2 aspect-[1.58] w-[82%] max-w-[360px] -translate-x-1/2 rounded-2xl border-2 border-emerald-400" />
-      <div className="absolute top-[228px] left-1/2 h-1.5 w-10 -translate-x-1/2 rounded-full bg-emerald-500" />
+      <div className="verify-guide-ring pointer-events-none absolute -inset-2 rounded-[20px] border border-dashed border-emerald-200" />
+      <div className="pointer-events-none absolute inset-0 rounded-2xl border-2 border-emerald-400" />
+      <div className="pointer-events-none absolute top-2 left-1/2 h-1.5 w-10 -translate-x-1/2 rounded-full bg-emerald-500" />
     </>
   );
 }
