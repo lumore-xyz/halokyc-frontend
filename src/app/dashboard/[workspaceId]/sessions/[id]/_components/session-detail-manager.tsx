@@ -180,6 +180,8 @@ export function SessionDetailContent({
   onRefresh,
   onReprocess,
   sidebarExtra,
+  sessionHrefPrefix,
+  showEvidence = true,
 }: {
   workspaceId: string;
   verificationId: string;
@@ -194,10 +196,14 @@ export function SessionDetailContent({
   onRefresh: () => void;
   onReprocess?: () => void;
   sidebarExtra?: ReactNode;
+  sessionHrefPrefix?: string;
+  showEvidence?: boolean;
 }) {
+  const sessionBaseHref =
+    sessionHrefPrefix ?? `/dashboard/${workspaceId}/sessions`;
   const timedOutServices = data.timed_out_services ?? [];
   const duplicateSessionHref = data.duplicate_session_id
-    ? `/dashboard/${workspaceId}/sessions/${data.duplicate_session_id}`
+    ? `${sessionBaseHref}/${data.duplicate_session_id}`
     : undefined;
   const duplicateResult = data.checks.duplicate?.result;
   const duplicateFound = duplicateResult?.duplicate_found === true;
@@ -242,9 +248,7 @@ export function SessionDetailContent({
           </div>
           <div className="flex flex-col items-end gap-2 sm:items-end">
             <div className="flex flex-wrap justify-end gap-2">
-              {canReprocess &&
-              onReprocess &&
-              isTerminalStatus(data.status) ? (
+              {canReprocess && onReprocess && isTerminalStatus(data.status) ? (
                 <Button
                   type="button"
                   variant="outline"
@@ -299,7 +303,7 @@ export function SessionDetailContent({
 
       {duplicateFound || duplicateSessions.length > 0 ? (
         <DuplicateMatchesCard
-          workspaceId={workspaceId}
+          sessionHrefPrefix={sessionBaseHref}
           result={duplicateResult}
           sessions={duplicateSessions}
         />
@@ -404,11 +408,13 @@ export function SessionDetailContent({
             />
           ) : null}
 
-          <EvidenceViewer
-            workspaceId={workspaceId}
-            session={data as VerificationSessionDetail}
-            canViewEvidence={canViewEvidence}
-          />
+          {showEvidence ? (
+            <EvidenceViewer
+              workspaceId={workspaceId}
+              session={data as VerificationSessionDetail}
+              canViewEvidence={canViewEvidence}
+            />
+          ) : null}
 
           <AuditLogCard logs={data.audit_logs ?? []} />
         </div>
@@ -448,11 +454,11 @@ export function SessionDetailContent({
 }
 
 function DuplicateMatchesCard({
-  workspaceId,
+  sessionHrefPrefix,
   result,
   sessions,
 }: {
-  workspaceId: string;
+  sessionHrefPrefix: string;
   result: DuplicateCheckResult["result"];
   sessions: DuplicateSessionReference[];
 }) {
@@ -520,7 +526,7 @@ function DuplicateMatchesCard({
             {sessions.map((session) => (
               <li key={session.verification_id}>
                 <Link
-                  href={`/dashboard/${workspaceId}/sessions/${session.verification_id}`}
+                  href={`${sessionHrefPrefix}/${session.verification_id}`}
                   className="group hover:bg-muted/30 focus-visible:bg-muted/30 grid gap-3 px-6 py-4 transition-colors outline-none sm:grid-cols-[minmax(0,1fr)_auto_auto] sm:items-center"
                 >
                   <div className="min-w-0">
