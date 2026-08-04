@@ -14,6 +14,7 @@ const ORGANIZATION_SCOPED_PATHS = new Set([
   "/dashboard/workspaces",
   "/dashboard/team",
   "/dashboard/billing",
+  "/dashboard/verification",
   "/dashboard/settings",
 ]);
 
