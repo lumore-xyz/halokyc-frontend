@@ -180,6 +180,10 @@ Next.js 16 (App Router), React 19, TypeScript 5 (strict). Tailwind CSS v4, shadc
 
 ## 9. Security & Data Retention
 
+- Sensitive authenticated customer mutations require two-step account
+  assurance: verified email plus an approved HaloKYC account identity check.
+  Google OAuth marks email verified by default; password accounts complete
+  email first.
 - API keys hashed (bcrypt/argon2); raw shown only once at creation
 - Files stored server-side, not publicly accessible
 - Audit logs for every status change and sensitive action

@@ -5,11 +5,21 @@ import { MailWarningIcon } from "lucide-react";
 
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { Button } from "@/components/ui/button";
+import { useAccountVerification } from "@/lib/hooks/use-account-verification";
 import { useClientSession } from "@/lib/hooks/use-client-session";
 
 export function EmailVerificationBanner() {
   const session = useClientSession();
-  if (!session.data?.authenticated || session.data.emailVerified !== false) {
+  const emailVerified = session.data?.emailVerified === true;
+  const verification = useAccountVerification(
+    session.data?.authenticated === true && emailVerified,
+  );
+  const identityVerified = verification.data?.status === "approved";
+
+  if (
+    !session.data?.authenticated ||
+    (emailVerified && (verification.isLoading || identityVerified))
+  ) {
     return null;
   }
 
@@ -17,19 +27,20 @@ export function EmailVerificationBanner() {
     <div className="px-4 pt-4">
       <Alert>
         <MailWarningIcon aria-hidden />
-        <AlertTitle>Verify your email to unlock sensitive actions</AlertTitle>
+        <AlertTitle>Complete account verification</AlertTitle>
         <AlertDescription className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
           <span>
-            Check your inbox. Invites, API keys, and billing changes remain
-            restricted until verification is complete.
+            {emailVerified
+              ? "Your email is verified. Complete identity verification to unlock sensitive actions."
+              : "Verify your email, then complete identity verification to unlock sensitive actions."}
           </span>
           <Button
             size="sm"
             variant="outline"
-            render={<Link href="/resend-verification" />}
+            render={<Link href="/dashboard/verification" />}
             nativeButton={false}
           >
-            Resend email
+            Continue verification
           </Button>
         </AlertDescription>
       </Alert>

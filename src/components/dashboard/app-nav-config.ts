@@ -2,6 +2,7 @@ import type { LucideIcon } from "lucide-react";
 import {
   ActivityIcon,
   BarChart3Icon,
+  BadgeCheckIcon,
   BoxesIcon,
   Building2Icon,
   ChartLineIcon,
@@ -162,6 +163,12 @@ export const APP_NAV_GROUPS: AppNavGroup[] = [
     label: "Account",
     audience: "client",
     items: [
+      {
+        title: "Verification",
+        url: "/dashboard/verification",
+        icon: BadgeCheckIcon,
+        scope: "organization",
+      },
       {
         title: "Settings",
         url: "/dashboard/settings",

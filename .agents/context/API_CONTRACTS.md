@@ -1656,6 +1656,20 @@ directly to `POST /api/v1/auth/google` and follows the same unified-login
 handshake (store in `sessionStorage["unified_auth"]`, navigate to
 `/select-account` or `/login/google/complete`).
 
+## Dashboard Account Assurance
+
+Password-created customer accounts complete two ordered checks: email
+verification, then account identity verification. Every successful Google
+OAuth authentication sets `email_verified_at`, so Google accounts begin at
+step 2.
+
+`GET /api/v1/me/identity-verification` remains available while either step is
+incomplete. Starting identity verification requires email verification only.
+Every other sensitive customer mutation requires both checks. Denials return
+`403` with `email_verification_required` for step 1 or
+`identity_verification_required` for step 2. Read-only dashboard routes remain
+available so users can inspect their account and complete verification.
+
 ## Transactional Email Account Actions
 
 ### `GET /api/v1/auth/me`

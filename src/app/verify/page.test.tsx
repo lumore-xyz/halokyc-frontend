@@ -44,19 +44,6 @@ describe("VerifyPage", () => {
     );
   });
 
-  it("ignores callback_url query values", async () => {
-    const element = await VerifyPage({
-      searchParams: Promise.resolve({
-        verification_id: "11111111-2222-3333-4444-555555555555",
-        callback_url: "https://example.com/done",
-      }),
-    });
-    render(element);
-
-    const flow = screen.getByTestId("verification-flow");
-    expect(flow).not.toHaveAttribute("data-callback-url");
-  });
-
   it("uses the first value when verification_id is duplicated", async () => {
     const element = await VerifyPage({
       searchParams: Promise.resolve({

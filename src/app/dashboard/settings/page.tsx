@@ -2,7 +2,13 @@
 
 import { useState } from "react";
 import { AppShell } from "@/components/dashboard/app-shell";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
 import { Spinner } from "@/components/ui/spinner";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -42,8 +48,12 @@ export default function SettingsPage() {
     return (
       <AppShell audience="client">
         <div className="p-6">
-          <h1 className="text-3xl font-semibold tracking-tight mb-2">Settings</h1>
-          <p className="text-muted-foreground">Please sign in to view your settings.</p>
+          <h1 className="mb-2 text-3xl font-semibold tracking-tight">
+            Settings
+          </h1>
+          <p className="text-muted-foreground">
+            Please sign in to view your settings.
+          </p>
         </div>
       </AppShell>
     );
@@ -63,7 +73,9 @@ export default function SettingsPage() {
           <Card>
             <CardHeader>
               <CardTitle>Company Profile</CardTitle>
-              <CardDescription>Basic information about your organization.</CardDescription>
+              <CardDescription>
+                Basic information about your organization.
+              </CardDescription>
             </CardHeader>
             <CardContent>
               {isLoading ? (
@@ -82,7 +94,9 @@ export default function SettingsPage() {
                   onSave={(payload) => updateMutation.mutate(payload)}
                 />
               ) : (
-                <p className="text-sm text-muted-foreground">No profile data available.</p>
+                <p className="text-muted-foreground text-sm">
+                  No profile data available.
+                </p>
               )}
             </CardContent>
           </Card>
@@ -90,10 +104,12 @@ export default function SettingsPage() {
           <Card>
             <CardHeader>
               <CardTitle>Account Security</CardTitle>
-              <CardDescription>Manage your credentials and access.</CardDescription>
+              <CardDescription>
+                Manage your credentials and access.
+              </CardDescription>
             </CardHeader>
             <CardContent>
-              <p className="text-sm text-muted-foreground italic">
+              <p className="text-muted-foreground text-sm italic">
                 Password management and MFA coming soon.
               </p>
             </CardContent>
@@ -118,7 +134,9 @@ function ProfileSettingsForm({
   }) => void;
 }) {
   const [name, setName] = useState(profile.company_name);
-  const [contactPersonName, setContactPersonName] = useState(profile.contact_person_name ?? "");
+  const [contactPersonName, setContactPersonName] = useState(
+    profile.contact_person_name ?? "",
+  );
   const [contactPhone, setContactPhone] = useState(profile.contact_phone ?? "");
 
   const hasChanges =
@@ -148,7 +166,9 @@ function ProfileSettingsForm({
       </Field>
 
       <Field>
-        <FieldLabel htmlFor="contact-person-name">Contact person name</FieldLabel>
+        <FieldLabel htmlFor="contact-person-name">
+          Contact person name
+        </FieldLabel>
         <Input
           id="contact-person-name"
           value={contactPersonName}
@@ -168,7 +188,11 @@ function ProfileSettingsForm({
       </Field>
 
       <div>
-        <Button size="sm" onClick={handleUpdate} disabled={isPending || !name.trim() || !hasChanges}>
+        <Button
+          size="sm"
+          onClick={handleUpdate}
+          disabled={isPending || !name.trim() || !hasChanges}
+        >
           {isPending && <Spinner className="mr-2 size-3" />}
           Save
         </Button>
@@ -185,7 +209,9 @@ function ProfileSettingsForm({
         </div>
         <div className="flex items-center justify-between border-b py-2">
           <span className="text-muted-foreground">Account Status</span>
-          <span className={`font-medium ${profile.is_active ? "text-green-600" : "text-red-600"}`}>
+          <span
+            className={`font-medium ${profile.is_active ? "text-green-600" : "text-red-600"}`}
+          >
             {profile.is_active ? "Active" : "Inactive"}
           </span>
         </div>

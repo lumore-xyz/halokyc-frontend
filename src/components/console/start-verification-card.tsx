@@ -167,13 +167,7 @@ export function StartVerificationCard({ workspaceId }: { workspaceId: string }) 
       setMetadataJson(DEFAULT_METADATA);
       setCallbackUrl("");
       setTouched(false);
-      router.push(
-        `/verify?verification_id=${result.verification_id}&external_user_id=${encodeURIComponent(
-          externalUserId.trim(),
-        )}&callback_url=${encodeURIComponent(
-          callbackUrl.trim(),
-        )}&workflow_id=${selectedWorkflowId}`,
-      );
+      router.push(`/verify?verification_id=${result.verification_id}`);
     } catch {
       toast.error("Could not start verification");
     }

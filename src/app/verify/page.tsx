@@ -4,7 +4,6 @@ type VerifyPageProps = {
   searchParams: Promise<{
     verification_id?: string | string[];
     external_user_id?: string | string[];
-    callback_url?: string | string[];
   }>;
 };
 

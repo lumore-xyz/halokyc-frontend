@@ -139,7 +139,7 @@ export function VerificationFlow({
   });
 
   const handoffStatus = handoffPoll.data?.status;
-  const completionRedirectUrl = configQuery.data?.callback_url?.trim() || null;
+  const completionRedirectUrl = configQuery.data?.completion_url?.trim() || null;
   const finishVerification = useCallback(() => {
     if (completionRedirectUrl) {
       window.location.assign(completionRedirectUrl);

@@ -18,6 +18,16 @@
 
 ### Added
 
+- Added Account → Verification with an ordered email and identity checklist,
+  clear locked/current/verified states, hosted-flow continuation, and a
+  completion summary.
+- Linked the persistent dashboard verification banner to the new journey and
+  added Verification to Account navigation.
+- Moved account identity verification out of Settings and improved structured
+  API errors so blocked actions show actionable messages.
+- Hosted verification completion now navigates through the server-stored
+  `completion_url`, keeping browser navigation separate from webhooks.
+
 - Added a dedicated duplicate-session investigation panel and session audit
   timeline to workspace verification details.
 - Added a responsive device and network investigation panel to session detail,

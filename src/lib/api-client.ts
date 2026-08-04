@@ -43,7 +43,7 @@ export type VerificationConfig = {
   workflow_name: string;
   services: ("selfie" | "liveness" | "document" | "age")[];
   min_age?: number;
-  callback_url?: string | null;
+  completion_url?: string | null;
   step_sequence: VerifyStepConfig[];
   requires_user_action?: VerificationUserAction | null;
 };
@@ -52,6 +52,7 @@ export type StartVerificationRequest = {
   external_user_id: string;
   metadata?: Record<string, unknown>;
   callback_url?: string;
+  completion_url?: string;
   workflow_id: string;
 };
 
@@ -328,6 +329,13 @@ export type ClientProfileResponse = {
   contact_phone: string | null;
   phase: Phase;
   is_active: boolean;
+};
+
+export type AccountIdentityVerification = {
+  configured: boolean;
+  verification_id: string | null;
+  status: VerificationStatus | null;
+  verify_url: string | null;
 };
 
 export type Workflow = {
@@ -866,6 +874,15 @@ export class ApiError extends Error {
   }
 }
 
+function apiErrorMessage(body: unknown, fallback: string): string {
+  if (!body || typeof body !== "object") return fallback;
+  const detail = (body as { detail?: unknown }).detail;
+  if (typeof detail === "string") return detail;
+  if (!detail || typeof detail !== "object") return fallback;
+  const message = (detail as { message?: unknown }).message;
+  return typeof message === "string" ? message : fallback;
+}
+
 function joinUrl(path: string): string {
   return `${publicEnv.apiBaseUrl.replace(/\/$/, "")}${path}`;
 }
@@ -902,11 +919,8 @@ async function request<T>(
     } catch {
       // ignore body parse errors
     }
-    throw new ApiError(
-      `API ${init.method ?? "GET"} ${path} failed with ${response.status}`,
-      response.status,
-      body,
-    );
+    const fallback = `API ${init.method ?? "GET"} ${path} failed with ${response.status}`;
+    throw new ApiError(apiErrorMessage(body, fallback), response.status, body);
   }
   if (response.status === 204) {
     return undefined as T;
@@ -930,11 +944,8 @@ async function browserRequest<T>(
     } catch {
       // ignore body parse errors
     }
-    throw new ApiError(
-      `Browser API ${init.method ?? "GET"} ${path} failed with ${response.status}`,
-      response.status,
-      body,
-    );
+    const fallback = `Browser API ${init.method ?? "GET"} ${path} failed with ${response.status}`;
+    throw new ApiError(apiErrorMessage(body, fallback), response.status, body);
   }
   if (response.status === 204) {
     return undefined as T;
@@ -1370,6 +1381,15 @@ export const apiClient = {
     ),
   getClientProfile: () =>
     browserRequest<ClientProfileResponse>("/api/client/me"),
+  getAccountIdentityVerification: () =>
+    browserRequest<AccountIdentityVerification>(
+      "/api/client/me/identity-verification",
+    ),
+  startAccountIdentityVerification: () =>
+    browserRequest<AccountIdentityVerification>(
+      "/api/client/me/identity-verification",
+      { method: "POST" },
+    ),
   updateClientProfile: (payload: {
     name?: string;
     contact_person_name?: string | null;
