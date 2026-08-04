@@ -130,8 +130,7 @@ export function WebhooksManager({ workspaceId }: { workspaceId: string }) {
         <div className="flex flex-col gap-2">
           <h1 className="text-3xl font-semibold tracking-tight">Webhooks</h1>
           <p className="text-muted-foreground max-w-2xl">
-            Send verification status updates to a URL you control. We sign each
-            request with the workspace HMAC secret.
+            Add an endpoint to receive automatic verification status updates.
           </p>
         </div>
         <Button type="button" onClick={openSheet}>
@@ -139,6 +138,17 @@ export function WebhooksManager({ workspaceId }: { workspaceId: string }) {
           Add endpoint
         </Button>
       </header>
+
+      <Alert>
+        <AlertTitle>Webhook signing secret required</AlertTitle>
+        <AlertDescription>
+          Your receiving backend must verify the{" "}
+          <code className="font-mono text-xs">X-Verification-Signature</code>{" "}
+          header using the HaloKYC webhook signing secret. Keep the secret
+          server-side and obtain it from HaloKYC through a secure channel before
+          using webhook updates in production.
+        </AlertDescription>
+      </Alert>
 
       {create.error ? (
         <Alert variant="destructive">
@@ -176,7 +186,7 @@ export function WebhooksManager({ workspaceId }: { workspaceId: string }) {
           <CardHeader>
             <CardTitle>Endpoints</CardTitle>
             <CardDescription>
-              Each request is signed with the workspace HMAC secret and retried
+              Each request is signed with the webhook signing secret and retried
               on transient failures.
             </CardDescription>
           </CardHeader>
@@ -260,7 +270,7 @@ export function WebhooksManager({ workspaceId }: { workspaceId: string }) {
                   />
                   <FieldDescription>
                     Use https:// for production endpoints. HaloKYC signs every
-                    request with the workspace HMAC secret.
+                    request with the webhook signing secret.
                   </FieldDescription>
                   {targetError ? (
                     <FieldError id={`${targetInputId}-error`}>
