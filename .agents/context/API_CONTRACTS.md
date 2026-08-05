@@ -483,6 +483,8 @@ type WebhookEndpointCreate = {
   description?: string | null;
 };
 
+type WebhookEndpointUpdate = WebhookEndpointCreate;
+
 type WorkspaceAnalyticsResponse = {
   total: number;
   by_status: Record<VerificationStatus, number>;
@@ -614,6 +616,10 @@ type ApiKeyListItem = {
 };
 
 type ApiKeyCreate = {
+  name: string;            // 1..255 chars
+};
+
+type ApiKeyUpdate = {
   name: string;            // 1..255 chars
 };
 
@@ -1537,6 +1543,7 @@ server-side.
 - `DELETE /api/v1/workspaces/{workspace_id}/workflows/{workflow_id}`: delete workflow. Allowed: owner/admin.
 - `GET /api/v1/workspaces/{workspace_id}/api-keys`: list workspace API keys. Allowed: owner/admin/developer.
 - `POST /api/v1/workspaces/{workspace_id}/api-keys`: create workspace API key with `environment: "test" | "live"`. Allowed: owner/admin/developer.
+- `PATCH /api/v1/workspaces/{workspace_id}/api-keys/{api_key_id}`: rename a workspace API key. Allowed: owner/admin/developer.
 - `POST /api/v1/workspaces/{workspace_id}/api-keys/{api_key_id}/revoke`: revoke key. Allowed: owner/admin/developer.
 - `GET /api/v1/workspaces/{workspace_id}/verifications`: workspace session activity.
   Optional query params: `status`, `external_user_id`, `since`, `until`,
@@ -1551,6 +1558,7 @@ server-side.
 - `POST /api/v1/workspaces/{workspace_id}/reviews/{verification_id}/decision`: `{ decision: "approve" | "reject", reason?: string, notes?: string }`. Allowed: owner/admin/reviewer.
 - `GET /api/v1/workspaces/{workspace_id}/webhooks`: list webhook endpoints. Allowed: owner/admin/developer.
 - `POST /api/v1/workspaces/{workspace_id}/webhooks`: create webhook endpoint. Allowed: owner/admin/developer.
+- `PATCH /api/v1/workspaces/{workspace_id}/webhooks/{webhook_endpoint_id}`: update a webhook URL and description. Allowed: owner/admin/developer.
 - `GET /api/v1/workspaces/{workspace_id}/analytics`: workspace analytics.
 - `GET /api/v1/workspaces/{workspace_id}/audit-logs`: workspace audit log. Allowed: owner/admin. Query: `limit` 1..200, `offset` >= 0.
 - `POST /api/v1/workspaces/{workspace_id}/subjects/{external_user_id}/reset-verification`: dashboard equivalent of the developer API reset. Allowed: owner/admin.

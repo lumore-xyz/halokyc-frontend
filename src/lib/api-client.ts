@@ -280,6 +280,11 @@ export type WebhookEndpointCreate = {
   description?: string | null;
 };
 
+export type WebhookEndpointUpdate = {
+  target_url: string;
+  description?: string | null;
+};
+
 export type WorkspaceAuditLogItem = {
   action: string;
   old_value: Record<string, unknown> | null;
@@ -306,6 +311,10 @@ export type ApiKeyListItem = {
 export type ApiKeyCreate = {
   name: string;
   environment?: ApiKeyEnvironment;
+};
+
+export type ApiKeyUpdate = {
+  name: string;
 };
 
 export type ApiKeyCreateResponse = {
@@ -1357,6 +1366,18 @@ export const apiClient = {
         body: JSON.stringify(payload),
       },
     ),
+  updateWorkspaceWebhook: (
+    workspaceId: string,
+    webhookEndpointId: string,
+    payload: WebhookEndpointUpdate,
+  ) =>
+    browserRequest<WebhookEndpoint>(
+      `/api/client/workspaces/${workspaceId}/webhooks/${webhookEndpointId}`,
+      {
+        method: "PATCH",
+        body: JSON.stringify(payload),
+      },
+    ),
   listWorkspaceAuditLogs: (
     workspaceId: string,
     filters: { limit?: number; offset?: number } = {},
@@ -1437,6 +1458,19 @@ export const apiClient = {
       `/api/client/workspaces/${workspaceId}/api-keys`,
       {
         method: "POST",
+        body: JSON.stringify(payload),
+      },
+    ),
+
+  updateWorkspaceApiKey: (
+    workspaceId: string,
+    apiKeyId: string,
+    payload: ApiKeyUpdate,
+  ) =>
+    browserRequest<ApiKeyListItem>(
+      `/api/client/workspaces/${workspaceId}/api-keys/${apiKeyId}`,
+      {
+        method: "PATCH",
         body: JSON.stringify(payload),
       },
     ),

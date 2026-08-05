@@ -2,6 +2,15 @@
 
 **Context:** [`PRODUCT_PLAN.md`](PRODUCT_PLAN.md) (phases) · [`TODO.md`](TODO.md) (task status) · [`frontend/DECISIONS.md`](DECISIONS.md) (ADRs behind each change) · [`API_CONTRACTS.md`](API_CONTRACTS.md) (changed endpoints) · [`COMPLIANCE.md`](COMPLIANCE.md) (compliance surface changes)
 
+## [2026-08-05]
+
+### Editable integration settings and workflow dependencies
+
+- Added API-key rename and webhook endpoint edit drawers while preserving the
+  live/test key environment selector.
+- Disabled Liveness until Selfie is selected and Age until Document is
+  selected; removing a required service also removes its dependent service.
+
 ## [2026-07-10]
 
 ### Added

@@ -6,6 +6,7 @@ import {
   ClipboardIcon,
   ListFilterIcon,
   KeyIcon,
+  PencilIcon,
   PlusIcon,
   Trash2Icon,
 } from "lucide-react";
@@ -55,14 +56,12 @@ import {
   type ApiError,
   type ApiKeyCreate,
   type ApiKeyCreateResponse,
+  type ApiKeyListItem,
+  type ApiKeyUpdate,
 } from "@/lib/api-client";
 import { formatDate } from "@/lib/format";
 
-export function ApiKeysManager({
-  workspaceId,
-}: {
-  workspaceId: string;
-}) {
+export function ApiKeysManager({ workspaceId }: { workspaceId: string }) {
   const session = useClientSession();
   const nameInputId = useId();
   const environmentGroupId = useId();
@@ -70,6 +69,7 @@ export function ApiKeysManager({
   const [showAllKeys, setShowAllKeys] = useState(false);
   const [keyName, setKeyName] = useState("");
   const [environment, setEnvironment] = useState<"live" | "test">("live");
+  const [editingKeyId, setEditingKeyId] = useState<string | null>(null);
   const [nameError, setNameError] = useState<string | null>(null);
   const [createdKey, setCreatedKey] = useState<ApiKeyCreateResponse | null>(
     null,
@@ -100,6 +100,23 @@ export function ApiKeysManager({
       setCopiedKey(false);
       setCreateSheetOpen(false);
       void refetchKeys();
+    },
+  });
+
+  const updateKey = useMutation<
+    ApiKeyListItem,
+    ApiError,
+    { apiKeyId: string; payload: ApiKeyUpdate }
+  >({
+    mutationFn: ({ apiKeyId, payload }) =>
+      apiClient.updateWorkspaceApiKey(workspaceId, apiKeyId, payload),
+    onSuccess: () => {
+      setCreateSheetOpen(false);
+      setEditingKeyId(null);
+      setKeyName("");
+      setNameError(null);
+      void refetchKeys();
+      toast.success("API key renamed.");
     },
   });
 
@@ -137,20 +154,36 @@ export function ApiKeysManager({
       setNameError("Key names must be 255 characters or fewer.");
       return;
     }
+    if (editingKeyId) {
+      updateKey.mutate({ apiKeyId: editingKeyId, payload: { name } });
+      return;
+    }
     createKey.mutate({ name, environment });
   }
 
   function openCreateSheet() {
     setCreateSheetOpen(true);
+    setEditingKeyId(null);
     setKeyName("");
     setEnvironment("live");
     setNameError(null);
     createKey.reset();
+    updateKey.reset();
+  }
+
+  function openEditSheet(key: ApiKeyListItem) {
+    setCreateSheetOpen(true);
+    setEditingKeyId(key.api_key_id);
+    setKeyName(key.name);
+    setNameError(null);
+    createKey.reset();
+    updateKey.reset();
   }
 
   function closeCreateSheet() {
-    if (createKey.isPending) return;
+    if (createKey.isPending || updateKey.isPending) return;
     setCreateSheetOpen(false);
+    setEditingKeyId(null);
     setKeyName("");
     setEnvironment("live");
     setNameError(null);
@@ -175,7 +208,8 @@ export function ApiKeysManager({
           <div className="flex flex-col gap-2">
             <h1 className="text-3xl font-semibold tracking-tight">API Keys</h1>
             <p className="text-muted-foreground">
-              Manage the keys used to authenticate your integration with HaloKYC.
+              Manage the keys used to authenticate your integration with
+              HaloKYC.
             </p>
           </div>
           <Button onClick={openCreateSheet}>
@@ -190,14 +224,18 @@ export function ApiKeysManager({
             <AlertTitle>Key created successfully!</AlertTitle>
             <AlertDescription className="flex flex-col gap-3">
               <span>
-                Copy <span className="font-medium">{createdKey.name}</span>{" "}
-                now. The raw key will not be shown again.
+                Copy <span className="font-medium">{createdKey.name}</span> now.
+                The raw key will not be shown again.
               </span>
               <div className="flex flex-col gap-2 sm:flex-row sm:items-center">
-                <code className="min-w-0 flex-1 select-all rounded-lg border bg-background px-3 py-2 font-mono text-xs">
+                <code className="bg-background min-w-0 flex-1 rounded-lg border px-3 py-2 font-mono text-xs select-all">
                   {createdKey.api_key}
                 </code>
-                <Button type="button" variant="outline" onClick={copyCreatedKey}>
+                <Button
+                  type="button"
+                  variant="outline"
+                  onClick={copyCreatedKey}
+                >
                   {copiedKey ? (
                     <CheckIcon data-icon="inline-start" />
                   ) : (
@@ -225,11 +263,11 @@ export function ApiKeysManager({
           <CardHeader className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
             <div className="flex flex-col gap-1">
               <CardTitle>Your Keys</CardTitle>
-<CardDescription>
-              {showAllKeys
-                ? "A list of active and revoked API keys issued to this workspace. Each key is bound to either the live or test environment."
-                : "A list of active API keys issued to this workspace. Each key is bound to either the live or test environment."}
-            </CardDescription>
+              <CardDescription>
+                {showAllKeys
+                  ? "A list of active and revoked API keys issued to this workspace. Each key is bound to either the live or test environment."
+                  : "A list of active API keys issued to this workspace. Each key is bound to either the live or test environment."}
+              </CardDescription>
             </div>
             <Button
               type="button"
@@ -249,7 +287,7 @@ export function ApiKeysManager({
               </div>
             ) : keys && keys.length === 0 ? (
               <div className="flex flex-col items-center justify-center py-12 text-center">
-                <KeyIcon className="mb-4 size-12 text-muted-foreground" />
+                <KeyIcon className="text-muted-foreground mb-4 size-12" />
                 <p className="text-muted-foreground">
                   {showAllKeys
                     ? "No API keys found. Create one to get started."
@@ -300,6 +338,15 @@ export function ApiKeysManager({
                       </TableCell>
                       <TableCell className="text-right">
                         <div className="flex justify-end gap-2">
+                          <Button
+                            variant="ghost"
+                            size="icon"
+                            onClick={() => openEditSheet(key)}
+                            disabled={updateKey.isPending}
+                            aria-label={`Rename ${key.name}`}
+                          >
+                            <PencilIcon />
+                          </Button>
                           {!key.revoked_at && (
                             <Button
                               variant="ghost"
@@ -339,9 +386,13 @@ export function ApiKeysManager({
             aria-labelledby="api-key-create-title"
           >
             <SheetHeader className="border-b p-4">
-              <SheetTitle id="api-key-create-title">New API key</SheetTitle>
+              <SheetTitle id="api-key-create-title">
+                {editingKeyId ? "Rename API key" : "New API key"}
+              </SheetTitle>
               <SheetDescription>
-                Name this key so your team can identify where it is used.
+                {editingKeyId
+                  ? "Update the name your team uses to identify this key."
+                  : "Name this key so your team can identify where it is used."}
               </SheetDescription>
             </SheetHeader>
             <div className="flex-1 overflow-y-auto p-4">
@@ -355,20 +406,21 @@ export function ApiKeysManager({
                       setKeyName(event.target.value);
                       if (nameError) setNameError(null);
                       if (createKey.error) createKey.reset();
+                      if (updateKey.error) updateKey.reset();
                     }}
                     placeholder="Production backend"
                     aria-invalid={nameError ? true : undefined}
                     aria-describedby={
                       nameError ? `${nameInputId}-error` : undefined
                     }
-                    disabled={createKey.isPending}
+                    disabled={createKey.isPending || updateKey.isPending}
                     maxLength={255}
                     autoComplete="off"
                     autoFocus
                   />
                   <FieldDescription>
-                    Use a name tied to the environment, service, or app that
-                    will hold this key.
+                    Use a name tied to the service or app that will hold this
+                    key.
                   </FieldDescription>
                   {nameError ? (
                     <FieldError id={`${nameInputId}-error`}>
@@ -376,55 +428,65 @@ export function ApiKeysManager({
                     </FieldError>
                   ) : null}
                 </Field>
-                <Field>
-                  <FieldLabel id={`${environmentGroupId}-label`}>
-                    Environment
-                  </FieldLabel>
-                  <div
-                    role="radiogroup"
-                    aria-labelledby={`${environmentGroupId}-label`}
-                    className="flex gap-2"
-                  >
-                    {(["live", "test"] as const).map((value) => {
-                      const checked = environment === value;
-                      return (
-                        <label
-                          key={value}
-                          className="flex flex-1 cursor-pointer items-center gap-2 rounded-lg border border-[var(--dashboard-rule)] bg-[var(--dashboard-canvas)] px-3 py-2 text-sm has-[:focus-visible]:outline has-[:focus-visible]:outline-2 has-[:focus-visible]:outline-offset-2 has-[:focus-visible]:outline-[var(--ring)]"
-                          data-checked={checked ? "true" : undefined}
-                        >
-                          <input
-                            type="radio"
-                            name={environmentGroupId}
-                            value={value}
-                            checked={checked}
-                            disabled={createKey.isPending}
-                            onChange={() => setEnvironment(value)}
-                            className="size-4 accent-[var(--ring)]"
-                          />
-                          <span className="font-medium capitalize">
-                            {value}
-                          </span>
-                          <span className="text-muted-foreground text-xs">
-                            {value === "live"
-                              ? "Production traffic"
-                              : "Sandbox only"}
-                          </span>
-                        </label>
-                      );
-                    })}
-                  </div>
-                  <FieldDescription>
-                    Live keys serve real sessions and consume credits. Test keys
-                    stay in the sandbox bucket for integration development.
-                  </FieldDescription>
-                </Field>
-                {createKey.error ? (
+                {!editingKeyId ? (
+                  <Field>
+                    <FieldLabel id={`${environmentGroupId}-label`}>
+                      Environment
+                    </FieldLabel>
+                    <div
+                      role="radiogroup"
+                      aria-labelledby={`${environmentGroupId}-label`}
+                      className="flex gap-2"
+                    >
+                      {(["live", "test"] as const).map((value) => {
+                        const checked = environment === value;
+                        return (
+                          <label
+                            key={value}
+                            className="flex flex-1 cursor-pointer items-center gap-2 rounded-lg border border-[var(--dashboard-rule)] bg-[var(--dashboard-canvas)] px-3 py-2 text-sm has-[:focus-visible]:outline has-[:focus-visible]:outline-2 has-[:focus-visible]:outline-offset-2 has-[:focus-visible]:outline-[var(--ring)]"
+                            data-checked={checked ? "true" : undefined}
+                          >
+                            <input
+                              type="radio"
+                              name={environmentGroupId}
+                              value={value}
+                              checked={checked}
+                              disabled={createKey.isPending}
+                              onChange={() => setEnvironment(value)}
+                              className="size-4 accent-[var(--ring)]"
+                            />
+                            <span className="font-medium capitalize">
+                              {value}
+                            </span>
+                            <span className="text-muted-foreground text-xs">
+                              {value === "live"
+                                ? "Production traffic"
+                                : "Sandbox only"}
+                            </span>
+                          </label>
+                        );
+                      })}
+                    </div>
+                    <FieldDescription>
+                      Live keys serve real sessions and consume credits. Test
+                      keys stay in the sandbox bucket for integration
+                      development.
+                    </FieldDescription>
+                  </Field>
+                ) : null}
+                {createKey.error || updateKey.error ? (
                   <Alert variant="destructive">
-                    <AlertTitle>Error creating key</AlertTitle>
+                    <AlertTitle>
+                      {editingKeyId
+                        ? "Error renaming key"
+                        : "Error creating key"}
+                    </AlertTitle>
                     <AlertDescription>
-                      {createKey.error instanceof Error
-                        ? createKey.error.message
+                      {(editingKeyId
+                        ? updateKey.error
+                        : createKey.error) instanceof Error
+                        ? (editingKeyId ? updateKey.error : createKey.error)
+                            ?.message
                         : "An unexpected error occurred."}
                     </AlertDescription>
                   </Alert>
@@ -435,13 +497,18 @@ export function ApiKeysManager({
               <SheetClose render={<Button type="button" variant="ghost" />}>
                 Cancel
               </SheetClose>
-              <Button type="submit" disabled={createKey.isPending}>
-                {createKey.isPending ? (
+              <Button
+                type="submit"
+                disabled={createKey.isPending || updateKey.isPending}
+              >
+                {createKey.isPending || updateKey.isPending ? (
                   <Spinner data-icon="inline-start" />
+                ) : editingKeyId ? (
+                  <PencilIcon data-icon="inline-start" />
                 ) : (
                   <PlusIcon data-icon="inline-start" />
                 )}
-                Create key
+                {editingKeyId ? "Save name" : "Create key"}
               </Button>
             </SheetFooter>
           </form>

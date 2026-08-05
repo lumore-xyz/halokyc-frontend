@@ -149,7 +149,9 @@ describe("WorkflowDesigner", () => {
     renderDesigner();
 
     await user.click(
-      await screen.findByRole("button", { name: /Create your first workflow/i }),
+      await screen.findByRole("button", {
+        name: /Create your first workflow/i,
+      }),
     );
 
     const dialog = await screen.findByRole("dialog");
@@ -174,6 +176,47 @@ describe("WorkflowDesigner", () => {
       auto_decide_allowed: true,
       auto_decide_confidence_threshold: null,
     });
+  });
+
+  it("disables dependent services until their required service is selected", async () => {
+    server.use(
+      http.get(
+        "/api/client/workspaces/30000000-0000-0000-0000-000000000000/workflows",
+        () => HttpResponse.json([]),
+      ),
+    );
+
+    const user = userEvent.setup();
+    renderDesigner();
+
+    await user.click(
+      await screen.findByRole("button", {
+        name: /Create your first workflow/i,
+      }),
+    );
+
+    const dialog = await screen.findByRole("dialog");
+    const selfie = within(dialog).getByRole("button", { name: "Selfie" });
+    const liveness = within(dialog).getByRole("button", { name: "Liveness" });
+    const document = within(dialog).getByRole("button", { name: "Document" });
+    const age = within(dialog).getByRole("button", { name: "Age" });
+
+    expect(liveness).toBeDisabled();
+    expect(age).toBeDisabled();
+
+    await user.click(selfie);
+    await user.click(document);
+    expect(liveness).toBeEnabled();
+    expect(age).toBeEnabled();
+
+    await user.click(liveness);
+    await user.click(age);
+    await user.click(selfie);
+    await user.click(document);
+    expect(liveness).toBeDisabled();
+    expect(liveness).toHaveAttribute("aria-pressed", "false");
+    expect(age).toBeDisabled();
+    expect(age).toHaveAttribute("aria-pressed", "false");
   });
 
   it("defaults automatic decisions to enabled", async () => {
@@ -203,7 +246,9 @@ describe("WorkflowDesigner", () => {
     renderDesigner();
 
     await user.click(
-      await screen.findByRole("button", { name: /Create your first workflow/i }),
+      await screen.findByRole("button", {
+        name: /Create your first workflow/i,
+      }),
     );
 
     const dialog = await screen.findByRole("dialog");
@@ -252,7 +297,9 @@ describe("WorkflowDesigner", () => {
     renderDesigner();
 
     await user.click(
-      await screen.findByRole("button", { name: /Create your first workflow/i }),
+      await screen.findByRole("button", {
+        name: /Create your first workflow/i,
+      }),
     );
 
     const dialog = await screen.findByRole("dialog");
@@ -305,7 +352,9 @@ describe("WorkflowDesigner", () => {
     renderDesigner();
 
     await user.click(
-      await screen.findByRole("button", { name: /Create your first workflow/i }),
+      await screen.findByRole("button", {
+        name: /Create your first workflow/i,
+      }),
     );
 
     const dialog = await screen.findByRole("dialog");
@@ -342,7 +391,9 @@ describe("WorkflowDesigner", () => {
     renderDesigner();
 
     await user.click(
-      await screen.findByRole("button", { name: /Create your first workflow/i }),
+      await screen.findByRole("button", {
+        name: /Create your first workflow/i,
+      }),
     );
 
     const dialog = await screen.findByRole("dialog");

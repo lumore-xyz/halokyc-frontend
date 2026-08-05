@@ -63,6 +63,11 @@ const SERVICE_LABELS: Record<Service, string> = {
   age: "Age",
 };
 
+const SERVICE_DEPENDENCIES: Partial<Record<Service, Service>> = {
+  liveness: "selfie",
+  age: "document",
+};
+
 type EditorState = {
   name: string;
   services: Service[];
@@ -129,11 +134,7 @@ function validateConfidenceThreshold(
   return null;
 }
 
-export function WorkflowDesigner({
-  workspaceId,
-}: {
-  workspaceId: string;
-}) {
+export function WorkflowDesigner({ workspaceId }: { workspaceId: string }) {
   const session = useClientSession();
   const role = session.data?.organizationRole ?? null;
   const canEditConfidenceThreshold =
@@ -180,12 +181,7 @@ export function WorkflowDesigner({
     }: {
       workflowId: string;
       payload: WorkflowUpdate;
-    }) =>
-      apiClient.patchWorkspaceWorkflow(
-        workspaceId,
-        workflowId,
-        payload,
-      ),
+    }) => apiClient.patchWorkspaceWorkflow(workspaceId, workflowId, payload),
     onSuccess: () => {
       void queryClient.invalidateQueries({
         queryKey: ["workspace-workflows", workspaceId],
@@ -219,7 +215,11 @@ export function WorkflowDesigner({
   useEffect(() => {
     if (!isOpen) return;
     const onKey = (event: KeyboardEvent) => {
-      if (event.key === "Escape" && !createMutation.isPending && !updateMutation.isPending) {
+      if (
+        event.key === "Escape" &&
+        !createMutation.isPending &&
+        !updateMutation.isPending
+      ) {
         setEditor(null);
         setEditingId(null);
       }
@@ -249,7 +249,10 @@ export function WorkflowDesigner({
       if (!current) return current;
       const has = current.services.includes(service);
       const services = has
-        ? current.services.filter((entry) => entry !== service)
+        ? current.services.filter(
+            (entry) =>
+              entry !== service && SERVICE_DEPENDENCIES[entry] !== service,
+          )
         : [...current.services, service];
       return {
         ...current,
@@ -282,12 +285,11 @@ export function WorkflowDesigner({
       auto_decide_allowed: editor.autoDecideAllowed,
     };
     if (canEditConfidenceThreshold) {
-      payload.auto_decide_confidence_threshold =
-        editor.autoDecideAllowed
-          ? editor.confidenceThreshold.trim().length > 0
-            ? Number(editor.confidenceThreshold)
-            : null
-          : null;
+      payload.auto_decide_confidence_threshold = editor.autoDecideAllowed
+        ? editor.confidenceThreshold.trim().length > 0
+          ? Number(editor.confidenceThreshold)
+          : null
+        : null;
     }
 
     if (editingId) {
@@ -306,7 +308,10 @@ export function WorkflowDesigner({
 
   const editingWorkflow = useMemo(
     () =>
-      editingId ? workflows.find((workflow) => workflow.workflow_id === editingId) ?? null : null,
+      editingId
+        ? (workflows.find((workflow) => workflow.workflow_id === editingId) ??
+          null)
+        : null,
     [editingId, workflows],
   );
 
@@ -331,7 +336,7 @@ export function WorkflowDesigner({
     <AppShell audience="client">
       <main className="mx-auto flex w-full max-w-5xl flex-1 flex-col gap-8 px-6 py-12">
         <header className="flex flex-col gap-3">
-          <span className="text-xs font-medium tracking-wide text-muted-foreground uppercase">
+          <span className="text-muted-foreground text-xs font-medium tracking-wide uppercase">
             Workflow designer
           </span>
           <div className="flex flex-col gap-2 sm:flex-row sm:items-end sm:justify-between">
@@ -353,7 +358,10 @@ export function WorkflowDesigner({
           </div>
         </header>
 
-        <section className="grid gap-4 sm:grid-cols-3" aria-label="Workflow metrics">
+        <section
+          className="grid gap-4 sm:grid-cols-3"
+          aria-label="Workflow metrics"
+        >
           <Metric
             label="Total workflows"
             value={workflowsQuery.isLoading ? "—" : workflows.length}
@@ -379,7 +387,9 @@ export function WorkflowDesigner({
             }
             icon={CheckIcon}
             description={
-              workflows.length === 0 ? "No workflows yet" : "Most recent created date"
+              workflows.length === 0
+                ? "No workflows yet"
+                : "Most recent created date"
             }
           />
         </section>
@@ -402,7 +412,7 @@ export function WorkflowDesigner({
                   <li key={workflow.workflow_id}>
                     <Card>
                       <CardHeader className="flex flex-row items-start justify-between gap-3">
-                        <div className="flex flex-col gap-1.5 min-w-0">
+                        <div className="flex min-w-0 flex-col gap-1.5">
                           <CardTitle className="text-base">
                             {workflow.name}
                           </CardTitle>
@@ -441,27 +451,27 @@ export function WorkflowDesigner({
                           ))}
                           <Badge
                             variant={
-                              workflow.auto_decide_allowed ?? true
+                              (workflow.auto_decide_allowed ?? true)
                                 ? "secondary"
                                 : "outline"
                             }
                           >
                             Auto-decide{" "}
-                            {workflow.auto_decide_allowed ?? true
+                            {(workflow.auto_decide_allowed ?? true)
                               ? "allowed"
                               : "blocked"}
                           </Badge>
                         </div>
-                        <div className="flex flex-wrap items-center gap-x-4 gap-y-1 text-xs text-muted-foreground">
+                        <div className="text-muted-foreground flex flex-wrap items-center gap-x-4 gap-y-1 text-xs">
                           <span>
                             Min age:{" "}
-                            <span className="font-mono text-foreground">
+                            <span className="text-foreground font-mono">
                               {workflow.min_age ?? "—"}
                             </span>
                           </span>
                           <span>
                             Confidence threshold:{" "}
-                            <span className="font-mono text-foreground">
+                            <span className="text-foreground font-mono">
                               {formatConfidenceThreshold(
                                 workflow.auto_decide_confidence_threshold,
                               )}
@@ -469,18 +479,18 @@ export function WorkflowDesigner({
                           </span>
                           <span>
                             Created{" "}
-                            <span className="font-mono text-foreground">
+                            <span className="text-foreground font-mono">
                               {formatDate(workflow.created_at)}
                             </span>
                           </span>
                         </div>
                         {pendingDeleteId === workflow.workflow_id ? (
-                          <div className="flex flex-col gap-3 rounded-xl border border-dashed bg-muted/30 p-4 sm:flex-row sm:items-center sm:justify-between">
+                          <div className="bg-muted/30 flex flex-col gap-3 rounded-xl border border-dashed p-4 sm:flex-row sm:items-center sm:justify-between">
                             <div className="flex flex-col gap-0.5">
                               <span className="text-sm font-medium">
                                 Delete this workflow?
                               </span>
-                              <span className="text-xs text-muted-foreground">
+                              <span className="text-muted-foreground text-xs">
                                 Sessions already created with this ID keep
                                 running, but new sessions cannot use it.
                               </span>
@@ -629,23 +639,27 @@ function WorkflowFormFields({
         >
           {ALL_SERVICES.map((service) => {
             const active = editor.services.includes(service);
+            const dependency = SERVICE_DEPENDENCIES[service];
+            const disabled = Boolean(
+              dependency && !editor.services.includes(dependency),
+            );
             return (
               <button
                 key={service}
                 type="button"
                 onClick={() => onToggle(service)}
                 aria-pressed={active}
+                disabled={disabled}
                 className={cn(
                   "inline-flex items-center gap-1.5 rounded-full border px-3 py-1.5 text-xs font-medium transition-colors",
-                  "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2",
+                  "focus-visible:ring-ring focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:outline-none",
+                  "disabled:cursor-not-allowed disabled:opacity-50",
                   active
                     ? "border-primary bg-primary text-primary-foreground"
                     : "border-border bg-background text-muted-foreground hover:border-foreground/40 hover:text-foreground",
                 )}
               >
-                {active ? (
-                  <CheckIcon className="size-3.5" aria-hidden />
-                ) : null}
+                {active ? <CheckIcon className="size-3.5" aria-hidden /> : null}
                 {SERVICE_LABELS[service]}
               </button>
             );
@@ -674,17 +688,15 @@ function WorkflowFormFields({
           }}
           className={cn(
             "flex w-full items-center justify-between gap-4 rounded-lg border px-4 py-4 text-left",
-            "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2",
+            "focus-visible:ring-ring focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:outline-none",
             editor.autoDecideAllowed
               ? "border-primary/40 bg-primary/5"
               : "border-border bg-muted/30",
           )}
         >
           <span className="flex flex-col gap-1">
-            <span className="text-sm font-medium">
-              Automatic decisions
-            </span>
-            <span className="text-xs text-muted-foreground">
+            <span className="text-sm font-medium">Automatic decisions</span>
+            <span className="text-muted-foreground text-xs">
               On by default. Deterministic safeguards still block approvals for
               under-age users, face mismatch, liveness failure, and tenant
               duplicate cases.
@@ -701,7 +713,7 @@ function WorkflowFormFields({
           >
             <span
               className={cn(
-                "absolute top-0.5 size-5 rounded-full bg-background shadow-sm transition-transform",
+                "bg-background absolute top-0.5 size-5 rounded-full shadow-sm transition-transform",
                 editor.autoDecideAllowed ? "translate-x-5" : "translate-x-0.5",
               )}
             />
@@ -733,8 +745,8 @@ function WorkflowFormFields({
             aria-invalid={Boolean(confidenceError)}
           />
           <FieldDescription>
-            Recommended range is 0.90-0.99. Leave blank to use the default
-            score bands.
+            Recommended range is 0.90-0.99. Leave blank to use the default score
+            bands.
           </FieldDescription>
           {confidenceError ? <FieldError>{confidenceError}</FieldError> : null}
         </Field>
@@ -756,8 +768,7 @@ function WorkflowFormFields({
           aria-invalid={Boolean(ageError)}
         />
         <FieldDescription>
-          Sessions whose extracted age is below this are rejected
-          automatically.
+          Sessions whose extracted age is below this are rejected automatically.
         </FieldDescription>
         {ageError ? <FieldError>{ageError}</FieldError> : null}
       </Field>
@@ -773,8 +784,8 @@ function EmptyWorkflows({ onCreate }: { onCreate: () => void }) {
         <CardDescription>
           A workflow is the policy you pass to{" "}
           <code className="font-mono text-xs">/verify?workflow_id=...</code> to
-          say which checks each session runs. Without one, the verify page
-          will not start.
+          say which checks each session runs. Without one, the verify page will
+          not start.
         </CardDescription>
       </CardHeader>
       <CardContent>

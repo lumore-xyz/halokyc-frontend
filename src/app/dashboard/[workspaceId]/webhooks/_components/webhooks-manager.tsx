@@ -1,15 +1,11 @@
 "use client";
 
 import { type FormEvent, useId, useState } from "react";
-import { PlusIcon, WebhookIcon } from "lucide-react";
+import { PencilIcon, PlusIcon, WebhookIcon } from "lucide-react";
 import { toast } from "sonner";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 
-import {
-  Alert,
-  AlertDescription,
-  AlertTitle,
-} from "@/components/ui/alert";
+import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { Button } from "@/components/ui/button";
 import {
   Card,
@@ -50,6 +46,7 @@ import {
   type ApiError,
   type WebhookEndpoint,
   type WebhookEndpointCreate,
+  type WebhookEndpointUpdate,
 } from "@/lib/api-client";
 import { useClientSession } from "@/lib/hooks/use-client-session";
 
@@ -61,6 +58,9 @@ export function WebhooksManager({ workspaceId }: { workspaceId: string }) {
   const [createOpen, setCreateOpen] = useState(false);
   const [targetUrl, setTargetUrl] = useState("");
   const [description, setDescription] = useState("");
+  const [editingEndpointId, setEditingEndpointId] = useState<string | null>(
+    null,
+  );
   const [targetError, setTargetError] = useState<string | null>(null);
 
   const list = useQuery({
@@ -75,6 +75,26 @@ export function WebhooksManager({ workspaceId }: { workspaceId: string }) {
     onSuccess: () => {
       toast.success("Webhook endpoint added.");
       setCreateOpen(false);
+      setTargetUrl("");
+      setDescription("");
+      setTargetError(null);
+      void queryClient.invalidateQueries({
+        queryKey: ["workspace-webhooks", workspaceId],
+      });
+    },
+  });
+
+  const update = useMutation<
+    WebhookEndpoint,
+    ApiError,
+    { endpointId: string; payload: WebhookEndpointUpdate }
+  >({
+    mutationFn: ({ endpointId, payload }) =>
+      apiClient.updateWorkspaceWebhook(workspaceId, endpointId, payload),
+    onSuccess: () => {
+      toast.success("Webhook endpoint updated.");
+      setCreateOpen(false);
+      setEditingEndpointId(null);
       setTargetUrl("");
       setDescription("");
       setTargetError(null);
@@ -104,21 +124,41 @@ export function WebhooksManager({ workspaceId }: { workspaceId: string }) {
       return;
     }
     setTargetError(null);
-    create.mutate({
+    const payload = {
       target_url: trimmed,
       description: description.trim() ? description.trim() : null,
-    });
+    };
+    if (editingEndpointId) {
+      update.mutate({ endpointId: editingEndpointId, payload });
+      return;
+    }
+    create.mutate(payload);
   }
 
   function openSheet() {
     setCreateOpen(true);
+    setEditingEndpointId(null);
+    setTargetUrl("");
+    setDescription("");
     setTargetError(null);
     create.reset();
+    update.reset();
+  }
+
+  function openEditSheet(endpoint: WebhookEndpoint) {
+    setCreateOpen(true);
+    setEditingEndpointId(endpoint.webhook_endpoint_id);
+    setTargetUrl(endpoint.target_url);
+    setDescription(endpoint.description ?? "");
+    setTargetError(null);
+    create.reset();
+    update.reset();
   }
 
   function closeSheet() {
-    if (create.isPending) return;
+    if (create.isPending || update.isPending) return;
     setCreateOpen(false);
+    setEditingEndpointId(null);
     setTargetUrl("");
     setDescription("");
     setTargetError(null);
@@ -150,12 +190,16 @@ export function WebhooksManager({ workspaceId }: { workspaceId: string }) {
         </AlertDescription>
       </Alert>
 
-      {create.error ? (
+      {create.error || update.error ? (
         <Alert variant="destructive">
-          <AlertTitle>Could not add webhook</AlertTitle>
+          <AlertTitle>
+            {editingEndpointId
+              ? "Could not update webhook"
+              : "Could not add webhook"}
+          </AlertTitle>
           <AlertDescription>
-            {create.error instanceof Error
-              ? create.error.message
+            {(editingEndpointId ? update.error : create.error) instanceof Error
+              ? (editingEndpointId ? update.error : create.error)?.message
               : "An unexpected error occurred."}
           </AlertDescription>
         </Alert>
@@ -198,6 +242,7 @@ export function WebhooksManager({ workspaceId }: { workspaceId: string }) {
                   <TableHead>Description</TableHead>
                   <TableHead>Status</TableHead>
                   <TableHead>Created</TableHead>
+                  <TableHead className="text-right">Actions</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
@@ -206,14 +251,26 @@ export function WebhooksManager({ workspaceId }: { workspaceId: string }) {
                     <TableCell className="font-mono text-xs">
                       {endpoint.target_url}
                     </TableCell>
-                    <TableCell className="text-sm text-muted-foreground">
+                    <TableCell className="text-muted-foreground text-sm">
                       {endpoint.description ?? "—"}
                     </TableCell>
                     <TableCell className="text-sm">
                       {endpoint.is_active ? "Active" : "Paused"}
                     </TableCell>
-                    <TableCell className="text-sm text-muted-foreground">
+                    <TableCell className="text-muted-foreground text-sm">
                       {new Date(endpoint.created_at).toLocaleString()}
+                    </TableCell>
+                    <TableCell className="text-right">
+                      <Button
+                        type="button"
+                        variant="ghost"
+                        size="icon"
+                        onClick={() => openEditSheet(endpoint)}
+                        disabled={update.isPending}
+                        aria-label={`Edit ${endpoint.target_url}`}
+                      >
+                        <PencilIcon />
+                      </Button>
                     </TableCell>
                   </TableRow>
                 ))}
@@ -240,9 +297,13 @@ export function WebhooksManager({ workspaceId }: { workspaceId: string }) {
             aria-labelledby="webhook-create-title"
           >
             <SheetHeader className="border-b p-4">
-              <SheetTitle id="webhook-create-title">Add webhook</SheetTitle>
+              <SheetTitle id="webhook-create-title">
+                {editingEndpointId ? "Edit webhook" : "Add webhook"}
+              </SheetTitle>
               <SheetDescription>
-                HaloKYC POSTs verification status updates to the URL below.
+                {editingEndpointId
+                  ? "Update where HaloKYC sends verification status updates."
+                  : "HaloKYC POSTs verification status updates to the URL below."}
               </SheetDescription>
             </SheetHeader>
             <div className="flex-1 overflow-y-auto p-4">
@@ -256,12 +317,13 @@ export function WebhooksManager({ workspaceId }: { workspaceId: string }) {
                       setTargetUrl(event.target.value);
                       if (targetError) setTargetError(null);
                       if (create.error) create.reset();
+                      if (update.error) update.reset();
                     }}
                     placeholder="https://hooks.example.com/halokyc"
                     inputMode="url"
                     autoComplete="off"
                     spellCheck={false}
-                    disabled={create.isPending}
+                    disabled={create.isPending || update.isPending}
                     aria-invalid={targetError ? true : undefined}
                     aria-describedby={
                       targetError ? `${targetInputId}-error` : undefined
@@ -287,7 +349,7 @@ export function WebhooksManager({ workspaceId }: { workspaceId: string }) {
                     value={description}
                     onChange={(event) => setDescription(event.target.value)}
                     placeholder="Production webhook"
-                    disabled={create.isPending}
+                    disabled={create.isPending || update.isPending}
                     maxLength={2000}
                   />
                   <FieldDescription>
@@ -301,13 +363,18 @@ export function WebhooksManager({ workspaceId }: { workspaceId: string }) {
               <SheetClose render={<Button type="button" variant="ghost" />}>
                 Cancel
               </SheetClose>
-              <Button type="submit" disabled={create.isPending}>
-                {create.isPending ? (
+              <Button
+                type="submit"
+                disabled={create.isPending || update.isPending}
+              >
+                {create.isPending || update.isPending ? (
                   <Spinner data-icon="inline-start" />
+                ) : editingEndpointId ? (
+                  <PencilIcon data-icon="inline-start" />
                 ) : (
                   <PlusIcon data-icon="inline-start" />
                 )}
-                Add webhook
+                {editingEndpointId ? "Save changes" : "Add webhook"}
               </Button>
             </SheetFooter>
           </form>
