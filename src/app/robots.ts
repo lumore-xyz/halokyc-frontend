@@ -9,6 +9,8 @@ const marketingRoutes = [
   "/workflow",
   "/security",
   "/pricing",
+  "/switch",
+  "/switch/",
   "/credits",
   "/privacy",
   "/terms",

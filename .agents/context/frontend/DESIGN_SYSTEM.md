@@ -624,7 +624,10 @@ Landing-only components live under `src/components/landing/`:
 - `workflow-section` - 6-step vertical timeline
 - `use-cases-section` - 6 product-shape cards
 - `client-control-section` - mock client policy/review controls with audit labels
-- `pricing-section` - 3 plans, no hardcoded prices
+- `pricing-section` - 4 public plans using the monthly credit model
+- `pricing-comparison` - shared six-vendor public-price audit used on the
+  pricing page and competitor alternative pages; unpublished prices are
+  labeled as sales quotes rather than estimated
 - `security-section` - 8-point checklist
 - `final-cta` - soft lime halo with two CTAs
 - `landing-footer` - 4-column marketing navigation

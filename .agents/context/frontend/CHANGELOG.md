@@ -27,6 +27,49 @@
 
 ### Added
 
+- Added the complete `/switch` comparison cluster to `sitemap.xml`, enabled
+  indexing through segment metadata, removed duplicate title suffixes, and
+  added WebPage, breadcrumb, and ItemList structured data to the switch hub.
+
+- Added `/switch/`, a responsive comparison hub linking every vendor
+  alternative page, with a migration-focused hero, vendor route cards,
+  platform-independent integration guidance, and SEO metadata.
+
+- Added `/switch/idenfy-alternative/`, an evidence-led iDenfy comparison
+  covering its current self-serve pricing, trial, approved-only option,
+  compliance breadth, SDK tradeoffs, repeat-user controls, and FAQs.
+
+- Added `/switch/entrust-alternative/` as a metadata-specific route reusing
+  the Onfido/Entrust comparison page, with its own Entrust canonical URL.
+
+- Added `/switch/onfido-alternative/`, an evidence-led Onfido/Entrust IDV
+  comparison covering the acquisition, pricing visibility, global document
+  coverage, Workflow Studio, duplicate controls, integration, and FAQs.
+
+- Added `/switch/jumio-alternative/`, an honest Jumio comparison covering
+  pricing visibility, global coverage, SDK tradeoffs, identity and AML breadth,
+  repeat-user controls, platform-independent delivery, and FAQs.
+
+- Added `/switch/veriff-alternative/`, an honest Veriff comparison covering
+  self-serve pricing, sandbox and trial access, SDK tradeoffs, identity
+  workflows, repeat-user controls, platform-independent delivery, and FAQs.
+
+- Added `/switch/sumsub-alternative/`, an honest Sumsub comparison covering
+  trial limits, monthly minimums, verification pricing, compliance breadth,
+  platform-independent integration, phased migration, and FAQs.
+
+- Added `/switch/didit-alternative/`, an honest Didit comparison covering
+  monthly free usage, billing units, product breadth, repeat-user controls,
+  platform-independent integration, phased migration, pricing, and FAQs.
+
+- Added a shared public pricing comparison to `/pricing` and the Persona
+  alternative page, using the six vendor logos and clearly labeling published,
+  included, unavailable, and sales-quoted figures.
+- Added `/switch/persona-alternative/`, a dedicated SEO comparison page with
+  an honest fit recommendation, side-by-side capability table, phased
+  migration guidance, public HaloKYC pricing, platform-independent web/mobile
+  integration copy, and vendor-switch FAQs.
+
 - Added Account → Verification with an ordered email and identity checklist,
   clear locked/current/verified states, hosted-flow continuation, and a
   completion summary.

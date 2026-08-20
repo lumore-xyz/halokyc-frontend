@@ -7,6 +7,7 @@ import { faqPageSchema } from "@/lib/structured-data";
 
 import { Reveal } from "@/components/landing/reveal";
 import { MarketingPageShell } from "@/components/landing/marketing-page";
+import { PricingComparison } from "@/components/landing/pricing-comparison";
 import { SectionMarker } from "@/components/landing/section-marker";
 import { PricingFaq } from "@/components/landing/pricing-faq";
 import { PricingSection } from "@/components/landing/pricing-section";
@@ -300,6 +301,8 @@ export default function PricingPage() {
 
       {/* ---------- PLANS (SEC. 01 — first numbered section after credits context) ---------- */}
       <PricingSection index={1} />
+
+      <PricingComparison />
 
       {/* ---------- BUY MORE CREDITS ---------- */}
       <section aria-labelledby="packs-headline" className="border-t border-[var(--landing-hair)] bg-(--landing-paper-soft)">

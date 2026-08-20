@@ -152,6 +152,38 @@ export function breadcrumbListSchema(
   };
 }
 
+interface ItemListSchema {
+  "@context": "https://schema.org";
+  "@type": "ItemList";
+  name: string;
+  numberOfItems: number;
+  itemListElement: {
+    "@type": "ListItem";
+    position: number;
+    name: string;
+    url: string;
+  }[];
+}
+
+export function itemListSchema(
+  name: string,
+  items: readonly { name: string; url: string }[],
+): ItemListSchema {
+  const baseUrl = publicEnv.siteUrl;
+  return {
+    "@context": "https://schema.org",
+    "@type": "ItemList",
+    name,
+    numberOfItems: items.length,
+    itemListElement: items.map((item, index) => ({
+      "@type": "ListItem",
+      position: index + 1,
+      name: item.name,
+      url: `${baseUrl}${item.url}`,
+    })),
+  };
+}
+
 interface WebPageSchema {
   "@context": "https://schema.org";
   "@type": "WebPage";

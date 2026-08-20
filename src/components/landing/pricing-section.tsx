@@ -1,5 +1,5 @@
 /**
- * PricingSection - three plans, no hardcoded prices.
+ * PricingSection - four plans with the public monthly credit model.
  *
  * Editorial 3-column layout. Each plan is a paper card with a
  * tiny section number, a name, a sub-headline, and a list of
@@ -38,7 +38,7 @@ const PLANS: readonly Plan[] = [
     name: "Sandbox",
     blurb: "Validate your integration at zero cost.",
     bullets: [
-      "1,000 credits total (does not roll over)",
+      "1,000 credits per month (resets monthly)",
       "1 workspace",
       "1 team member",
       "Full API access",
