@@ -27,6 +27,9 @@
 
 ### Added
 
+- Added a compact “Pricing & compare” footer column linking `/pricing`, four
+  key vendor alternatives, and the complete `/switch` comparison hub.
+
 - Added the complete `/switch` comparison cluster to `sitemap.xml`, enabled
   indexing through segment metadata, removed duplicate title suffixes, and
   added WebPage, breadcrumb, and ItemList structured data to the switch hub.

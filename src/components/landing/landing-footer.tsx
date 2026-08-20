@@ -31,9 +31,19 @@ const COLUMNS = [
     ],
   },
   {
-    title: "Company",
+    title: "Pricing & compare",
     links: [
       { label: "Pricing", href: "/pricing" },
+      { label: "vs Didit", href: "/switch/didit-alternative" },
+      { label: "vs Sumsub", href: "/switch/sumsub-alternative" },
+      { label: "vs Veriff", href: "/switch/veriff-alternative" },
+      { label: "vs Persona", href: "/switch/persona-alternative" },
+      { label: "All competitor comparisons →", href: "/switch" },
+    ],
+  },
+  {
+    title: "Company",
+    links: [
       { label: "About", href: "/about" },
       { label: "Contact", href: "mailto:hello@halokyc.com" },
     ],
@@ -99,7 +109,7 @@ export function LandingFooter() {
             </dl>
           </div>
 
-          <div className="grid grid-cols-2 gap-10 sm:grid-cols-4">
+          <div className="grid grid-cols-2 gap-10 lg:grid-cols-5">
             {COLUMNS.map((col, i) => (
               <div key={col.title}>
                 <p className="font-mono text-[10px] tracking-[0.22em] text-[var(--landing-canvas-mute)] uppercase">
